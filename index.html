@@ -244,10 +244,21 @@ company:{ic:'🏢',n:'شرکت‌ها',grp:'سازمان',f:[
  {k:'industry',n:'صنعت',t:MUL,o:['تامین مالی','فناوری','بازرگانی','ساختمانی','فرهنگی','مشاوره']},
  {k:'astatus',n:'وضعیت فعالیت',t:SEL,o:['فعال','در حال تاسیس','راکد']},
  {k:'own',n:'درصد مالکیت هلدینگ',t:NUM},{k:'capital',n:'سرمایه ثبتی',t:NUM},
+ {k:'assets',n:'ارزش کل دارایی‌های شرکت',t:NUM},
+ {k:'shares',n:'تعداد کل سهام',t:NUM},
  {k:'founded',n:'تاریخ تاسیس',t:DAT},
  {k:'ceo',n:'مدیرعامل',t:REL,r:'hr',s:1},
+ {k:'board',n:'اعضای هیات مدیره',t:REL,r:'hr'},
  {k:'parent',n:'شرکت مادر',t:REL,r:'company',s:1}],
- cols:['title','type','astatus','industry','ceo']},
+ cols:['title','type','astatus','own','ceo'],comp:'holdEquity'},
+share:{ic:'👑',n:'سهامداران',grp:'سازمان',f:[
+ {k:'title',n:'نام سهامدار',t:TXT},
+ {k:'person',n:'فرد مرتبط (اختیاری)',t:REL,r:'hr',s:1},
+ {k:'crm',n:'شخص حقوقی مرتبط (اختیاری)',t:REL,r:'crm',s:1},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'count',n:'تعداد سهام',t:NUM},
+ {k:'note',n:'توضیح',t:TXT}],
+ cols:['title','company','count'],comp:'sharePct'},
 business:{ic:'🧢',n:'کسب‌وکارها',grp:'سازمان',f:[
  {k:'title',n:'نام کسب‌وکار',t:TXT},{k:'desc',n:'شرح',t:LNG},
  {k:'model',n:'مدل درآمدی',t:SEL,o:['کارمزدی','فروش','اشتراک','پروژه‌ای']},
@@ -763,6 +774,17 @@ function planDays(p){
   return{label:'روز مانده',v:days.toLocaleString('fa-IR')+' روز',bad:days<0&&p.d.status!=='Done'};
 }
 window.planDays=planDays;
+function holdEquity(c){
+  const p=(c.d.own||0)/100;
+  if(!p)return{label:'سهم هلدینگ',v:'—'};
+  return{label:'سهم هلدینگ: سرمایه │ دارایی',v:abbrN(p*(c.d.capital||0))+' │ '+abbrN(p*(c.d.assets||0))};
+}
+function sharePct(s){
+  const cid=relIds(s,'company')[0], comp=cid&&recs[cid];
+  if(!comp||!comp.d.shares||!s.d.count)return{label:'درصد سهام',v:'—'};
+  return{label:'درصد سهام',v:(s.d.count/comp.d.shares*100).toLocaleString('fa-IR',{maximumFractionDigits:2})+'٪'};
+}
+window.holdEquity=holdEquity;window.sharePct=sharePct;
 function riskScore(r){
   const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1}[r.d.prob]||0;
   const I={'زیاد':3,'متوسط':2,'کم':1}[r.d.impact]||0;
@@ -966,7 +988,7 @@ function recHTML(e,id){
       const rs=backRefs(id,ek,f.k);
       const selfParent=(ek===e&&f.k==='parent');
       const secTitle=selfParent?'زیرمجموعه‌ها':`${ed.ic} ${ed.n} — ${f.n}`;
-      const alwaysShow=(ek==='booknote'); // بانک دانش همیشه دیده شود تا افزودن نکته دم دست باشد
+      const alwaysShow=(ek==='booknote')||(ek==='share'&&e==='company'); // بانک دانش و سهامداران همیشه دم دست
       if(!rs.length&&!selfParent&&!alwaysShow)return;
       h+=`<div class="sec relsec"><h3>${secTitle} <span class="c">${rs.length.toLocaleString('fa-IR')}</span>
         <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}',null,{k:'${f.k}',id:'${id}'})">＋ افزودن</button>`:''}</h3>`;
@@ -1356,6 +1378,26 @@ function dashHTML(){
     ${card('⏰ تسک عقب‌افتاده',overdue.length,overdue.length?'var(--bad)':null,"go('list','task',null,'overdueTask')")}
     ${card('🎯 اهداف فعال',obs.filter(o=>o.d.status!=='Done').length,null,"go('list','objective',null,'activeObj')")}
   </div>`;
+  // 💠 سهم هلدینگ از شرکت‌ها
+  const eqCos=byE('company').filter(c=>(c.d.own||0)>0&&((c.d.capital||0)>0||(c.d.assets||0)>0));
+  if(eqCos.length){
+    let totCap=0,totAst=0;
+    let rows=eqCos.map(c=>{
+      const p=(c.d.own||0)/100, hc=p*(c.d.capital||0), ha=p*(c.d.assets||0);
+      totCap+=hc;totAst+=ha;
+      return `<tr onclick="go('rec','company','${c.id}')"><td>🏢 ${esc(c.d.title)}</td>
+        <td>${(c.d.own||0).toLocaleString('fa-IR')}٪</td>
+        <td>${fmtN(c.d.capital)}</td><td style="color:#ecd98f">${abbrN(hc)}</td>
+        <td>${fmtN(c.d.assets)}</td><td style="color:#ecd98f">${abbrN(ha)}</td></tr>`;
+    }).join('');
+    h+=`<div class="sec"><h3>💠 دارایی و سرمایه هلدینگ (بر اساس درصد مالکیت در شرکت‌ها)</h3>
+    <div class="comp" style="margin-bottom:12px">
+      <div class="chip">جمع سهم هلدینگ از سرمایه ثبتی: <b style="color:#ecd98f">${abbrN(totCap)}</b></div>
+      <div class="chip">جمع سهم هلدینگ از دارایی‌ها: <b style="color:#ecd98f">${abbrN(totAst)}</b></div>
+    </div>
+    <div class="tblwrap"><table><thead><tr><th>شرکت</th><th>مالکیت</th><th>سرمایه ثبتی</th><th>سهم هلدینگ</th><th>دارایی شرکت</th><th>سهم هلدینگ</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></div>`;
+  }
   // آبشار
   h+=`<div class="sec"><h3>📐 زنجیره آبشاری: استراتژی ← اهداف ← پروژه‌ها ← تسک‌ها</h3>`;
   const strats=byE('strategy').filter(s=>!(s.d.parent&&s.d.parent[0]));
