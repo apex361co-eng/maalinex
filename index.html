@@ -120,6 +120,38 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 /* toolbar */
 .tools{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
 .tools input{max-width:260px}
+/* jalali calendar picker */
+#jcal{position:fixed;z-index:80;width:262px;padding:12px;border-radius:14px;display:none;
+  background:rgba(18,22,19,.97);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.3);box-shadow:0 18px 50px rgba(0,0,0,.6)}
+#jcal .jh{display:flex;align-items:center;gap:4px;margin-bottom:8px}
+#jcal .jh b{flex:1;text-align:center;font-size:13px;color:#ecd98f}
+#jcal .jh button{background:var(--bg3);border:1px solid var(--line);color:var(--tx);border-radius:7px;padding:3px 9px;cursor:pointer;font-family:inherit;font-size:12px}
+#jcal .jg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+#jcal .jg span{font-size:10.5px;color:var(--tx2);padding:3px 0}
+#jcal .jg div{font-size:12.5px;padding:6px 0;border-radius:7px;cursor:pointer}
+#jcal .jg div:hover{background:var(--bg3)}
+#jcal .jg div.td{background:rgba(212,175,55,.2);color:#ecd98f;font-weight:700}
+#jcal .jmode{width:100%;margin-top:8px;font-size:11.5px}
+/* reminders */
+#remind{position:fixed;top:56px;left:14px;z-index:65;width:280px;padding:14px;border-radius:16px;display:none;
+  background:rgba(18,22,19,.95);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.28);box-shadow:0 18px 50px rgba(0,0,0,.55)}
+#remind.show{display:block}
+.remitem{display:flex;gap:7px;align-items:center;padding:7px 8px;border-radius:8px;background:var(--bg);margin-bottom:5px;font-size:12.5px}
+.remitem.due{border:1px solid var(--bad);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 12px rgba(224,106,95,.5)}}
+#rembtn.due{background:rgba(224,106,95,.25)!important}
+/* calendar view */
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.calhd{font-size:11.5px;color:var(--tx2);text-align:center;padding:4px 0}
+.calcell{background:var(--bg2);border:1px solid var(--line);border-radius:10px;min-height:86px;padding:5px;cursor:pointer;overflow:hidden}
+.calcell:hover{border-color:var(--ac)}
+.calcell.dim{opacity:.35}
+.calcell.td{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+.calcell .dn{font-size:11.5px;color:var(--tx2);margin-bottom:3px}
+.calev{font-size:10px;padding:1px 5px;border-radius:5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--bg3)}
+@media(max-width:760px){.calcell{min-height:56px}.calev{display:none}.calcell .cnt{display:block;font-size:10px;color:var(--ac)}}
 /* pomodoro */
 #pomo{position:fixed;bottom:18px;left:18px;z-index:60;width:235px;padding:16px;border-radius:18px;text-align:center;
   background:rgba(18,22,19,.93);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
@@ -194,6 +226,8 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
       <span id="ttl">اتاق کنترل</span><span class="sp"></span>
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
+      <button class="btn gh sm" id="rembtn" onclick="toggleRemind()" title="یادآوری‌ها">⏰</button>
+      <button class="btn gh sm" id="fxbtn" onclick="setFx()" title="نرخ تسعیر دلار" style="display:none">💱</button>
       <button class="btn gh sm" id="quickbtn" onclick="quickNote()" title="ثبت سریع نکته در بانک دانش">⚡ نکته</button>
       <button class="btn gh sm" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
       <button class="btn gh sm" id="authbtn" onclick="authAction()">ورود</button>
@@ -203,6 +237,21 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   </div>
 </div>
 
+<div id="jcal"></div>
+<div id="remind">
+  <div style="display:flex;align-items:center"><b style="font-size:14px">⏰ یادآوری‌ها</b><span style="flex:1"></span>
+    <span onclick="toggleRemind()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
+  <div id="rem_list" style="max-height:220px;overflow:auto;margin:10px 0;text-align:right"></div>
+  <div style="display:grid;grid-template-columns:1fr;gap:5px;text-align:right">
+    <input id="rem_t" placeholder="چه چیزی یادآوری شود؟">
+    <div style="display:grid;grid-template-columns:1fr 34px 100px;gap:5px">
+      <input id="rem_d" dir="ltr" placeholder="۱۴۰۵/۰۵/۰۱">
+      <button class="btn gh sm" style="padding:4px" onclick="openJcal('rem_d')">📅</button>
+      <input id="rem_h" dir="ltr" type="time">
+    </div>
+    <button class="btn sm" onclick="quickRemind()">＋ افزودن یادآوری</button>
+  </div>
+</div>
 <div id="pomo">
   <div style="display:flex;align-items:center"><b style="font-size:14px">🍅 پومودورو</b><span style="flex:1"></span>
     <span id="pomo_x" onclick="togglePomo()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
@@ -277,28 +326,38 @@ strategy:{ic:'🔗',n:'استراتژی',grp:'زنجیره آبشاری',f:[
  {k:'team',n:'تیم و نفرات کلیدی',t:REL,r:'hr'},
  {k:'parent',n:'استراتژی والد',t:REL,r:'strategy',s:1}],
  cols:['title','level','year','business'],prog:'strategyProg'},
-objective:{ic:'🎯',n:'اهداف',grp:'زنجیره آبشاری',f:[
+objective:{ic:'🎯',n:'اهداف سازمانی',grp:'زنجیره آبشاری',f:[
  {k:'title',n:'عنوان هدف',t:TXT},
+ {k:'nature',n:'ماهیت هدف',t:SEL,o:['کمی (عددی)','کیفی (ارزیابی)','تحویلی (انجام/عدم انجام)']},
+ {k:'gkind',n:'نوع هدف',t:SEL,o:['مالی','فروش و بازار','عملیاتی','توسعه‌ای','منابع انسانی','رگولاتوری','فناوری']},
  {k:'status',n:'وضعیت',t:STA,o:STATUS},
- {k:'level',n:'سطح',t:SEL,o:['هلدینگ','شرکت','کسب و کار','فردی']},
+ {k:'level',n:'سطح',t:SEL,o:['هلدینگ','شرکت','کسب و کار']},
  {k:'horizon',n:'افق زمانی',t:SEL,o:['پنج ساله','سه ساله','دوساله','سالانه','فصلی']},
  {k:'year',n:'سال',t:SEL,o:['1405','1406','1407']},
  {k:'month',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
  {k:'start',n:'مقدار شروع',t:NUM},
  {k:'target',n:'مقدار هدف',t:NUM},{k:'current',n:'مقدار فعلی',t:NUM},
- {k:'unit',n:'واحد سنجش',t:SEL,o:['تومان','میلیون تومان','میلیارد تومان','درصد','تعداد','نفر','کیلووات','مگاوات']},
+ {k:'unit',n:'واحد سنجش',t:SEL,o:['تومان','میلیون تومان','میلیارد تومان','دلار','درصد','تعداد','نفر','کیلووات','مگاوات']},
+ {k:'manual',n:'درصد تحقق (برای هدف کیفی)',t:NUM},
+ {k:'crit',n:'معیار موفقیت هدف کیفی',t:LNG},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
  {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'strategy'},
  {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
  {k:'company',n:'شرکت مرتبط',t:REL,r:'company'},
  {k:'parent',n:'هدف والد',t:REL,r:'objective',s:1}],
- cols:['title','status','level','year','owner'],prog:'objectiveProg'},
+ cols:['title','nature','status','level','year','owner'],prog:'objectiveProg'},
 project:{ic:'🏗️',n:'پروژه‌ها',grp:'زنجیره آبشاری',f:[
  {k:'title',n:'نام پروژه',t:TXT},{k:'desc',n:'شرح',t:LNG},
  {k:'status',n:'وضعیت',t:SEL,o:['شروع نشده','در حال اجرا','متوقف','تمام شده']},
  {k:'sched',n:'وضعیت زمان‌بندی',t:SEL,o:['طبق برنامه','تاخیر دارد']},
  {k:'prio',n:'اولویت',t:SEL,o:PRIO},
+ {k:'ptype',n:'نوع پروژه',t:SEL,o:['عادی','EPC / نیروگاهی','ساختمانی و عمرانی','فناوری','مطالعاتی']},
  {k:'range',n:'بازه زمانی',t:DAT},{k:'budget',n:'بودجه مصوب',t:NUM},
+ {k:'charter',n:'منشور پروژه (اهداف، الزامات، مفروضات)',t:LNG},
+ {k:'scopetxt',n:'محدوده پروژه (Scope)',t:LNG},
+ {k:'quality',n:'الزامات کیفیت',t:LNG},
+ {k:'procure',n:'برنامه تدارکات',t:LNG},
+ {k:'dep',n:'⛓ وابسته به پروژه‌های',t:REL,r:'project'},
  {k:'pm',n:'مدیر پروژه',t:REL,r:'hr',s:1},
  {k:'objective',n:'هدف استراتژیک',t:REL,r:'objective'},
  {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'strategy'},
@@ -313,6 +372,7 @@ task:{ic:'📘',n:'تسک‌ها',grp:'زنجیره آبشاری',f:[
  {k:'status',n:'وضعیت',t:STA,o:STATUS},
  {k:'prio',n:'اولویت',t:SEL,o:PRIO},
  {k:'due',n:'ددلاین',t:DAT},{k:'est',n:'تخمین زمان (ساعت)',t:NUM},
+ {k:'dep',n:'⛓ وابسته به تسک‌های',t:REL,r:'task'},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
  {k:'project',n:'پروژه',t:REL,r:'project',s:1},
  {k:'objective',n:'هدف مرتبط',t:REL,r:'objective'},
@@ -320,6 +380,15 @@ task:{ic:'📘',n:'تسک‌ها',grp:'زنجیره آبشاری',f:[
  {k:'risk',n:'ریسک مرتبط',t:REL,r:'risk'},
  {k:'parent',n:'تسک والد',t:REL,r:'task',s:1}],
  cols:['title','status','prio','due','owner','project'],prog:'taskProg'},
+milestone:{ic:'🚩',n:'مایلستون‌ها / فازها',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'عنوان مایلستون',t:TXT},
+ {k:'project',n:'پروژه',t:REL,r:'project',s:1},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'weight',n:'وزن (٪ از پروژه)',t:NUM},
+ {k:'date',n:'تاریخ سررسید',t:DAT},
+ {k:'deliv',n:'اقلام قابل تحویل',t:LNG},
+ {k:'owner',n:'مسئول',t:REL,r:'hr',s:1}],
+ cols:['title','project','status','weight','date'],prog:'msProg'},
 kpi:{ic:'📈',n:'پایش اهداف (KPI)',grp:'زنجیره آبشاری',f:[
  {k:'title',n:'عنوان ثبت',t:TXT},{k:'date',n:'تاریخ ثبت',t:DAT},
  {k:'value',n:'مقدار ثبت‌شده',t:NUM},{k:'desc',n:'توضیح',t:LNG},
@@ -426,8 +495,11 @@ idea:{ic:'💡',n:'بانک ایده‌ها',grp:'حاکمیت',f:[
  {k:'company',n:'شرکت مرتبط',t:REL,r:'company'}],
  cols:['title','status','prio','due','owner']},
 /* ---------- رشد شخصی (از ساختار Personality نوشن) ---------- */
-growth:{ic:'🌱',n:'اهداف رشد',grp:'رشد شخصی',f:[
+growth:{ic:'🌱',n:'اهداف شخصی',grp:'رشد شخصی',f:[
  {k:'title',n:'عنوان',t:TXT},
+ {k:'nature',n:'ماهیت هدف',t:SEL,o:['کمی (عددی)','کیفی (ارزیابی)','تحویلی (انجام/عدم انجام)']},
+ {k:'manual',n:'درصد تحقق (برای هدف کیفی)',t:NUM},
+ {k:'done',n:'انجام شد (هدف تحویلی)',t:CHK},
  {k:'kind',n:'نوع',t:SEL,o:['کتاب','دوره آموزشی','عادت','هدف']},
  {k:'area',n:'حوزه',t:SEL,o:['روابط','مهارت مدیریتی','مالی شخصی','سلامت','یادگیری']},
  {k:'areas',n:'حوزه‌ها',t:MUL,o:['یادگیری','مراقبت از خود','فروش','مذاکره','روابط شخصی','مالی','ارتباطات']},
@@ -519,9 +591,86 @@ booknote:{ic:'🧠',n:'بانک دانش',grp:'رشد شخصی',f:[
 note:{ic:'📝',n:'یادداشت‌ها',grp:'رشد شخصی',f:[
  {k:'title',n:'عنوان',t:TXT},{k:'body',n:'متن',t:LNG}],
  cols:['title','body']},
+reminder:{ic:'⏰',n:'یادآوری‌ها',grp:'رشد شخصی',f:[
+ {k:'title',n:'عنوان یادآوری',t:TXT},
+ {k:'at',n:'تاریخ و ساعت',t:DAT},
+ {k:'repeat',n:'تکرار',t:SEL,o:['بدون تکرار','روزانه','هفتگی','ماهانه']},
+ {k:'note',n:'توضیح',t:TXT},
+ {k:'done',n:'انجام شد',t:CHK}],
+ cols:['title','at','repeat','done']},
+/* ---------- کسب‌وکار ویژه (فروشگاه/عملیات) ---------- */
+product:{ic:'📦',n:'کالا و خدمات',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'نام کالا/خدمت',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'grp',n:'گروه کالا',t:SEL,o:['عمومی','دیجیتال','پوشاک','خوراکی','خدمات','مواد اولیه']},
+ {k:'unit',n:'واحد',t:TXT},
+ {k:'buy',n:'قیمت خرید واحد (تومان)',t:NUM},
+ {k:'sell',n:'قیمت فروش واحد (تومان)',t:NUM},
+ {k:'stock0',n:'موجودی اولیه',t:NUM},
+ {k:'minstock',n:'حداقل موجودی (هشدار)',t:NUM},
+ {k:'cover',n:'تصویر',t:FIL,img:1}],
+ cols:['title','biz','grp','sell'],comp:'productStat'},
+sale:{ic:'🛒',n:'فروش',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'شرح فروش / شماره فاکتور',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'qty',n:'تعداد',t:NUM},{k:'price',n:'قیمت واحد (تومان)',t:NUM},
+ {k:'extra',n:'هزینه‌های جانبی (حمل و…)',t:NUM},
+ {k:'customer',n:'مشتری',t:REL,r:'crm',s:1},
+ {k:'channel',n:'کانال فروش',t:REL,r:'channel',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['نقدی','اعتباری']},
+ {k:'settled',n:'تسویه شد',t:CHK},
+ {k:'date',n:'تاریخ',t:DAT}],
+ cols:['title','product','qty','kind','date'],comp:'saleTotal'},
+purchase:{ic:'🚚',n:'خرید و تامین',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'شرح خرید',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'qty',n:'تعداد',t:NUM},{k:'price',n:'قیمت واحد (تومان)',t:NUM},
+ {k:'extra',n:'هزینه‌های جانبی (حمل، گمرک و…)',t:NUM},
+ {k:'supplier',n:'تامین‌کننده',t:REL,r:'crm',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['نقدی','اعتباری']},
+ {k:'settled',n:'تسویه شد',t:CHK},
+ {k:'date',n:'تاریخ',t:DAT}],
+ cols:['title','product','qty','kind','date'],comp:'purchTotal'},
+channel:{ic:'📣',n:'کانال‌ها و تبلیغات',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'نام کانال',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['کانال فروش','تبلیغات','ارتباط با مشتری','لجستیک']},
+ {k:'cost',n:'هزینه ماهانه (تومان)',t:NUM},
+ {k:'link',n:'لینک',t:URLF},
+ {k:'note',n:'توضیح',t:TXT}],
+ cols:['title','biz','kind','cost']},
+/* ---------- استراتژی و تعالی سازمانی ---------- */
+bsc:{ic:'⚖️',n:'کارت امتیازی متوازن (BSC)',grp:'استراتژی و تعالی',f:[
+ {k:'title',n:'هدف استراتژیک',t:TXT},
+ {k:'persp',n:'منظر',t:SEL,o:['مالی','مشتری','فرآیندهای داخلی','یادگیری و رشد']},
+ {k:'scope',n:'دامنه',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار']},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'measure',n:'سنجه / KPI',t:TXT},
+ {k:'unit',n:'واحد سنجه',t:TXT},
+ {k:'start',n:'مقدار شروع',t:NUM},{k:'current',n:'مقدار فعلی',t:NUM},{k:'target',n:'مقدار هدف',t:NUM},
+ {k:'weight',n:'وزن (٪)',t:NUM},
+ {k:'initiative',n:'اقدامات و ابتکارات (پروژه‌ها)',t:REL,r:'project'},
+ {k:'objective',n:'هدف سازمانی مرتبط',t:REL,r:'objective'},
+ {k:'parent',n:'⬆ هدف BSC سطح بالاتر (آبشار)',t:REL,r:'bsc',s:1}],
+ cols:['title','persp','scope','company','measure'],prog:'bscProg'},
+efqm:{ic:'🏅',n:'ارزیابی EFQM',grp:'استراتژی و تعالی',f:[
+ {k:'title',n:'عنوان ارزیابی',t:TXT},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'crit',n:'معیار (مدل EFQM 2020)',t:SEL,o:['جهت‌گیری: مقصود، چشم‌انداز و استراتژی','جهت‌گیری: فرهنگ سازمانی و رهبری','اجرا: مشارکت ذینفعان','اجرا: خلق ارزش پایدار','اجرا: پیشران عملکرد و تحول','نتایج: ادراک ذینفعان','نتایج: عملکرد استراتژیک و عملیاتی']},
+ {k:'score',n:'امتیاز (۰ تا ۱۰۰)',t:NUM},
+ {k:'weight',n:'وزن',t:NUM},
+ {k:'evidence',n:'شواهد و نقاط قوت',t:LNG},
+ {k:'gaps',n:'فرصت‌های بهبود',t:LNG},
+ {k:'actions',n:'اقدامات بهبود (تسک‌ها)',t:REL,r:'task'},
+ {k:'date',n:'تاریخ ارزیابی',t:DAT}],
+ cols:['title','company','crit','score','date']},
 };
-const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','حاکمیت','رشد شخصی'];
-const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course'];
+const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','کسب‌وکار ویژه','استراتژی و تعالی','حاکمیت','رشد شخصی'];
+const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
 
 /* ================= STORE & SYNC ================= */
 let recs={};            // id -> {id,e,d,u,del}
@@ -603,7 +752,7 @@ function subscribeRT(){
 /* ================= کاربران و سطح دسترسی ================= */
 const ROLES=['ادمین','مدیرارشد','مدیر','معاون','کارشناس ارشد','کارشناس','کاربر'];
 const FIN=['bank','tx','budget','hrcontract','bizcontract'];
-const MIDSET=['project','task','meeting','idea','kpi','crm','letter','leave'];
+const MIDSET=['project','task','meeting','idea','kpi','crm','letter','leave','milestone','product','sale','purchase','channel','bsc','efqm'];
 const LOWSET=['task','idea','kpi','leave'];
 function myEmail(){return session&&session.user?session.user.email:'local';}
 function usersList(){const m=recs[MU];return (m&&!m.del&&m.d.list)||[];}
@@ -672,7 +821,8 @@ function whoami(){
   const el=document.getElementById('who');if(el)el.textContent=session?myEmail()+' · '+myRole():'حالت محلی · ادمین';
   const ab=document.getElementById('authbtn');if(ab)ab.textContent=session?'🚪 خروج':'ورود';
   const pend=isPending();
-  ['quickbtn','pomobtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=pend?'none':'';});
+  ['quickbtn','pomobtn','rembtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=pend?'none':'';});
+  const fb=document.getElementById('fxbtn');if(fb)fb.style.display=(!pend&&isAdmin())?'':'none';
 }
 async function authAction(){
   if(session){
@@ -711,6 +861,12 @@ function taskProg(t){
 }
 function projectProg(p){
   const parts=[];
+  // مایلستون‌های وزن‌دار (PMBOK)
+  const ms=byE('milestone').filter(m=>relIds(m,'project').includes(p.id));
+  if(ms.length){
+    const totW=ms.reduce((a,m)=>a+(m.d.weight||0),0);
+    parts.push(totW>0?ms.reduce((a,m)=>a+msProg(m)*(m.d.weight||0),0)/totW:avg(ms.map(msProg)));
+  }
   const tasks=byE('task').filter(t=>relIds(t,'project').includes(p.id)&&!(t.d.parent&&t.d.parent[0]));
   if(tasks.length)parts.push(avg(tasks.map(taskProg)));
   const subs=byE('project').filter(x=>x.d.parent&&x.d.parent[0]===p.id);
@@ -718,10 +874,18 @@ function projectProg(p){
   if(!parts.length)return p.d.status==='تمام شده'?100:0;
   return avg(parts);
 }
+function msProg(m){return m.d.status==='Done'?100:m.d.status==='In progress'?50:0;}
 function objectiveProg(o){
+  // هدف تحویلی: انجام/عدم انجام
+  if((o.d.nature||'').startsWith('تحویلی'))return o.d.status==='Done'?100:o.d.status==='In progress'?50:0;
   const parts=[];
-  const np=numProg(o.d);
-  if(np!=null)parts.push(np);
+  // هدف کیفی: ارزیابی دستی + پیشرفت پروژه‌های متصل
+  if((o.d.nature||'').startsWith('کیفی')){
+    if(o.d.manual!=null)parts.push(Math.max(0,Math.min(100,o.d.manual)));
+  } else {
+    const np=numProg(o.d);
+    if(np!=null)parts.push(np);
+  }
   const prjs=byE('project').filter(p=>relIds(p,'objective').includes(o.id));
   if(prjs.length)parts.push(avg(prjs.map(projectProg)));
   const subs=byE('objective').filter(x=>x.d.parent&&x.d.parent[0]===o.id);
@@ -745,9 +909,14 @@ function numProg(d){
   return Math.max(0,Math.min(100,(cur||0)/tgt*100));
 }
 function growthProg(g){
+  if((g.d.nature||'').startsWith('تحویلی'))return g.d.done?100:0;
   const parts=[];
-  const np=numProg(g.d);
-  if(np!=null)parts.push(np);
+  if((g.d.nature||'').startsWith('کیفی')){
+    if(g.d.manual!=null)parts.push(Math.max(0,Math.min(100,g.d.manual)));
+  } else {
+    const np=numProg(g.d);
+    if(np!=null)parts.push(np);
+  }
   const subs=byE('growth').filter(x=>x.d.parent&&x.d.parent[0]===g.id);
   if(subs.length)parts.push(avg(subs.map(growthProg)));
   return parts.length?avg(parts):0;
@@ -785,6 +954,42 @@ function sharePct(s){
   return{label:'درصد سهام',v:(s.d.count/comp.d.shares*100).toLocaleString('fa-IR',{maximumFractionDigits:2})+'٪'};
 }
 window.holdEquity=holdEquity;window.sharePct=sharePct;
+/* --- کسب‌وکار ویژه --- */
+function bscProg(b){const np=numProg(b.d);return np!=null?np:0;}
+function saleAmt(s){return (s.d.qty||0)*(s.d.price||0)+(s.d.extra||0);}
+function purchAmt(s){return (s.d.qty||0)*(s.d.price||0)+(s.d.extra||0);}
+function saleTotal(s){const a=saleAmt(s);const open=s.d.kind==='اعتباری'&&!s.d.settled;
+  return{label:'مبلغ کل'+(open?' │ تسویه نشده':''),v:money(a),bad:open};}
+function purchTotal(s){const a=purchAmt(s);const open=s.d.kind==='اعتباری'&&!s.d.settled;
+  return{label:'مبلغ کل'+(open?' │ تسویه نشده':''),v:money(a),bad:open};}
+function stockNow(p){
+  const bought=byE('purchase').filter(x=>relIds(x,'product').includes(p.id)).reduce((a,x)=>a+(x.d.qty||0),0);
+  const sold=byE('sale').filter(x=>relIds(x,'product').includes(p.id)).reduce((a,x)=>a+(x.d.qty||0),0);
+  return (p.d.stock0||0)+bought-sold;
+}
+function productProfit(p){ // سود تحقق‌یافته کالا از فروش‌ها
+  return byE('sale').filter(x=>relIds(x,'product').includes(p.id))
+    .reduce((a,x)=>a+((x.d.price||0)-(p.d.buy||0))*(x.d.qty||0)-(x.d.extra||0),0);
+}
+function productStat(p){
+  const st=stockNow(p);
+  return{label:'موجودی │ سود تحقق‌یافته',v:st.toLocaleString('fa-IR')+' │ '+money(productProfit(p)),
+    bad:p.d.minstock!=null&&st<p.d.minstock};
+}
+window.saleTotal=saleTotal;window.purchTotal=purchTotal;window.productStat=productStat;
+/* --- 💱 نرخ تسعیر ارز (تومان ↔ دلار) --- */
+function fxRate(){const m=recs[MO];return (m&&!m.del&&m.d._fx&&m.d._fx.usd)||null;}
+function setFx(){
+  if(!isAdmin()){alert('فقط ادمین');return;}
+  const v=prompt('نرخ دلار به تومان:',fxRate()||'');if(v===null)return;
+  const n=Number(faNum(v).replace(/[,،٬\s]/g,''));if(!n){alert('عدد معتبر وارد کنید');return;}
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};m.d={...m.d,_fx:{usd:n}};m.u=Date.now();m.del=false;put(m);
+}
+function money(n){ // مبنا: تومان؛ معادل دلار در صورت تنظیم نرخ
+  if(n==null||isNaN(n))return '—';
+  const fx=fxRate();
+  return abbrN(n)+' ت'+(fx?' ≈ $'+Math.round(n/fx).toLocaleString('fa-IR'):'');
+}
 function riskScore(r){
   const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1}[r.d.prob]||0;
   const I={'زیاد':3,'متوسط':2,'کم':1}[r.d.impact]||0;
@@ -805,7 +1010,7 @@ function projectSpent(p){
   const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
   return txs.reduce((a,t)=>a+(t.d.amount||0),0);
 }
-const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg,courseProg};
+const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg,courseProg,msProg,bscProg};
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
 function fmtN(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('fa-IR');}
 /* --- تاریخ شمسی --- */
@@ -838,12 +1043,15 @@ function nav(){
   if(isPending()){el.innerHTML='';return;}
   let h=`<div class="nav-i ${view.type==='dash'?'on':''}" onclick="go('dash')">🎛️ اتاق کنترل</div>
   <div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>
+  <div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>
   <div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`;
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>`;
   GROUPS.forEach(g=>{
     h+=`<div class="nav-h">${g}</div>`;
     if(g==='رشد شخصی')h+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
+    if(g==='کسب‌وکار ویژه'&&canSee('sale'))h+=`<div class="nav-i ${view.type==='bizdash'?'on':''}" onclick="go('bizdash')">🏪 داشبورد کسب‌وکار</div>`;
+    if(g==='استراتژی و تعالی'&&canSee('bsc'))h+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
     Object.entries(E).filter(([k,v])=>v.grp===g&&canSee(k)).forEach(([k,v])=>{
       h+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${visE(k).length}</span></div>`;
     });
@@ -884,6 +1092,9 @@ function render(){
     view.type==='acl'?'🛡️ سطوح دسترسی':
     view.type==='me'?'🗂️ میز کار من':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
+    view.type==='cal'?'📅 تقویم':
+    view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
+    view.type==='bscmap'?'🗺️ نقشه استراتژی و BSC':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
@@ -892,6 +1103,9 @@ function render(){
   else if(view.type==='acl')c.innerHTML=aclHTML();
   else if(view.type==='me')c.innerHTML=meHTML();
   else if(view.type==='gdash')c.innerHTML=gdashHTML();
+  else if(view.type==='cal')c.innerHTML=calHTML();
+  else if(view.type==='bizdash')c.innerHTML=bizdashHTML();
+  else if(view.type==='bscmap')c.innerHTML=bscmapHTML();
   else if(view.type==='charts')c.innerHTML=chartsHTML();
   else if(view.type==='rec')c.innerHTML=recHTML(view.e,view.id);
   else c.innerHTML=listHTML(view.e);
@@ -971,7 +1185,22 @@ function recHTML(e,id){
   const chips=[];
   if(def.prog)chips.push(['پیشرفت کل',pbarHTML(PROGFN[def.prog](r))]);
   if(def.comp){const c=window[def.comp](r);chips.push([c.label,`<b style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</b>`]);}
-  if(e==='project')chips.push(['هزینه واقعی',`<b>${fmtN(projectSpent(r))}</b>`]);
+  if(e==='project'){
+    const ac=projectSpent(r);
+    chips.push(['هزینه واقعی',`<b>${money(ac)}</b>`]);
+    // شاخص عملکرد هزینه PMBOK: CPI = EV/AC
+    if(r.d.budget>0&&ac>0){
+      const cpi=(PROGFN.projectProg(r)/100*r.d.budget)/ac;
+      chips.push(['CPI (شاخص عملکرد هزینه)',`<b style="color:${cpi>=1?'var(--ok)':'var(--bad)'}">${cpi.toLocaleString('fa-IR',{maximumFractionDigits:2})}</b>`]);
+    }
+    // وابستگی‌های باز
+    const deps=relIds(r,'dep').map(id=>recs[id]).filter(d=>d&&d.d.status!=='تمام شده');
+    if(deps.length)chips.push(['⛓ وابستگی باز',`<b style="color:var(--warn)">${deps.map(d=>esc(d.d.title)).join('، ')}</b>`]);
+  }
+  if(e==='task'){
+    const deps=relIds(r,'dep').map(id=>recs[id]).filter(d=>d&&d.d.status!=='Done');
+    if(deps.length)chips.push(['⛓ منتظر تسک',`<b style="color:var(--warn)">${deps.map(d=>esc(d.d.title)).join('، ')}</b>`]);
+  }
   if(e==='objective'&&r.d.target)chips.push(['مقدار فعلی / هدف',`<b>${fmtN(r.d.current||0)} / ${fmtN(r.d.target)} ${esc(r.d.unit||'')}</b>`]);
   if(chips.length)h+=`<div class="comp" style="margin-bottom:12px">${chips.map(c=>`<div class="chip">${c[0]}: ${c[1]}</div>`).join('')}</div>`;
   // properties
@@ -1307,6 +1536,134 @@ function gdashHTML(){
   return h;
 }
 
+/* ================= 🏪 داشبورد کسب‌وکار ویژه ================= */
+function bizdashHTML(){
+  const bizList=byE('business');
+  if(!bizList.length)return `<div class="empty">اول یک کسب‌وکار در «🧢 کسب‌وکارها» ثبت کنید</div>`;
+  if(!view.biz||!recs[view.biz])view.biz=bizList[0].id;
+  const B=view.biz;
+  const inB=(e,k='biz')=>byE(e).filter(r=>relIds(r,k).includes(B));
+  const sales=inB('sale'),purs=inB('purchase'),prods=inB('product'),chans=inB('channel');
+  const rev=sales.reduce((a,s)=>a+saleAmt(s),0);
+  const cogs=purs.reduce((a,s)=>a+purchAmt(s),0);
+  const chCost=chans.reduce((a,c)=>a+(c.d.cost||0),0);
+  const profit=sales.reduce((a,s)=>{const p=recs[relIds(s,'product')[0]];return a+((s.d.price||0)-((p&&p.d.buy)||0))*(s.d.qty||0)-(s.d.extra||0);},0);
+  const recv=sales.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled).reduce((a,s)=>a+saleAmt(s),0);
+  const pay=purs.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled).reduce((a,s)=>a+purchAmt(s),0);
+  const stockVal=prods.reduce((a,p)=>a+stockNow(p)*(p.d.buy||0),0);
+  let h=`<div class="tools">
+    <label style="margin:0">کسب‌وکار:</label>
+    <select onchange="view.biz=this.value;render()" style="max-width:240px">
+      ${bizList.map(b=>`<option value="${b.id}" ${b.id===B?'selected':''}>${esc(b.d.title)}</option>`).join('')}</select>
+    <span style="flex:1"></span>
+    ${can('c','sale')?`<button class="btn sm" onclick="openRec('sale',null,{k:'biz',id:'${B}'})">＋ فروش</button>
+    <button class="btn gh sm" onclick="openRec('purchase',null,{k:'biz',id:'${B}'})">＋ خرید</button>
+    <button class="btn gh sm" onclick="openRec('product',null,{k:'biz',id:'${B}'})">＋ کالا</button>`:''}
+  </div>
+  <div class="cards">
+    ${card('💵 درآمد فروش',abbrN(rev))}
+    ${card('🚚 هزینه خرید',abbrN(cogs))}
+    ${card('📣 هزینه کانال/تبلیغات',abbrN(chCost))}
+    ${card('📈 سود ناخالص',abbrN(profit-chCost),profit-chCost<0?'var(--bad)':'var(--ok)')}
+    ${card('🧾 مطالبات (فروش نسیه)',abbrN(recv),recv?'var(--warn)':null)}
+    ${card('💳 بدهی به تامین‌کنندگان',abbrN(pay),pay?'var(--warn)':null)}
+    ${card('📦 ارزش موجودی انبار',abbrN(stockVal))}
+  </div>`;
+  // فروش/خرید ماهانه این کسب‌وکار (۶ ماه)
+  const now=new Date();const [cy,cm]=g2j(now.getFullYear(),now.getMonth()+1,now.getDate());
+  const months=[];for(let i=5;i>=0;i--){let y=cy,m=cm-i;while(m<1){m+=12;y--;}months.push({y,m,inc:0,exp:0});}
+  const bucket=(list,key,amt)=>list.forEach(s=>{const iso=ds(s.d.date);if(!iso)return;
+    const j=g2j(...iso.split('-').map(Number));const slot=months.find(x=>x.y===j[0]&&x.m===j[1]);if(slot)slot[key]+=amt(s);});
+  bucket(sales,'inc',saleAmt);bucket(purs,'exp',purchAmt);
+  const max=Math.max(1,...months.flatMap(m=>[m.inc,m.exp]));
+  let bars='',labels='';const W=560,H=200,pb=28,pt=12,bw=26,gap=4,gw=W/6;
+  months.forEach((m,i)=>{
+    const x0=W-(i+1)*gw+gw/2;
+    const hI=(m.inc/max)*(H-pb-pt),hE=(m.exp/max)*(H-pb-pt);
+    bars+=`<rect x="${x0-bw-gap/2}" y="${H-pb-hI}" width="${bw}" height="${Math.max(hI,1)}" rx="4" fill="${CH.aqua}"><title>فروش: ${abbrN(m.inc)}</title></rect>
+           <rect x="${x0+gap/2}" y="${H-pb-hE}" width="${bw}" height="${Math.max(hE,1)}" rx="4" fill="${CH.red}"><title>خرید: ${abbrN(m.exp)}</title></rect>`;
+    labels+=`<text x="${x0}" y="${H-8}" text-anchor="middle" fill="${CH.ink2}" font-size="11" font-family="inherit">${JMON[m.m-1].slice(0,3)}</text>`;
+  });
+  const prodBars=prods.map(p=>({l:p.d.title,v:productProfit(p),href:`go('rec','product','${p.id}')`}))
+    .sort((a,b)=>b.v-a.v).slice(0,8);
+  const maxP=Math.max(1,...prodBars.map(x=>Math.abs(x.v)));
+  h+=`<div class="chartgrid">
+    <div class="sec"><h3>💳 فروش و خرید — ۶ ماه اخیر</h3>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" dir="ltr">
+      <line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="#383a35" stroke-width="1.5"/>${bars}${labels}</svg></div>
+    <div class="sec"><h3>📦 سود کالا به کالا</h3>
+      ${prodBars.length?prodBars.map(x=>`<div style="margin:8px 0;cursor:pointer" onclick="${x.href}">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px">
+          <span>${esc(x.l)}</span><b style="color:${x.v<0?'var(--bad)':'#ecd98f'}">${abbrN(x.v)}</b></div>
+        <div style="background:var(--bg);border-radius:99px;height:8px"><div style="width:${Math.round(Math.abs(x.v)/maxP*100)}%;height:100%;border-radius:99px;background:${x.v<0?CH.red:CH.blue}"></div></div>
+      </div>`).join(''):'<div class="empty">فروشی ثبت نشده</div>'}</div>
+  </div>
+  <div class="sec relsec"><h3>📦 موجودی انبار <span style="flex:1"></span></h3>
+    ${prods.length?`<div class="tblwrap"><table><thead><tr><th>کالا</th><th>گروه</th><th>موجودی فعلی</th><th>حداقل</th><th>ارزش موجودی</th></tr></thead><tbody>
+    ${prods.map(p=>{const st=stockNow(p);const low=p.d.minstock!=null&&st<p.d.minstock;
+      return `<tr onclick="go('rec','product','${p.id}')"><td>${esc(p.d.title)}</td><td>${esc(p.d.grp||'—')}</td>
+      <td style="color:${low?'var(--bad)':'var(--tx)'}">${st.toLocaleString('fa-IR')}${low?' ⚠️':''}</td>
+      <td>${fmtN(p.d.minstock)}</td><td>${abbrN(st*(p.d.buy||0))}</td></tr>`;}).join('')}
+    </tbody></table></div>`:'<div class="empty">کالایی ثبت نشده</div>'}</div>
+  <div class="sec relsec"><h3>🧾 تسویه‌نشده‌ها (اعتباری)</h3>
+    ${miniTable('sale',sales.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled))}
+    ${miniTable('purchase',purs.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled))}</div>`;
+  return h;
+}
+
+/* ================= 🗺️ نقشه استراتژی (BSC کاپلان-نورتون) ================= */
+function bscmapHTML(){
+  const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
+    ...byE('company').map(c=>({id:'c:'+c.id,t:'🏢 '+c.d.title})),
+    ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+b.d.title}))];
+  if(!view.bscT)view.bscT='_h';
+  const T=view.bscT;
+  const items=byE('bsc').filter(x=>{
+    if(T==='_h')return x.d.scope==='هلدینگ'||(!relIds(x,'company').length&&!relIds(x,'biz').length);
+    if(T.startsWith('c:'))return relIds(x,'company').includes(T.slice(2));
+    return relIds(x,'biz').includes(T.slice(2));
+  });
+  const PERSPS=[['مالی','💰','#b48a1e'],['مشتری','🤝','#2f9e6e'],['فرآیندهای داخلی','⚙️','#8a7fd6'],['یادگیری و رشد','🌱','#d9a441']];
+  let h=`<div class="tools">
+    <label style="margin:0">دامنه:</label>
+    <select onchange="view.bscT=this.value;render()" style="max-width:250px">
+      ${targets.map(x=>`<option value="${x.id}" ${x.id===T?'selected':''}>${esc(x.t)}</option>`).join('')}</select>
+    <span style="flex:1"></span>
+    ${can('c','bsc')?`<button class="btn sm" onclick="openRec('bsc')">＋ هدف BSC</button>`:''}
+    ${can('c','efqm')?`<button class="btn gh sm" onclick="go('list','efqm')">🏅 ارزیابی EFQM</button>`:''}
+  </div>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">نقشه استراتژی کاپلان-نورتون: چهار منظر از بالا (مالی) به پایین (یادگیری و رشد). اهداف پایین‌تر پشتیبان اهداف بالاترند؛ فلش ⬆ یعنی این هدف به یک هدف سطح بالاتر (مثلاً هلدینگ) آبشار شده است.</p>`;
+  PERSPS.forEach(([p,ic,c])=>{
+    const rows=items.filter(x=>x.d.persp===p);
+    h+=`<div class="sec" style="border-inline-start:3px solid ${c}"><h3>${ic} منظر ${p} <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">`;
+    if(!rows.length)h+=`<div class="empty" style="grid-column:1/-1;padding:10px">هدفی در این منظر ثبت نشده</div>`;
+    rows.forEach(x=>{
+      const par=x.d.parent&&x.d.parent[0]&&recs[x.d.parent[0]];
+      h+=`<div style="background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px;cursor:pointer" onclick="go('rec','bsc','${x.id}')">
+        <div style="font-weight:600;font-size:13px;margin-bottom:5px">${esc(x.d.title)} ${par?`<span class="tag y" title="آبشار از: ${esc(par.d.title)}">⬆</span>`:''}</div>
+        ${x.d.measure?`<div style="font-size:11px;color:var(--tx2);margin-bottom:5px">سنجه: ${esc(x.d.measure)}${x.d.target!=null?` — هدف: ${fmtN(x.d.target)} ${esc(x.d.unit||'')}`:''}</div>`:''}
+        ${pbarHTML(bscProg(x))}
+      </div>`;
+    });
+    h+=`</div></div>`;
+  });
+  // خلاصه EFQM دامنه انتخابی
+  const efs=byE('efqm').filter(x=>{
+    if(T==='_h')return !relIds(x,'company').length&&!relIds(x,'biz').length;
+    if(T.startsWith('c:'))return relIds(x,'company').includes(T.slice(2));
+    return relIds(x,'biz').includes(T.slice(2));
+  });
+  if(efs.length){
+    const tw=efs.reduce((a,x)=>a+(x.d.weight||1),0);
+    const sc=efs.reduce((a,x)=>a+(x.d.score||0)*(x.d.weight||1),0)/(tw||1);
+    h+=`<div class="sec"><h3>🏅 تعالی سازمانی EFQM <span class="c">${efs.length.toLocaleString('fa-IR')} معیار</span>
+      <span style="flex:1"></span><span class="chip" style="background:var(--bg)">امتیاز وزنی: <b style="color:#ecd98f">${Math.round(sc).toLocaleString('fa-IR')} از ۱۰۰</b></span></h3>
+      ${hbarsHTML(efs.map(x=>({l:x.d.crit||x.d.title,v:x.d.score||0,href:`go('rec','efqm','${x.id}')`})),CH.violet)}</div>`;
+  }
+  return h;
+}
+
 /* ================= صفحه کاربران ================= */
 function usersHTML(){
   const list=usersList();
@@ -1392,8 +1749,9 @@ function dashHTML(){
     }).join('');
     h+=`<div class="sec"><h3>💠 دارایی و سرمایه هلدینگ (بر اساس درصد مالکیت در شرکت‌ها)</h3>
     <div class="comp" style="margin-bottom:12px">
-      <div class="chip">جمع سهم هلدینگ از سرمایه ثبتی: <b style="color:#ecd98f">${abbrN(totCap)}</b></div>
-      <div class="chip">جمع سهم هلدینگ از دارایی‌ها: <b style="color:#ecd98f">${abbrN(totAst)}</b></div>
+      <div class="chip">جمع سهم هلدینگ از سرمایه ثبتی: <b style="color:#ecd98f">${money(totCap)}</b></div>
+      <div class="chip">جمع سهم هلدینگ از دارایی‌ها: <b style="color:#ecd98f">${money(totAst)}</b></div>
+      <div class="chip" style="cursor:pointer" onclick="setFx()">💱 نرخ دلار: <b>${fxRate()?fxRate().toLocaleString('fa-IR')+' تومان':'تنظیم کنید'}</b></div>
     </div>
     <div class="tblwrap"><table><thead><tr><th>شرکت</th><th>مالکیت</th><th>سرمایه ثبتی</th><th>سهم هلدینگ</th><th>دارایی شرکت</th><th>سهم هلدینگ</th></tr></thead>
     <tbody>${rows}</tbody></table></div></div>`;
@@ -1414,6 +1772,11 @@ function dashHTML(){
   crmDue.forEach(c=>alerts.push(['📞 پیگیری CRM سررسید شده: '+c.d.title,'crm',c.id]));
   ideasDue.forEach(i=>alerts.push(['💡 مهلت تصمیم‌گیری ایده: '+i.d.title,'idea',i.id]));
   lettersOpen.forEach(l=>alerts.push(['✉️ نامه وارده بدون اقدام: '+l.d.title,'letter',l.id]));
+  // وابستگی‌ها: تسک/پروژه در جریان که پیش‌نیازش تمام نشده
+  tasks.filter(t=>t.d.status==='In progress'&&relIds(t,'dep').some(id=>recs[id]&&recs[id].d.status!=='Done'))
+    .forEach(t=>alerts.push(['⛓ تسک در جریان با پیش‌نیاز ناتمام: '+t.d.title,'task',t.id]));
+  prjs.filter(p=>p.d.status==='در حال اجرا'&&relIds(p,'dep').some(id=>recs[id]&&recs[id].d.status!=='تمام شده'))
+    .forEach(p=>alerts.push(['⛓ پروژه در حال اجرا با پیش‌نیاز ناتمام: '+p.d.title,'project',p.id]));
   if(!alerts.length)h+=`<div class="empty">✅ همه‌چیز طبق آیین‌نامه است — هیچ کاری زمین نمانده</div>`;
   alerts.slice(0,30).forEach(a=>h+=`<div class="alert" onclick="go('rec','${a[1]}','${a[2]}')">${esc(a[0])}</div>`);
   h+=`</div>`;
@@ -1443,13 +1806,72 @@ function openRec(e,id,preset){
 }
 function dateInputHTML(f){
   const d=dVal(cur.d[f.k])||{};
-  return `<div style="display:grid;grid-template-columns:1fr 105px;gap:5px">
-    <input data-dk="${f.k}" data-p="sd" dir="ltr" placeholder="شروع: ۱۴۰۵/۰۳/۱۱" value="${iso2jstr(d.s)}">
+  return `<div style="display:grid;grid-template-columns:1fr 34px 100px;gap:5px">
+    <input id="di_${f.k}_sd" data-dk="${f.k}" data-p="sd" dir="ltr" placeholder="شروع: ۱۴۰۵/۰۳/۱۱" value="${iso2jstr(d.s)}">
+    <button type="button" class="btn gh sm" style="padding:4px" onclick="openJcal('di_${f.k}_sd')">📅</button>
     <input data-dk="${f.k}" data-p="st" dir="ltr" type="time" value="${isoTime(d.s)}">
-    <input data-dk="${f.k}" data-p="ed" dir="ltr" placeholder="پایان (اختیاری)" value="${iso2jstr(d.e)}">
+    <input id="di_${f.k}_ed" data-dk="${f.k}" data-p="ed" dir="ltr" placeholder="پایان (اختیاری)" value="${iso2jstr(d.e)}">
+    <button type="button" class="btn gh sm" style="padding:4px" onclick="openJcal('di_${f.k}_ed')">📅</button>
     <input data-dk="${f.k}" data-p="et" dir="ltr" type="time" value="${isoTime(d.e)}">
   </div>`;
 }
+/* ================= 📅 تقویم‌چه شمسی/میلادی ================= */
+const JMON=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const GMON=['ژانویه','فوریه','مارس','آوریل','مه','ژوئن','ژوئیه','اوت','سپتامبر','اکتبر','نوامبر','دسامبر'];
+let jc={t:null,mode:'j',y:0,m:0};
+function jMonthLen(jy,jm){if(jm<=6)return 31;if(jm<=11)return 30;const g=j2g(jy,12,30);return g2j(g[0],g[1],g[2])[2]===30?30:29;}
+function gMonthLen(gy,gm){return new Date(gy,gm,0).getDate();}
+function openJcal(id){
+  jc.t=id;jc.mode='j';
+  const el=document.getElementById(id);
+  const iso=parseJDate(el.value,'')||today();
+  const [gy,gm,gd]=String(iso).slice(0,10).split('-').map(Number);
+  [jc.y,jc.m]=g2j(gy,gm,gd);
+  drawJcal();
+  const p=document.getElementById('jcal'), r=el.getBoundingClientRect();
+  p.style.display='block';
+  p.style.top=Math.max(8,Math.min(window.innerHeight-330,r.bottom+6))+'px';
+  p.style.left=Math.max(8,Math.min(window.innerWidth-272,r.left))+'px';
+}
+function jcNav(d){jc.m+=d;if(jc.m<1){jc.m=12;jc.y--;}if(jc.m>12){jc.m=1;jc.y++;}drawJcal();}
+function jcToggle(){
+  if(jc.mode==='j'){const g=j2g(jc.y,jc.m,15);jc.mode='g';jc.y=g[0];jc.m=g[1];}
+  else{const j=g2j(jc.y,jc.m,15);jc.mode='j';jc.y=j[0];jc.m=j[1];}
+  drawJcal();
+}
+function jcPick(d){
+  let iso;
+  if(jc.mode==='j'){const g=j2g(jc.y,jc.m,d);iso=g[0]+'-'+String(g[1]).padStart(2,'0')+'-'+String(g[2]).padStart(2,'0');}
+  else iso=jc.y+'-'+String(jc.m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  const el=document.getElementById(jc.t);
+  if(el){el.value=iso2jstr(iso);el.dispatchEvent(new Event('input'));}
+  document.getElementById('jcal').style.display='none';
+}
+function drawJcal(){
+  const p=document.getElementById('jcal');
+  const j=jc.mode==='j';
+  const first=j?j2g(jc.y,jc.m,1):[jc.y,jc.m,1];
+  const dow=new Date(first[0],first[1]-1,first[2]).getDay(); // 0=Sun
+  const off=(dow+1)%7; // شنبه=0
+  const len=j?jMonthLen(jc.y,jc.m):gMonthLen(jc.y,jc.m);
+  const tj=g2j(...today().split('-').map(Number)), tIso=today();
+  let h=`<div class="jh">
+    <button onclick="jcNav(-1)">‹</button>
+    <b>${j?JMON[jc.m-1]:GMON[jc.m-1]} ${jc.y.toLocaleString('fa-IR',{useGrouping:false})}</b>
+    <button onclick="jcNav(1)">›</button></div>
+  <div class="jg">${['ش','ی','د','س','چ','پ','ج'].map(x=>`<span>${x}</span>`).join('')}`;
+  for(let i=0;i<off;i++)h+='<i></i>';
+  for(let d=1;d<=len;d++){
+    const isToday=j?(tj[0]===jc.y&&tj[1]===jc.m&&tj[2]===d):(tIso===jc.y+'-'+String(jc.m).padStart(2,'0')+'-'+String(d).padStart(2,'0'));
+    h+=`<div class="${isToday?'td':''}" onclick="jcPick(${d})">${d.toLocaleString('fa-IR')}</div>`;
+  }
+  h+=`</div><button class="btn gh sm jmode" onclick="jcToggle()">${j?'نمایش تقویم میلادی':'نمایش تقویم شمسی'}</button>`;
+  p.innerHTML=h;
+}
+document.addEventListener('mousedown',e=>{
+  const p=document.getElementById('jcal');
+  if(p&&p.style.display==='block'&&!p.contains(e.target)&&!(e.target.closest&&e.target.closest('button')&&e.target.textContent==='📅'))p.style.display='none';
+},true);
 function drawModal(){
   const e=cur.e, def=E[e], id=cur._new?null:cur.id;
   let h=`<h3>${def.ic} ${id?esc(cur.d.title||''):'مورد جدید — '+def.n}</h3>`;
@@ -1657,6 +2079,141 @@ function openSettings(){
   delete cfg.local;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
   fillLoginForm();
   document.getElementById('login').classList.add('show');
+}
+
+/* ================= ⏰ یادآوری‌ها ================= */
+let remFired=JSON.parse(localStorage.getItem('xr_remfired')||'{}');
+function myReminders(){return visE('reminder').filter(r=>!r.d.done&&dVal(r.d.at)).sort((a,b)=>(dVal(a.d.at).s||'').localeCompare(dVal(b.d.at).s||''));}
+function toggleRemind(){const p=document.getElementById('remind');p.classList.toggle('show');drawRemind();}
+function drawRemind(){
+  const list=document.getElementById('rem_list');if(!list)return;
+  const now=new Date();
+  const rs=myReminders();
+  list.innerHTML=rs.length?rs.slice(0,12).map(r=>{
+    const at=dVal(r.d.at).s;const due=new Date(at)<=now;
+    return `<div class="remitem ${due?'due':''}">
+      <span style="cursor:pointer" onclick="remDone('${r.id}')" title="انجام شد">☑️</span>
+      <span style="flex:1;cursor:pointer" onclick="go('rec','reminder','${r.id}');toggleRemind()">${esc(r.d.title)}</span>
+      <span style="color:${due?'var(--bad)':'var(--tx2)'};font-size:10.5px">${fmtOne(at)}</span></div>`;
+  }).join(''):'<div class="empty" style="padding:10px">یادآوری فعالی نیست</div>';
+  const btn=document.getElementById('rembtn');
+  const dueN=rs.filter(r=>new Date(dVal(r.d.at).s)<=now).length;
+  if(btn){btn.textContent=dueN?('⏰ '+dueN.toLocaleString('fa-IR')):'⏰';btn.classList.toggle('due',dueN>0);}
+}
+function quickRemind(){
+  const t=document.getElementById('rem_t').value.trim();
+  const d=document.getElementById('rem_d').value, h=document.getElementById('rem_h').value;
+  if(!t){alert('عنوان را بنویسید');return;}
+  const iso=parseJDate(d,h);
+  if(!iso){alert('تاریخ معتبر نیست (مثال: ۱۴۰۵/۰۵/۰۱)');return;}
+  put({id:uid(),e:'reminder',d:{title:t,at:{s:iso,e:null},repeat:'بدون تکرار',_by:myEmail()},u:Date.now()});
+  document.getElementById('rem_t').value='';document.getElementById('rem_d').value='';document.getElementById('rem_h').value='';
+  if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+  drawRemind();
+}
+function remDone(id){
+  const r=recs[id];if(!r)return;
+  const rep=r.d.repeat;
+  if(rep&&rep!=='بدون تکرار'){ // نوبت بعدی
+    const at=new Date(dVal(r.d.at).s);
+    if(rep==='روزانه')at.setDate(at.getDate()+1);
+    else if(rep==='هفتگی')at.setDate(at.getDate()+7);
+    else at.setMonth(at.getMonth()+1);
+    r.d.at={s:at.toISOString().slice(0,16),e:null};
+  } else r.d.done=true;
+  r.u=Date.now();put(r);drawRemind();
+}
+function checkReminders(){
+  const now=new Date();
+  myReminders().forEach(r=>{
+    const at=dVal(r.d.at).s;
+    if(new Date(at)<=now&&!remFired[r.id+at]){
+      remFired[r.id+at]=1;localStorage.setItem('xr_remfired',JSON.stringify(remFired));
+      beep();setTimeout(beep,700);
+      try{if('Notification' in window&&Notification.permission==='granted')new Notification('⏰ Maalinex — یادآوری',{body:r.d.title});}catch(e){}
+      document.getElementById('remind').classList.add('show');
+    }
+  });
+  drawRemind();
+}
+setInterval(checkReminders,30000);
+
+/* ================= 📅 نمای تقویم ================= */
+function calEvents(){
+  const ev=[];
+  const push=(v,label,ic,e,id,c)=>{const d=dVal(v);if(d&&d.s)ev.push({iso:d.s.slice(0,10),time:isoTime(d.s),label,ic,e,id,c});};
+  if(canSee('task'))byE('task').filter(t=>t.d.status!=='Done').forEach(t=>push(t.d.due,t.d.title,'📘','task',t.id,'#3987e5'));
+  if(canSee('meeting'))byE('meeting').forEach(m=>push(m.d.date,m.d.title,'🗃️','meeting',m.id,'#8a7fd6'));
+  if(canSee('letter'))byE('letter').filter(l=>l.d.astatus!=='Done').forEach(l=>push(l.d.due,'مهلت: '+l.d.title,'✉️','letter',l.id,'#d95f55'));
+  if(canSee('crm'))byE('crm').forEach(c=>push(c.d.next,'پیگیری: '+c.d.title,'🧑‍🤝‍🧑','crm',c.id,'#2f9e6e'));
+  if(canSee('milestone'))byE('milestone').filter(m=>m.d.status!=='Done').forEach(m=>push(m.d.date,'🚩 '+m.d.title,'🚩','milestone',m.id,'#d9a441'));
+  visE('plan').filter(p=>p.d.status!=='Done').forEach(p=>push(p.d.due,'برنامه: '+p.d.title,'🗓️','plan',p.id,'#b48a1e'));
+  visE('leave').forEach(l=>push(l.d.range,'مرخصی: '+l.d.title,'⛳','leave',l.id,'#98a096'));
+  visE('reminder').filter(r=>!r.d.done).forEach(r=>push(r.d.at,'⏰ '+r.d.title,'⏰','reminder',r.id,'#e06a5f'));
+  return ev;
+}
+function calState(){
+  if(!view.calY){const t=g2j(...today().split('-').map(Number));view.calY=t[0];view.calM=t[1];view.calMode='month';view.calD=today();}
+}
+function calNav(d){
+  if(view.calMode==='month'){view.calM+=d;if(view.calM<1){view.calM=12;view.calY--;}if(view.calM>12){view.calM=1;view.calY++;}}
+  else{const dt=new Date(view.calD);dt.setDate(dt.getDate()+d*(view.calMode==='week'?7:1));view.calD=dt.toISOString().slice(0,10);
+    const j=g2j(...view.calD.split('-').map(Number));view.calY=j[0];view.calM=j[1];}
+  render();
+}
+function calToday(){const t=g2j(...today().split('-').map(Number));view.calY=t[0];view.calM=t[1];view.calD=today();render();}
+function calHTML(){
+  calState();
+  const ev=calEvents(), byDay={};
+  ev.forEach(x=>{(byDay[x.iso]=byDay[x.iso]||[]).push(x);});
+  const modes=[['month','ماه'],['week','هفته'],['day','روز']];
+  let h=`<div class="tools">
+    <button class="btn gh sm" onclick="calNav(-1)">‹ قبلی</button>
+    <button class="btn sm" onclick="calToday()">امروز</button>
+    <button class="btn gh sm" onclick="calNav(1)">بعدی ›</button>
+    <b style="margin:0 8px">${view.calMode==='month'?JMON[view.calM-1]+' '+view.calY.toLocaleString('fa-IR',{useGrouping:false}):fmtOne(view.calD)}</b>
+    <span style="flex:1"></span>
+    ${modes.map(([m,l])=>`<button class="btn ${view.calMode===m?'':'gh'} sm" onclick="view.calMode='${m}';render()">${l}</button>`).join('')}
+  </div>`;
+  const evHTML=(x)=>`<div class="calev" style="border-inline-start:3px solid ${x.c}" onclick="event.stopPropagation();go('rec','${x.e}','${x.id}')">${x.time?x.time+' ':''}${esc(x.label)}</div>`;
+  if(view.calMode==='month'){
+    const first=j2g(view.calY,view.calM,1);
+    const off=(new Date(first[0],first[1]-1,first[2]).getDay()+1)%7;
+    const len=jMonthLen(view.calY,view.calM);
+    h+=`<div class="calgrid">${['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'].map(x=>`<div class="calhd">${x}</div>`).join('')}`;
+    for(let i=0;i<off;i++)h+=`<div></div>`;
+    for(let d=1;d<=len;d++){
+      const g=j2g(view.calY,view.calM,d);
+      const iso=g[0]+'-'+String(g[1]).padStart(2,'0')+'-'+String(g[2]).padStart(2,'0');
+      const list=byDay[iso]||[];
+      h+=`<div class="calcell ${iso===today()?'td':''}" onclick="view.calMode='day';view.calD='${iso}';render()">
+        <div class="dn">${d.toLocaleString('fa-IR')}</div>
+        ${list.slice(0,3).map(evHTML).join('')}
+        ${list.length>3?`<div class="calev">+${(list.length-3).toLocaleString('fa-IR')} مورد دیگر</div>`:''}
+        ${list.length?`<span class="cnt" style="display:none">●${list.length.toLocaleString('fa-IR')}</span>`:''}
+      </div>`;
+    }
+    h+=`</div>`;
+  } else if(view.calMode==='week'){
+    const base=new Date(view.calD);
+    const dow=(base.getDay()+1)%7; base.setDate(base.getDate()-dow); // شنبه هفته
+    h+=`<div class="calgrid">`;
+    for(let i=0;i<7;i++){
+      const dt=new Date(base);dt.setDate(base.getDate()+i);
+      const iso=dt.toISOString().slice(0,10), list=byDay[iso]||[];
+      h+=`<div class="calcell ${iso===today()?'td':''}" style="min-height:150px" onclick="view.calMode='day';view.calD='${iso}';render()">
+        <div class="dn">${fmtOne(iso)}</div>${list.map(evHTML).join('')}</div>`;
+    }
+    h+=`</div>`;
+  } else {
+    const list=(byDay[view.calD]||[]).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    h+=`<div class="sec"><h3>📅 ${fmtOne(view.calD)}</h3>`;
+    h+=list.length?list.map(x=>`<div class="alert" onclick="go('rec','${x.e}','${x.id}')">
+      <b style="color:${x.c};min-width:44px" dir="ltr">${x.time||'—'}</b> ${x.ic} ${esc(x.label)}</div>`).join('')
+      :`<div class="empty">برنامه‌ای برای این روز ثبت نشده</div>`;
+    h+=`</div>`;
+  }
+  return h;
 }
 
 /* ================= پومودورو 🍅 ================= */
