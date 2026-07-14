@@ -194,6 +194,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
       <span id="ttl">اتاق کنترل</span><span class="sp"></span>
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
+      <button class="btn gh sm" id="quickbtn" onclick="quickNote()" title="ثبت سریع نکته در بانک دانش">⚡ نکته</button>
       <button class="btn gh sm" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
       <button class="btn gh sm" id="authbtn" onclick="authAction()">ورود</button>
       <button class="btn gh sm" onclick="openSettings()">⚙️</button>
@@ -222,7 +223,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 /* ⚙️ اتصال پیش‌فرض Supabase — این دو مقدار را «یک بار» پر کنید (از Project Settings → API)؛
    بعد از آن هیچ کاربری لازم نیست URL و Key وارد کند و فقط ایمیل/رمز می‌بیند. */
 const PRESET={url:'https://rmwbcdrkktblwlvrkjob.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtd2JjZHJra3RibHdsdnJram9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMTY4OTMsImV4cCI6MjA5OTU5Mjg5M30.NLvgFG1Bjs3h2_Ne-_Qm3RFEN5XbO3PaH-puo-DD5gM'};
-const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',STA='sta',CHK='chk';
+const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',STA='sta',CHK='chk',FIL='fil',URLF='url';
 const STATUS=['Not started','In progress','Done'];
 const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
 const PRIO=['بحرانی','بالا','متوسط','پایین'];
@@ -461,6 +462,9 @@ book:{ic:'📚',n:'کتاب‌ها (Read & Learn)',grp:'رشد شخصی',f:[
  {k:'author',n:'نام نویسنده',t:TXT},
  {k:'translator',n:'مترجم',t:TXT},
  {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'cover',n:'عکس روی جلد',t:FIL,img:1},
+ {k:'file',n:'فایل کتاب (PDF)',t:FIL},
+ {k:'link',n:'لینک منبع',t:URLF},
  {k:'topic',n:'موضوع',t:MUL,o:['برنامه ریزی','موفقیت','داستان','روانشناسی','کسب و کار','مدیریت','مدیریت و تجربه فردی']},
  {k:'cat',n:'دسته‌بندی',t:MUL,o:['رهبری','روانشناسی','کسب و کار','مدیریت استراتژی','مدیریت مالی','مذاکره']},
  {k:'kind',n:'نوع کتاب',t:SEL,o:['الکترونیکی','فیزیکی','صوتی']},
@@ -468,27 +472,52 @@ book:{ic:'📚',n:'کتاب‌ها (Read & Learn)',grp:'رشد شخصی',f:[
  {k:'pages',n:'تعداد صفحات',t:NUM},{k:'read',n:'خوانده شده (صفحه)',t:NUM},
  {k:'rating',n:'امتیاز',t:SEL,o:['★★★★★','★★★★','★★★','★★','★']},
  {k:'start',n:'شروع مطالعه',t:DAT},{k:'finish',n:'پایان مطالعه',t:DAT},
- {k:'growth',n:'اهداف رشد مرتبط',t:REL,r:'growth'}],
+ {k:'growth',n:'اهداف رشد مرتبط',t:REL,r:'growth'},
+ {k:'objective',n:'اهداف سازمانی مرتبط',t:REL,r:'objective'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'}],
  cols:['title','author','status','rating','pages','read'],prog:'bookProg'},
-booknote:{ic:'🧠',n:'دانش کتاب (نکات)',grp:'رشد شخصی',f:[
- {k:'title',n:'عنوان',t:TXT},
+course:{ic:'🎓',n:'دوره‌های آموزشی',grp:'رشد شخصی',f:[
+ {k:'title',n:'نام دوره',t:TXT},
+ {k:'provider',n:'برگزارکننده / پلتفرم',t:TXT},
+ {k:'link',n:'لینک دوره',t:URLF},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'cat',n:'دسته‌بندی',t:MUL,o:['رهبری','روانشناسی','کسب و کار','مدیریت استراتژی','مدیریت مالی','مذاکره','فنی']},
+ {k:'total',n:'کل جلسات/ساعت',t:NUM},{k:'done',n:'گذرانده‌شده',t:NUM},
+ {k:'cover',n:'تصویر دوره',t:FIL,img:1},
+ {k:'file',n:'فایل‌ها و جزوه‌ها',t:FIL},
+ {k:'start',n:'شروع',t:DAT},{k:'finish',n:'پایان',t:DAT},
+ {k:'growth',n:'اهداف رشد مرتبط',t:REL,r:'growth'},
+ {k:'objective',n:'اهداف سازمانی مرتبط',t:REL,r:'objective'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'}],
+ cols:['title','provider','status','done','total'],prog:'courseProg'},
+booknote:{ic:'🧠',n:'بانک دانش',grp:'رشد شخصی',f:[
+ {k:'title',n:'عنوان نکته',t:TXT},
+ {k:'body',n:'متن نکته / خلاصه',t:LNG},
+ {k:'tags',n:'برچسب‌ها',t:MUL,o:['رهبری','مذاکره','مالی','استراتژی','بازاریابی','روانشناسی']},
+ {k:'source',n:'نوع منبع',t:SEL,o:['کتاب','دوره آموزشی','مقاله','پادکست','جلسه','تجربه شخصی']},
+ {k:'link',n:'لینک منبع',t:URLF},
+ {k:'file',n:'فایل پیوست',t:FIL},
  {k:'book',n:'کتاب مرتبط',t:REL,r:'book',s:1},
- {k:'link',n:'لینک منبع',t:TXT},
- {k:'body',n:'نکات جذاب کتاب',t:LNG}],
- cols:['title','book','link']},
+ {k:'course',n:'دوره مرتبط',t:REL,r:'course',s:1},
+ {k:'growth',n:'هدف رشد مرتبط',t:REL,r:'growth'},
+ {k:'objective',n:'هدف سازمانی مرتبط',t:REL,r:'objective'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
+ {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'strategy'},
+ {k:'idea',n:'💡 ایده حاصل',t:REL,r:'idea',s:1}],
+ cols:['title','tags','source','book','course']},
 note:{ic:'📝',n:'یادداشت‌ها',grp:'رشد شخصی',f:[
  {k:'title',n:'عنوان',t:TXT},{k:'body',n:'متن',t:LNG}],
  cols:['title','body']},
 };
 const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','حاکمیت','رشد شخصی'];
-const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote'];
+const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course'];
 
 /* ================= STORE & SYNC ================= */
 let recs={};            // id -> {id,e,d,u,del}
 let sb=null, session=null, rt=null;
 const cfg=JSON.parse(localStorage.getItem('xr_cfg')||'{}');
 if(PRESET.url&&PRESET.key){cfg.url=PRESET.url;cfg.key=PRESET.key;}
-const MU='00000000-0000-4000-8000-00000000aaaa', MO='00000000-0000-4000-8000-00000000bbbb';
+const MU='00000000-0000-4000-8000-00000000aaaa', MO='00000000-0000-4000-8000-00000000bbbb', MA='00000000-0000-4000-8000-00000000cccc';
 function saveLocal(){localStorage.setItem('xr_data',JSON.stringify(recs));}
 function loadLocal(){try{recs=JSON.parse(localStorage.getItem('xr_data')||'{}');}catch(e){recs={};}
   // مهاجرت شناسه‌های متا به UUID (رفع مشکل سینک نقش‌ها و گزینه‌ها)
@@ -568,34 +597,71 @@ const LOWSET=['task','idea','kpi','leave'];
 function myEmail(){return session&&session.user?session.user.email:'local';}
 function usersList(){const m=recs[MU];return (m&&!m.del&&m.d.list)||[];}
 function saveUsers(list){const m=recs[MU]||{id:MU,e:'_users',d:{}};m.d={...m.d,list};m.u=Date.now();m.del=false;put(m);}
+const PENDING='در انتظار تایید';
 function myRole(){
   if(!session)return 'ادمین'; // حالت محلی
   const u=usersList().find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
   if(u)return u.role;
   if(!usersList().length)return 'ادمین'; // اولین کاربر
-  return 'کاربر';
+  return PENDING; // ثبت‌نامی جدید تا تایید ادمین هیچ دسترسی‌ای ندارد
 }
+function isPending(){return !!session&&myRole()===PENDING;}
 function bootstrapAdmin(){
-  if(session&&!usersList().length){saveUsers([{email:myEmail(),role:'ادمین'}]);}
+  if(!session)return;
+  const list=usersList();
+  if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
+  // ثبت خودکار تازه‌واردها در لیست، با وضعیت «در انتظار تایید» تا ادمین ببیندشان
+  if(!list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase())){
+    saveUsers([...list,{email:myEmail(),role:PENDING}]);
+  }
 }
+/* --- ماتریس دسترسی سفارشی (قابل تنظیم توسط ادمین) --- */
+function acl(){const m=recs[MA];return (m&&!m.del&&m.d)||{};}
+function saveAcl(fn){
+  const m=recs[MA]||{id:MA,e:'_acl',d:{}};
+  const d=JSON.parse(JSON.stringify(m.d||{}));fn(d);
+  m.d=d;m.u=Date.now();m.del=false;put(m);
+}
+function aclRoles(){const a=acl();return [...ROLES,...Object.keys(a.roles||{}).filter(r=>!ROLES.includes(r))];}
+function aclFor(){ // تنظیمات مؤثر برای کاربر جاری: نقش + جایگزینی فردی
+  const a=acl(), roleCfg=(a.roles||{})[myRole()]||{}, userCfg=(a.users||{})[myEmail().toLowerCase()]||{};
+  return {ent:{...(roleCfg.ent||{}),...(userCfg.ent||{})},fld:{...(roleCfg.fld||{}),...(userCfg.fld||{})}};
+}
+function entLevel(e){if(isAdmin())return null;return aclFor().ent[e]||null;} // hide|read|edit|full|null
+function fldMode(e,k){if(isAdmin())return null;return aclFor().fld[e+'.'+k]||null;} // hide|read|null
+function canSee(e){if(isPending())return false;return entLevel(e)!=='hide';}
+function visFields(e){return E[e].f.filter(f=>fldMode(e,f.k)!=='hide');}
+
 function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
   const r=myRole();
-  if(r==='ادمین'||r==='مدیرارشد')return true;
+  if(r===PENDING)return false;
+  if(r==='ادمین')return true;
   // هرکس پروفایل خودش را می‌تواند ویرایش کند
   if(a==='e'&&e==='hr'&&rec&&(rec.d.email||'').toLowerCase()===myEmail().toLowerCase())return true;
-  // رشد شخصی: هر کاربر روی رکوردهای خودش همه‌کاره است
+  // ۱) اگر ادمین برای این نقش/کاربر تنظیم سفارشی گذاشته، همان حاکم است
+  const lvl=entLevel(e);
+  if(lvl){
+    if(lvl==='full')return true;
+    if(lvl==='edit')return a!=='d'||(rec&&rec.d._by===myEmail());
+    return false; // read / hide
+  }
+  // ۲) پیش‌فرض‌های داخلی
+  if(r==='مدیرارشد')return true;
   if(GROWTH.includes(e))return a!=='d'||(rec&&rec.d._by===myEmail());
   if(r==='مدیر')return a!=='d'||(rec&&rec.d._by===myEmail());
   if(r==='معاون')return a!=='d'&&!FIN.includes(e);
   if(r==='کارشناس ارشد')return a!=='d'&&MIDSET.includes(e);
   if(r==='کارشناس')return a!=='d'&&LOWSET.includes(e);
   if(r==='کاربر')return a!=='d'&&['leave','idea'].includes(e);
+  // نقش سفارشی بدون تنظیم: فقط مشاهده
   return false;
 }
 function isAdmin(){return myRole()==='ادمین';}
 function whoami(){
   const el=document.getElementById('who');if(el)el.textContent=session?myEmail()+' · '+myRole():'حالت محلی · ادمین';
   const ab=document.getElementById('authbtn');if(ab)ab.textContent=session?'🚪 خروج':'ورود';
+  const pend=isPending();
+  ['quickbtn','pomobtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=pend?'none':'';});
 }
 async function authAction(){
   if(session){
@@ -680,6 +746,11 @@ function bookProg(b){
   if(b.d.pages>0)return Math.min(100,(b.d.read||0)/b.d.pages*100);
   return b.d.status==='In progress'?50:0;
 }
+function courseProg(c){
+  if(c.d.status==='Done')return 100;
+  if(c.d.total>0)return Math.min(100,(c.d.done||0)/c.d.total*100);
+  return c.d.status==='In progress'?50:0;
+}
 function habitPct(h){
   const ks=E.habit.f.filter(f=>f.t===CHK);
   const done=ks.filter(f=>h.d[f.k]).length;
@@ -712,7 +783,7 @@ function projectSpent(p){
   const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
   return txs.reduce((a,t)=>a+(t.d.amount||0),0);
 }
-const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg};
+const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg,courseProg};
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
 function fmtN(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('fa-IR');}
 /* --- تاریخ شمسی --- */
@@ -742,14 +813,16 @@ function today(){return new Date().toISOString().slice(0,10);}
 let view={type:'dash'};
 function nav(){
   const el=document.getElementById('nav');
+  if(isPending()){el.innerHTML='';return;}
   let h=`<div class="nav-i ${view.type==='dash'?'on':''}" onclick="go('dash')">🎛️ اتاق کنترل</div>
   <div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>
   <div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`;
-  if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>`;
+  if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
+  <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>`;
   GROUPS.forEach(g=>{
     h+=`<div class="nav-h">${g}</div>`;
     if(g==='رشد شخصی')h+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
-    Object.entries(E).filter(([k,v])=>v.grp===g).forEach(([k,v])=>{
+    Object.entries(E).filter(([k,v])=>v.grp===g&&canSee(k)).forEach(([k,v])=>{
       h+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${visE(k).length}</span></div>`;
     });
   });
@@ -766,10 +839,27 @@ function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
 function render(){
   nav();
   const c=document.getElementById('content');
+  if(isPending()){
+    document.getElementById('ttl').textContent='Maalinex';
+    c.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;min-height:70vh">
+      <div class="sec" style="max-width:430px;text-align:center;padding:34px">
+        <div class="lgo">M</div>
+        <h2 style="margin-bottom:6px">خوش آمدید 👋</h2>
+        <p style="color:var(--tx2);font-size:13.5px;line-height:2.2">حساب شما با ایمیل <b dir="ltr" style="color:var(--tx)">${esc(myEmail())}</b> با موفقیت ساخته شد.<br>
+        دسترسی شما هنوز توسط <b style="color:#ecd98f">ادمین</b> تعیین نشده است.<br>
+        لطفاً منتظر بمانید؛ به محض تایید، همه‌چیز به‌صورت خودکار برای شما باز می‌شود.</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:18px">
+          <button class="btn sm" onclick="pullAll()">🔄 بررسی مجدد</button>
+          <button class="btn gh sm" onclick="authAction()">🚪 خروج</button>
+        </div>
+      </div></div>`;
+    whoami();return;
+  }
   if(view.type==='rec'&&(!recs[view.id]||recs[view.id].del))view={type:'list',e:view.e};
   document.getElementById('ttl').textContent=
     view.type==='dash'?'🎛️ اتاق کنترل':
     view.type==='users'?'👤 کاربران و دسترسی':
+    view.type==='acl'?'🛡️ سطوح دسترسی':
     view.type==='me'?'🗂️ میز کار من':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
@@ -777,6 +867,7 @@ function render(){
     E[view.e].ic+' '+E[view.e].n;
   if(view.type==='dash')c.innerHTML=dashHTML();
   else if(view.type==='users')c.innerHTML=usersHTML();
+  else if(view.type==='acl')c.innerHTML=aclHTML();
   else if(view.type==='me')c.innerHTML=meHTML();
   else if(view.type==='gdash')c.innerHTML=gdashHTML();
   else if(view.type==='charts')c.innerHTML=chartsHTML();
@@ -798,6 +889,10 @@ function cellHTML(r,f){
   if(f.t===SEL||f.t===STA)return v?`<span class="tag ${tagCls(v)}">${esc(STATFA[v]||v)}</span>`:'—';
   if(f.t===MUL)return (v||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join('')||'—';
   if(f.t===CHK)return v?'<span style="color:var(--ok);font-weight:800">✓</span>':'<span style="color:var(--tx2)">—</span>';
+  if(f.t===URLF)return v?`<a href="${esc(v)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--ac)">🔗 باز کردن</a>`:'—';
+  if(f.t===FIL){const fs=Array.isArray(v)?v:[];if(!fs.length)return '—';
+    if(f.img)return `<img src="${esc(fs[0].url)}" style="height:44px;border-radius:6px;border:1px solid var(--line)" onclick="event.stopPropagation();window.open('${esc(fs[0].url)}')">`;
+    return fs.map((x,i)=>`<a href="${esc(x.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--ac);margin-inline-end:8px">📎 ${esc(x.name||'فایل')}</a>`).join('');}
   if(f.t===DAT)return fmtD(v);
   if(f.t===NUM)return fmtN(v);
   return esc(v||'—');
@@ -812,11 +907,12 @@ const FILTERS={
 };
 function listHTML(e){
   const def=E[e];
+  if(!canSee(e))return `<div class="empty">دسترسی شما به این بخش توسط ادمین محدود شده است</div>`;
   const q=(view.q||'').trim();
   let rows=visE(e).sort((a,b)=>b.u-a.u);
   if(view.flt&&FILTERS[view.flt])rows=rows.filter(FILTERS[view.flt].f);
   if(q)rows=rows.filter(r=>JSON.stringify(r.d).includes(q));
-  const cols=def.cols.map(k=>def.f.find(f=>f.k===k));
+  const cols=def.cols.map(k=>def.f.find(f=>f.k===k)).filter(f=>fldMode(e,f.k)!=='hide');
   let h=`<div class="tools">
     ${can('c',e)?`<button class="btn" onclick="openRec('${e}')">＋ افزودن</button>`:''}
     <input placeholder="جستجو…" value="${esc(q)}" oninput="view.q=this.value;render()">
@@ -843,9 +939,11 @@ function propHTML(r,f){
 }
 function recHTML(e,id){
   const def=E[e], r=recs[id];
+  if(!canSee(e))return `<div class="empty">دسترسی شما به این بخش محدود شده است</div>`;
   let h=`<div class="crumb"><a onclick="goBack()">→ بازگشت</a> / <a onclick="go('list','${e}')">${def.ic} ${def.n}</a> / <span>${esc(r.d.title||'—')}</span></div>`;
   h+=`<div class="rhead"><h2>${def.ic} ${esc(r.d.title||'—')}</h2>
     <span style="flex:1"></span>
+    ${e==='booknote'&&!relIds(r,'idea').length&&can('c','idea')?`<button class="btn gh sm" onclick="noteToIdea('${id}')">💡 تبدیل به ایده</button>`:''}
     ${can('e',e,r)?`<button class="btn sm" onclick="openRec('${e}','${id}')">✏️ ویرایش</button>`:''}</div>`;
   // computed chips
   const chips=[];
@@ -856,18 +954,20 @@ function recHTML(e,id){
   if(chips.length)h+=`<div class="comp" style="margin-bottom:12px">${chips.map(c=>`<div class="chip">${c[0]}: ${c[1]}</div>`).join('')}</div>`;
   // properties
   h+=`<div class="props">`;
-  def.f.filter(f=>f.k!=='title').forEach(f=>{
+  visFields(e).filter(f=>f.k!=='title').forEach(f=>{
     h+=`<div class="prop"><span class="pk">${f.n}</span><span class="pv">${propHTML(r,f)}</span></div>`;
   });
   h+=`</div>`;
   // related sections: back references grouped as mini tables
   Object.entries(E).forEach(([ek,ed])=>{
+    if(!canSee(ek))return;
     ed.f.forEach(f=>{
       if(f.t!==REL||f.r!==e)return;
       const rs=backRefs(id,ek,f.k);
       const selfParent=(ek===e&&f.k==='parent');
       const secTitle=selfParent?'زیرمجموعه‌ها':`${ed.ic} ${ed.n} — ${f.n}`;
-      if(!rs.length&&!selfParent)return;
+      const alwaysShow=(ek==='booknote'); // بانک دانش همیشه دیده شود تا افزودن نکته دم دست باشد
+      if(!rs.length&&!selfParent&&!alwaysShow)return;
       h+=`<div class="sec relsec"><h3>${secTitle} <span class="c">${rs.length.toLocaleString('fa-IR')}</span>
         <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}',null,{k:'${f.k}',id:'${id}'})">＋ افزودن</button>`:''}</h3>`;
       if(rs.length){
@@ -1041,6 +1141,88 @@ function chartsHTML(){
   return h;
 }
 
+/* ================= 🛡️ مدیریت سطوح دسترسی (ادمین) ================= */
+const LVLOPTS=[['','پیش‌فرض نقش'],['hide','مخفی 🚫'],['read','فقط مشاهده 👁'],['edit','ایجاد و ویرایش ✏️'],['full','کامل با حذف 🗑']];
+const FLDOPTS=[['','عادی'],['read','فقط مشاهده 👁'],['hide','مخفی 🚫']];
+function aclTarget(){
+  const t=view.aclT||'role';
+  const v=view.aclV||(t==='role'?aclRoles().filter(r=>r!=='ادمین')[0]:(usersList()[0]||{}).email);
+  return {t,v};
+}
+function aclCfg(){
+  const {t,v}=aclTarget(); const a=acl();
+  return ((t==='role'?a.roles:a.users)||{})[t==='user'?String(v).toLowerCase():v]||{};
+}
+function setAclT(t){view.aclT=t;view.aclV=null;render();}
+function setAclV(v){view.aclV=v;render();}
+function setAclEnt(ek,val){
+  const {t,v}=aclTarget(); if(!v)return;
+  const key=t==='user'?String(v).toLowerCase():v;
+  saveAcl(d=>{const b=t==='role'?(d.roles=d.roles||{}):(d.users=d.users||{});
+    const c=b[key]=b[key]||{};c.ent=c.ent||{};
+    if(val)c.ent[ek]=val;else delete c.ent[ek];});
+}
+function setAclFld(ek,fk,val){
+  const {t,v}=aclTarget(); if(!v)return;
+  const key=t==='user'?String(v).toLowerCase():v;
+  saveAcl(d=>{const b=t==='role'?(d.roles=d.roles||{}):(d.users=d.users||{});
+    const c=b[key]=b[key]||{};c.fld=c.fld||{};
+    if(val)c.fld[ek+'.'+fk]=val;else delete c.fld[ek+'.'+fk];});
+}
+function addRole(){
+  const name=prompt('نام نقش جدید:'); if(!name||!name.trim())return;
+  const nm=name.trim();
+  if(aclRoles().includes(nm)){alert('این نقش وجود دارد');return;}
+  saveAcl(d=>{d.roles=d.roles||{};d.roles[nm]={ent:{},fld:{}};});
+  view.aclT='role';view.aclV=nm;render();
+}
+function rmRole(){
+  const {t,v}=aclTarget(); if(t!=='role'||ROLES.includes(v)){alert('نقش‌های پایه حذف نمی‌شوند');return;}
+  if(!confirm('نقش «'+v+'» حذف شود؟ کاربرانش به «کاربر» برمی‌گردند'))return;
+  saveAcl(d=>{if(d.roles)delete d.roles[v];});
+  saveUsers(usersList().map(u=>u.role===v?{...u,role:'کاربر'}:u));
+  view.aclV=null;render();
+}
+function aclHTML(){
+  if(!isAdmin())return `<div class="empty">فقط ادمین</div>`;
+  const {t,v}=aclTarget(); const cfg=aclCfg();
+  let h=`<div class="sec"><h3>🛡️ ماتریس دسترسی</h3>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">برای هر <b>نقش</b> یا حتی یک <b>کاربر خاص</b>، دسترسی هر بخش را تعیین کنید — و در صورت نیاز تک‌تک فیلدها را مخفی یا فقط‌خواندنی کنید. تنظیم کاربر بر تنظیم نقشش اولویت دارد؛ «پیش‌فرض» یعنی همان قواعد پایه نقش.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <select onchange="setAclT(this.value)" style="max-width:130px">
+      <option value="role" ${t==='role'?'selected':''}>نقش</option>
+      <option value="user" ${t==='user'?'selected':''}>کاربر خاص</option></select>
+    <select onchange="setAclV(this.value)" style="max-width:230px" dir="${t==='user'?'ltr':'rtl'}">
+      ${(t==='role'?aclRoles().filter(r=>r!=='ادمین'):usersList().map(u=>u.email)).map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('')}</select>
+    <button class="btn gh sm" onclick="addRole()">＋ نقش جدید</button>
+    ${t==='role'&&!ROLES.includes(v)?`<button class="btn bad sm" onclick="rmRole()">🗑 حذف نقش</button>`:''}
+  </div></div>`;
+  if(!v)return h+`<div class="empty">کاربری ثبت نشده است</div>`;
+  GROUPS.forEach(g=>{
+    h+=`<div class="sec"><h3>${g}</h3><div class="tblwrap"><table><thead><tr><th>بخش</th><th>دسترسی</th><th>فیلدها</th></tr></thead><tbody>`;
+    Object.entries(E).filter(([k,d])=>d.grp===g).forEach(([ek,ed])=>{
+      const cur=(cfg.ent||{})[ek]||'';
+      h+=`<tr><td>${ed.ic} ${ed.n}</td>
+        <td><select onchange="setAclEnt('${ek}',this.value)" style="max-width:190px">
+          ${LVLOPTS.map(([val,l])=>`<option value="${val}" ${cur===val?'selected':''}>${l}</option>`).join('')}</select></td>
+        <td><button class="btn gh sm" onclick="view.aclEnt=view.aclEnt==='${ek}'?null:'${ek}';render()">${view.aclEnt===ek?'بستن':'تنظیم فیلدها'}</button></td></tr>`;
+      if(view.aclEnt===ek){
+        h+=`<tr><td colspan="3" style="white-space:normal"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;padding:6px 0">`;
+        ed.f.filter(f=>f.k!=='title').forEach(f=>{
+          const fc=(cfg.fld||{})[ek+'.'+f.k]||'';
+          h+=`<div style="display:flex;gap:6px;align-items:center;font-size:12px">
+            <span style="flex:1;color:var(--tx2)">${f.n}</span>
+            <select onchange="setAclFld('${ek}','${f.k}',this.value)" style="max-width:130px;padding:4px 6px;font-size:11.5px">
+              ${FLDOPTS.map(([val,l])=>`<option value="${val}" ${fc===val?'selected':''}>${l}</option>`).join('')}</select></div>`;
+        });
+        h+=`</div></td></tr>`;
+      }
+    });
+    h+=`</tbody></table></div></div>`;
+  });
+  return h;
+}
+
 /* ================= داشبورد رشد شخصی ================= */
 function habitTrendSVG(){
   const hs=visE('habit').filter(h=>ds(h.d.date));
@@ -1077,6 +1259,7 @@ function gdashHTML(){
     ${card('📚 کتاب تمام‌شده',bs.filter(b=>bookProg(b)>=100).length+' از '+bs.length,null,"go('list','book')")}
     ${card('🏆 دستاوردها',ws.length,null,"go('list','win')")}
     ${card('🍅 پومودورو امروز',pomoCount(),null,"togglePomo()")}
+    ${card('🧠 نکات بانک دانش',visE('booknote').length,null,"go('list','booknote')")}
   </div>`;
   // نمودارها
   const kindMap={};gs.forEach(g=>{const k=g.d.kind||'هدف';kindMap[k]=(kindMap[k]||0)+1;});
@@ -1092,7 +1275,10 @@ function gdashHTML(){
     <div class="sec"><h3>🌱 اهداف رشد بر اساس نوع</h3>${donutSVG(kindItems)}</div>
     <div class="sec"><h3>🎯 درصد تحقق اهداف رشد</h3>${hbarsHTML(growthBars,CH.blue)}</div>
     <div class="sec"><h3>💰 ترکیب دارایی‌ها (به ارزش خرید)</h3>${donutSVG(assetItems)}</div>
-    <div class="sec"><h3>📚 پیشرفت مطالعه</h3>${hbarsHTML(bs.filter(b=>bookProg(b)<100).map(b=>({l:b.d.title,v:bookProg(b),href:`go('rec','book','${b.id}')`})).sort((a,b)=>b.v-a.v).slice(0,8),CH.aqua)}</div>
+    <div class="sec"><h3>📚 پیشرفت مطالعه و دوره‌ها</h3>${hbarsHTML(
+      [...bs.filter(b=>bookProg(b)<100).map(b=>({l:'📚 '+b.d.title,v:bookProg(b),href:`go('rec','book','${b.id}')`})),
+       ...visE('course').filter(c=>courseProg(c)<100).map(c=>({l:'🎓 '+c.d.title,v:courseProg(c),href:`go('rec','course','${c.id}')`}))]
+      .sort((a,b)=>b.v-a.v).slice(0,8),CH.aqua)}</div>
   </div>
   <div class="sec relsec"><h3>🗓️ برنامه‌های پیش رو <span style="flex:1"></span><button class="btn gh sm" onclick="openRec('plan')">＋ برنامه جدید</button></h3>
   ${openPlans.length?miniTable('plan',openPlans):'<div class="empty">برنامه بازی نیست</div>'}</div>`;
@@ -1107,13 +1293,14 @@ function usersHTML(){
   <div class="tblwrap"><table><thead><tr><th>ایمیل</th><th>نقش</th><th></th></tr></thead><tbody>`;
   list.forEach((u,i)=>{
     h+=`<tr><td dir="ltr" style="text-align:left">${esc(u.email)}</td>
-      <td><select onchange="setRole(${i},this.value)" style="max-width:180px">${ROLES.map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select></td>
+      <td><select onchange="setRole(${i},this.value)" style="max-width:180px;${u.role===PENDING?'border-color:var(--warn)':''}">${aclRoles().concat([PENDING]).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select>
+      ${u.role===PENDING?'<div style="font-size:10.5px;color:var(--warn)">تازه ثبت‌نام کرده — منتظر تایید شما</div>':''}</td>
       <td><button class="btn bad sm" onclick="rmUser(${i})">حذف</button></td></tr>`;
   });
   h+=`</tbody></table></div>
   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
     <input id="nu_email" dir="ltr" type="email" placeholder="email@example.com" style="max-width:240px">
-    <select id="nu_role" style="max-width:160px">${ROLES.map(r=>`<option>${r}</option>`).join('')}</select>
+    <select id="nu_role" style="max-width:160px">${aclRoles().map(r=>`<option>${r}</option>`).join('')}</select>
     <button class="btn" onclick="addUser()">افزودن کاربر</button>
   </div></div>
   <div class="sec"><h3>📋 شرح سطوح دسترسی</h3><div style="font-size:13px;color:var(--tx2);line-height:2.1">
@@ -1136,6 +1323,14 @@ function addUser(){
   if(ex)ex.role=role;else l.push({email:em,role});
   saveUsers(l);
 }
+function noteToIdea(noteId){
+  const n=recs[noteId]; if(!n)return;
+  const ideaId=uid();
+  put({id:ideaId,e:'idea',d:{title:n.d.title,desc:n.d.body||null,status:'💭 خام',_by:myEmail()},u:Date.now()});
+  n.d.idea=[ideaId];n.u=Date.now();put(n);
+  go('rec','idea',ideaId);
+}
+function quickNote(){openRec('booknote');}
 function delFromPage(e,id){
   if(!can('d',e,recs[id])){alert('اجازه حذف ندارید');return;}
   if(!confirm('حذف شود؟'))return;
@@ -1224,8 +1419,9 @@ function drawModal(){
     if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
   }
   h+=`<div class="mrow">`;
-  def.f.forEach(f=>{
+  visFields(e).forEach(f=>{
     const v=cur.d[f.k];
+    const ro=fldMode(e,f.k)==='read';
     const full=(f.t===LNG||f.t===REL||f.t===DAT)?'full':'';
     const plus=(f.t===SEL||f.t===MUL||f.t===STA)?` <a onclick="addOpt('${f.k}')" style="color:var(--ac);cursor:pointer;font-size:11px">＋ گزینه جدید</a>`:'';
     h+=`<div class="${full}"><label>${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}</label>`;
@@ -1234,6 +1430,17 @@ function drawModal(){
     else if(f.t===NUM)h+=`<input data-k="${f.k}" type="number" dir="ltr" value="${v??''}">`;
     else if(f.t===DAT)h+=dateInputHTML(f);
     else if(f.t===CHK)h+=`<label style="display:flex;align-items:center;gap:8px;margin:0;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--tx)"><input type="checkbox" data-k="${f.k}" ${v?'checked':''} style="width:auto;accent-color:var(--ac)"> انجام شد</label>`;
+    else if(f.t===URLF)h+=`<input data-k="${f.k}" dir="ltr" placeholder="https://…" value="${esc(v||'')}">`;
+    else if(f.t===FIL){
+      const fs=Array.isArray(v)?v:[];
+      h+=`<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px">
+        ${fs.map((x,i)=>`<div style="display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:5px">
+          ${f.img?`<img src="${esc(x.url)}" style="height:34px;border-radius:5px">`:'📎'}
+          <a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:var(--ac);flex:1;overflow:hidden;text-overflow:ellipsis">${esc(x.name||'فایل')}</a>
+          <span style="color:var(--bad);cursor:pointer" onclick="rmFile('${f.k}',${i})">✕</span></div>`).join('')}
+        <input type="file" ${f.img?'accept="image/*"':''} onchange="upFile('${f.k}',this)" style="border:none;padding:2px;font-size:12px">
+        <div id="fu_${f.k}" style="font-size:11px;color:var(--tx2)"></div></div>`;
+    }
     else if(f.t===SEL||f.t===STA){const oo=optsFor(e,f);h+=`<select data-k="${f.k}"><option value="">—</option>${oo.concat(v&&!oo.includes(v)?[v]:[]).map(o=>`<option ${v===o?'selected':''} value="${esc(o)}">${esc(STATFA[o]||o)}</option>`).join('')}</select>`;}
     else if(f.t===MUL){const oo=optsFor(e,f);h+=`<select data-k="${f.k}" multiple size="3">${oo.map(o=>`<option ${(v||[]).includes(o)?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;}
     else if(f.t===REL)h+=relPicker(f);
@@ -1253,6 +1460,10 @@ function drawModal(){
       ${id&&can('d',e,recs[id])?`<button class="btn bad" onclick="delRec()">حذف</button>`:''}
       <span style="flex:1"></span><button class="btn gh" onclick="closeModal()">بستن</button></div>`;
   document.getElementById('modal').innerHTML=h;
+  // فیلدهای «فقط مشاهده»
+  visFields(e).filter(f=>fldMode(e,f.k)==='read').forEach(f=>{
+    document.querySelectorAll(`#modal [data-k="${f.k}"],#modal [data-dk="${f.k}"]`).forEach(el=>{el.disabled=true;el.style.opacity=.55;});
+  });
   document.getElementById('ovl').classList.add('show');
 }
 function relPicker(f){
@@ -1300,8 +1511,29 @@ function toggleRel(k,id,single){
   box.replaceWith(wrap.children[0]);list.replaceWith(wrap.children[0]);
   document.getElementById('rl_'+k).style.display='block';
 }
+/* --- آپلود فایل (Supabase Storage یا محلی) --- */
+async function upFile(k,inp){
+  const file=inp.files&&inp.files[0]; if(!file)return;
+  const st=document.getElementById('fu_'+k); if(st)st.textContent='در حال آپلود…';
+  harvest();
+  let url=null;
+  if(sb&&session){
+    const path=cur.id+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-آ-ی]/g,'_');
+    const {error}=await sb.storage.from('files').upload(path,file,{upsert:true});
+    if(error){if(st)st.textContent='خطا در آپلود: '+error.message+' (فایل SQL جدید را در Supabase اجرا کرده‌اید؟)';return;}
+    url=sb.storage.from('files').getPublicUrl(path).data.publicUrl;
+  } else {
+    if(file.size>1500000){if(st)st.textContent='در حالت بدون سینک حداکثر ۱.۵ مگابایت';return;}
+    url=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(file);});
+  }
+  const arr=Array.isArray(cur.d[k])?cur.d[k].slice():[];
+  arr.push({name:file.name,url});cur.d[k]=arr;
+  drawModal();
+}
+function rmFile(k,i){harvest();const arr=(cur.d[k]||[]).slice();arr.splice(i,1);cur.d[k]=arr;drawModal();}
 function harvest(){
   document.querySelectorAll('#modal [data-k]').forEach(el=>{
+    if(el.disabled)return;
     const k=el.dataset.k, f=E[cur.e].f.find(f=>f.k===k);
     if(f.t===NUM)cur.d[k]=el.value===''?null:Number(el.value);
     else if(f.t===MUL)cur.d[k]=[...el.selectedOptions].map(o=>o.value);
