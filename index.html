@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maalinex — سیستم عامل مدیریت هلدینگ</title>
+<meta name="theme-color" content="#101418">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maalinex">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1319; --bg2:#151b23; --bg3:#1c242f; --line:#28313d; --tx:#e8edf3; --tx2:#9aa7b5;
+  --ac:#4f8ef7; --ok:#3fb96f; --warn:#e5a83b; --bad:#e05f5f; --pur:#9b7ff2; --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Vazirmatn,Tahoma,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+#app{display:flex;height:100dvh;overflow:hidden}
+/* sidebar */
+#side{width:230px;background:var(--bg2);border-left:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;transition:margin .2s}
+#side .logo{padding:16px 14px;font-weight:800;font-size:16px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+#nav{overflow-y:auto;flex:1;padding:8px}
+.nav-h{font-size:11px;color:var(--tx2);margin:12px 8px 4px}
+.nav-i{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--tx2);white-space:nowrap}
+.nav-i:hover{background:var(--bg3);color:var(--tx)}
+.nav-i.on{background:var(--bg3);color:var(--tx);font-weight:600}
+.nav-i .c{margin-inline-start:auto;font-size:11px;background:var(--bg);border-radius:99px;padding:1px 7px;color:var(--tx2)}
+/* main */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg2)}
+#burger{display:none;background:none;border:none;color:var(--tx);font-size:20px;cursor:pointer}
+#ttl{font-weight:700;font-size:15px}
+#syncdot{width:9px;height:9px;border-radius:50%;background:var(--tx2)}
+#syncdot.ok{background:var(--ok)} #syncdot.off{background:var(--warn)} #syncdot.err{background:var(--bad)}
+#synctxt{font-size:11px;color:var(--tx2)}
+#top .sp{flex:1}
+#content{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
+/* buttons & inputs */
+.btn{background:var(--ac);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:13px;cursor:pointer;font-weight:600}
+.btn.gh{background:var(--bg3);color:var(--tx)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.bad{background:var(--bad)}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)}
+label{font-size:12px;color:var(--tx2);display:block;margin:10px 0 4px}
+/* table */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2)}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th{font-size:12px;color:var(--tx2);text-align:right;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--bg2)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
+.tag{display:inline-block;background:var(--bg3);border:1px solid var(--line);border-radius:99px;padding:1px 9px;font-size:11px;margin-inline-end:4px}
+.tag.g{border-color:var(--ok);color:var(--ok)} .tag.y{border-color:var(--warn);color:var(--warn)}
+.tag.r{border-color:var(--bad);color:var(--bad)} .tag.b{border-color:var(--ac);color:var(--ac)}
+.tag.p{border-color:var(--pur);color:var(--pur)}
+/* progress */
+.pbar{background:var(--bg);border-radius:99px;height:8px;min-width:70px;overflow:hidden;display:inline-block;vertical-align:middle;width:90px}
+.pbar>i{display:block;height:100%;background:var(--ac);border-radius:99px}
+.pnum{font-size:11px;color:var(--tx2);margin-inline-start:6px}
+/* modal */
+#ovl{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:24px 12px}
+#ovl.show{display:flex}
+#modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:680px;padding:20px}
+#modal h3{margin-bottom:4px}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.mrow .full{grid-column:1/-1}
+.mfoot{display:flex;gap:8px;margin-top:18px}
+.comp{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.comp .chip{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--tx2)}
+.comp .chip b{color:var(--tx)}
+/* rel picker */
+.relbox{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px;min-height:38px;cursor:pointer}
+.relbox .tag{cursor:pointer}
+.rellist{border:1px solid var(--line);border-radius:8px;margin-top:4px;max-height:180px;overflow:auto;background:var(--bg)}
+.rellist div{padding:7px 10px;cursor:pointer;font-size:13px}
+.rellist div:hover{background:var(--bg3)}
+.rellist div.sel{color:var(--ac);font-weight:600}
+/* dashboard */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card .v{font-size:24px;font-weight:800;margin-top:4px}
+.card .l{font-size:12px;color:var(--tx2)}
+.sec{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.sec h3{font-size:14px;margin-bottom:12px;display:flex;gap:6px;align-items:center}
+.tree{margin-inline-start:6px}
+.tnode{border-inline-start:2px solid var(--line);padding:6px 14px 6px 0;margin-inline-start:8px;position:relative}
+.tline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0;border-radius:6px;cursor:pointer}
+.tline:hover{background:var(--bg3)}
+.tline .nm{font-weight:600}
+.alert{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg);margin-bottom:6px;cursor:pointer;font-size:13px}
+.alert:hover{background:var(--bg3)}
+.empty{color:var(--tx2);padding:22px;text-align:center;font-size:13px}
+/* record page */
+.rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.rhead h2{font-size:20px}
+.crumb{font-size:12px;color:var(--tx2);margin-bottom:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crumb a{color:var(--ac);cursor:pointer;text-decoration:none}
+.props{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:2px 18px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:16px}
+.prop{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);align-items:baseline;min-width:0}
+.prop .pk{font-size:12px;color:var(--tx2);min-width:110px;flex-shrink:0}
+.prop .pv{font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.relsec h3 .c{font-size:11px;background:var(--bg);border-radius:99px;padding:1px 8px;color:var(--tx2)}
+.minitbl td{padding:7px 10px}
+.chartgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.chartgrid .sec{margin-bottom:0}
+/* toolbar */
+.tools{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.tools input{max-width:260px}
+/* login */
+#login{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow:auto;
+  background:radial-gradient(1100px 600px at 85% -10%,#1d3a6e 0%,transparent 55%),
+             radial-gradient(900px 500px at 0% 110%,#12355b 0%,transparent 55%),
+             linear-gradient(160deg,#0b0f16 0%,#0f1523 100%)}
+#login.show{display:flex}
+#login .box{background:rgba(21,27,35,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:30px 28px;width:100%;max-width:410px;
+  box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center}
+.lgo{width:64px;height:64px;border-radius:18px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:900;color:#fff;background:linear-gradient(135deg,#4f8ef7,#9b7ff2);
+  box-shadow:0 10px 30px rgba(79,142,247,.35);font-family:Georgia,serif}
+#login h2{font-size:26px;letter-spacing:.5px;margin-bottom:2px}
+#login .sub{color:var(--tx2);font-size:13px;margin-bottom:18px}
+.atabs{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:14px}
+.atabs button{flex:1;background:none;border:none;color:var(--tx2);font-family:inherit;font-size:13px;padding:8px;border-radius:8px;cursor:pointer;font-weight:600}
+.atabs button.on{background:var(--ac);color:#fff}
+#login label{text-align:right}
+#login details{margin-top:12px;text-align:right}
+#login summary{font-size:12px;color:var(--tx2);cursor:pointer}
+.btn.big{width:100%;padding:11px;font-size:14px;margin-top:14px;border-radius:10px}
+.err{color:var(--bad);font-size:12px;margin-top:8px;min-height:16px}
+.quote{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--tx2);font-size:12.5px;line-height:2}
+.credit{color:#5b6a7c;font-size:11.5px;margin-top:18px}
+#side .credit{padding:10px 14px;border-top:1px solid var(--line);margin-top:auto;text-align:center}
+@media (max-width:760px){
+  #side{position:fixed;inset-block:0;right:0;z-index:40;margin-right:-240px;box-shadow:0 0 30px rgba(0,0,0,.5)}
+  #side.open{margin-right:0}
+  #burger{display:block}
+  .mrow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="box">
+    <div class="lgo">M</div>
+    <h2>Maalinex</h2>
+    <div class="sub">سیستم عامل مدیریت هلدینگ</div>
+    <div class="atabs">
+      <button id="at_in" class="on" onclick="setAuthMode('in')">ورود</button>
+      <button id="at_up" onclick="setAuthMode('up')">ثبت‌نام</button>
+    </div>
+    <label>ایمیل</label><input id="l_email" dir="ltr" type="email" autocomplete="username">
+    <label>رمز عبور</label><input id="l_pass" dir="ltr" type="password" autocomplete="current-password">
+    <details id="l_conn"><summary>⚙️ تنظیمات اتصال (Supabase)</summary>
+      <label>Supabase URL</label><input id="l_url" dir="ltr" placeholder="https://xxxx.supabase.co">
+      <label>Anon Key</label><input id="l_key" dir="ltr" placeholder="eyJ...">
+    </details>
+    <div class="err" id="l_err"></div>
+    <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
+    <button class="btn gh" style="width:100%;margin-top:8px" onclick="localOnly()">استفاده بدون حساب (فقط این دستگاه)</button>
+    <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
+  </div>
+  <div class="credit">معماری و ساخت: علی خلج</div>
+</div>
+
+<div id="app">
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit">معماری و ساخت: علی خلج</div></aside>
+  <div id="main">
+    <div id="top">
+      <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
+      <span id="ttl">اتاق کنترل</span><span class="sp"></span>
+      <span id="who" style="font-size:11px;color:var(--tx2)"></span>
+      <span id="synctxt"></span><span id="syncdot"></span>
+      <button class="btn gh sm" id="authbtn" onclick="authAction()">ورود</button>
+      <button class="btn gh sm" onclick="openSettings()">⚙️</button>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<div id="ovl"><div id="modal"></div></div>
+
+<script>
+/* ================= SCHEMA ================= */
+const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',STA='sta';
+const STATUS=['Not started','In progress','Done'];
+const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
+const PRIO=['بحرانی','بالا','متوسط','پایین'];
+const E={
+hr:{ic:'👥',n:'منابع انسانی',grp:'سازمان',f:[
+ {k:'title',n:'نام و نام خانوادگی',t:TXT},{k:'role',n:'سمت',t:TXT},
+ {k:'unit',n:'واحد',t:SEL,o:['مدیریت','مالی','اداری','بازرگانی','فنی']},
+ {k:'wstatus',n:'وضعیت همکاری',t:SEL,o:['شاغل','مرخصی بلندمدت','بازنشسته','قطع همکاری']},
+ {k:'email',n:'ایمیل',t:TXT},{k:'phone',n:'تلفن',t:TXT},
+ {k:'hire',n:'تاریخ استخدام',t:DAT},{k:'quota',n:'سهمیه مرخصی سالانه',t:NUM},
+ {k:'manager',n:'مدیر مستقیم',t:REL,r:'hr',s:1},
+ {k:'company',n:'شرکت محل خدمت',t:REL,r:'company'}],
+ cols:['title','role','unit','wstatus','company']},
+company:{ic:'🏢',n:'شرکت‌ها',grp:'سازمان',f:[
+ {k:'title',n:'نام شرکت',t:TXT},
+ {k:'type',n:'نوع',t:SEL,o:['هلدینگ','زیرمجموعه','وابسته','مستقل']},
+ {k:'legal',n:'نوع شخصیت حقوقی',t:SEL,o:['سهامی خاص','سهامی عام','مسئولیت محدود','تعاونی','موسسه غیرتجاری','حقیقی']},
+ {k:'industry',n:'صنعت',t:MUL,o:['تامین مالی','فناوری','بازرگانی','ساختمانی','فرهنگی','مشاوره']},
+ {k:'astatus',n:'وضعیت فعالیت',t:SEL,o:['فعال','در حال تاسیس','راکد']},
+ {k:'own',n:'درصد مالکیت هلدینگ',t:NUM},{k:'capital',n:'سرمایه ثبتی',t:NUM},
+ {k:'founded',n:'تاریخ تاسیس',t:DAT},
+ {k:'ceo',n:'مدیرعامل',t:REL,r:'hr',s:1},
+ {k:'parent',n:'شرکت مادر',t:REL,r:'company',s:1}],
+ cols:['title','type','astatus','industry','ceo']},
+business:{ic:'🧢',n:'کسب‌وکارها',grp:'سازمان',f:[
+ {k:'title',n:'نام کسب‌وکار',t:TXT},{k:'desc',n:'شرح',t:LNG},
+ {k:'model',n:'مدل درآمدی',t:SEL,o:['کارمزدی','فروش','اشتراک','پروژه‌ای']},
+ {k:'stage',n:'مرحله',t:SEL,o:['ایده','راه اندازی','رشد','بلوغ','افول']},
+ {k:'companies',n:'شرکت‌های مجری',t:REL,r:'company'},
+ {k:'parent',n:'کسب‌وکار والد',t:REL,r:'business',s:1}],
+ cols:['title','model','stage','companies']},
+strategy:{ic:'🔗',n:'استراتژی',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'عنوان استراتژی',t:TXT},{k:'desc',n:'شرح استراتژی',t:LNG},
+ {k:'level',n:'سطح',t:MUL,o:['سطح هلدینگ','سطح کسب و کار','سطح شرکت','سطح پروژه','سطح شخصی']},
+ {k:'year',n:'سال',t:MUL,o:['1404','1405','1406','1407','1408','1409','1410']},
+ {k:'range',n:'بازه زمانی',t:DAT},
+ {k:'fin',n:'نقاط عطف مالی',t:LNG},{k:'prod',n:'عرضه محصول و فناوری',t:LNG},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'},
+ {k:'team',n:'تیم و نفرات کلیدی',t:REL,r:'hr'},
+ {k:'parent',n:'استراتژی والد',t:REL,r:'strategy',s:1}],
+ cols:['title','level','year','business'],prog:'strategyProg'},
+objective:{ic:'🎯',n:'اهداف',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'عنوان هدف',t:TXT},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'level',n:'سطح',t:SEL,o:['هلدینگ','شرکت','کسب و کار','فردی']},
+ {k:'horizon',n:'افق زمانی',t:SEL,o:['پنج ساله','سه ساله','دوساله','سالانه','فصلی']},
+ {k:'year',n:'سال',t:SEL,o:['1405','1406','1407']},
+ {k:'month',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'target',n:'مقدار هدف',t:NUM},{k:'current',n:'مقدار فعلی',t:NUM},
+ {k:'unit',n:'واحد سنجش',t:SEL,o:['تومان','میلیون تومان','میلیارد تومان','درصد','تعداد','نفر','کیلووات','مگاوات']},
+ {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
+ {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'strategy'},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'},
+ {k:'parent',n:'هدف والد',t:REL,r:'objective',s:1}],
+ cols:['title','status','level','year','owner'],prog:'objectiveProg'},
+project:{ic:'🏗️',n:'پروژه‌ها',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'نام پروژه',t:TXT},{k:'desc',n:'شرح',t:LNG},
+ {k:'status',n:'وضعیت',t:SEL,o:['شروع نشده','در حال اجرا','متوقف','تمام شده']},
+ {k:'sched',n:'وضعیت زمان‌بندی',t:SEL,o:['طبق برنامه','تاخیر دارد']},
+ {k:'prio',n:'اولویت',t:SEL,o:PRIO},
+ {k:'range',n:'بازه زمانی',t:DAT},{k:'budget',n:'بودجه مصوب',t:NUM},
+ {k:'pm',n:'مدیر پروژه',t:REL,r:'hr',s:1},
+ {k:'objective',n:'هدف استراتژیک',t:REL,r:'objective'},
+ {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'strategy'},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
+ {k:'company',n:'شرکت مجری',t:REL,r:'company'},
+ {k:'idea',n:'ایده منشأ',t:REL,r:'idea',s:1},
+ {k:'crm',n:'مشتریان و ذینفعان',t:REL,r:'crm'},
+ {k:'parent',n:'پروژه والد',t:REL,r:'project',s:1}],
+ cols:['title','status','prio','pm','objective'],prog:'projectProg'},
+task:{ic:'📘',n:'تسک‌ها',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'عنوان تسک',t:TXT},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'prio',n:'اولویت',t:SEL,o:PRIO},
+ {k:'due',n:'ددلاین',t:DAT},{k:'est',n:'تخمین زمان (ساعت)',t:NUM},
+ {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
+ {k:'project',n:'پروژه',t:REL,r:'project',s:1},
+ {k:'objective',n:'هدف مرتبط',t:REL,r:'objective'},
+ {k:'meeting',n:'جلسه مرتبط (مصوبه)',t:REL,r:'meeting',s:1},
+ {k:'risk',n:'ریسک مرتبط',t:REL,r:'risk'},
+ {k:'parent',n:'تسک والد',t:REL,r:'task',s:1}],
+ cols:['title','status','prio','due','owner','project'],prog:'taskProg'},
+kpi:{ic:'📈',n:'پایش اهداف (KPI)',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'عنوان ثبت',t:TXT},{k:'date',n:'تاریخ ثبت',t:DAT},
+ {k:'value',n:'مقدار ثبت‌شده',t:NUM},{k:'desc',n:'توضیح',t:LNG},
+ {k:'objective',n:'هدف مرتبط',t:REL,r:'objective',s:1},
+ {k:'by',n:'ثبت‌کننده',t:REL,r:'hr',s:1}],
+ cols:['title','date','value','objective']},
+crm:{ic:'🧑‍🤝‍🧑',n:'CRM | ذینفعان',grp:'روابط',f:[
+ {k:'title',n:'نام',t:TXT},
+ {k:'kind',n:'شخصیت',t:SEL,o:['حقیقی','حقوقی']},
+ {k:'rel',n:'نوع رابطه',t:SEL,o:['مشتری','سرمایه‌گذار','بانک','بیمه','پیمانکار','تامین‌کننده','شریک تجاری','مشاور','دولتی']},
+ {k:'imp',n:'اهمیت رابطه',t:SEL,o:['بسیار مهم','مهم','معمولی','غیرفعال']},
+ {k:'contact',n:'فرد رابط',t:TXT},{k:'role',n:'سمت',t:TXT},
+ {k:'phone',n:'تلفن',t:TXT},{k:'email',n:'ایمیل',t:TXT},
+ {k:'last',n:'آخرین تماس',t:DAT},{k:'next',n:'پیگیری بعدی',t:DAT},
+ {k:'note',n:'یادداشت',t:LNG},
+ {k:'company',n:'شرکت طرف رابطه',t:REL,r:'company'},
+ {k:'projects',n:'پروژه‌های مرتبط',t:REL,r:'project'}],
+ cols:['title','rel','imp','next','phone']},
+meeting:{ic:'🗃️',n:'جلسات',grp:'روابط',f:[
+ {k:'title',n:'عنوان جلسه',t:TXT},
+ {k:'kind',n:'نوع جلسه',t:SEL,o:['هیات مدیره','شورای مدیران','جلسه داخلی','جلسه پروژه','جلسه با مشتریان','مجمع']},
+ {k:'status',n:'وضعیت برگزاری',t:STA,o:STATUS},
+ {k:'date',n:'تاریخ و ساعت',t:DAT},
+ {k:'internal',n:'حاضرین داخلی',t:REL,r:'hr'},
+ {k:'external',n:'حاضرین بیرونی',t:REL,r:'crm'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'}],
+ cols:['title','kind','status','date']},
+letter:{ic:'✉️',n:'مکاتبات',grp:'روابط',f:[
+ {k:'title',n:'عنوان نامه',t:TXT},
+ {k:'kind',n:'نوع نامه',t:SEL,o:['وارده 📥','صادره 📤','داخلی 🔄']},
+ {k:'sec',n:'محرمانگی',t:SEL,o:['عادی','محرمانه','خیلی محرمانه']},
+ {k:'astatus',n:'وضعیت اقدام',t:STA,o:STATUS},
+ {k:'date',n:'تاریخ نامه',t:DAT},{k:'due',n:'مهلت پاسخ / اقدام',t:DAT},
+ {k:'party',n:'طرف مکاتبه',t:REL,r:'crm'},
+ {k:'owner',n:'مسئول مربوطه',t:REL,r:'hr'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'}],
+ cols:['title','kind','astatus','date','due','party']},
+hrcontract:{ic:'📜',n:'قراردادهای پرسنلی',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'عنوان قرارداد',t:TXT},
+ {k:'kind',n:'نوع قرارداد',t:SEL,o:['رسمی','قراردادی','مشاوره‌ای','ساعتی']},
+ {k:'salary',n:'حقوق پایه',t:NUM},{k:'range',n:'شروع / پایان',t:DAT},
+ {k:'person',n:'فرد مرتبط',t:REL,r:'hr',s:1},
+ {k:'company',n:'شرکت طرف قرارداد',t:REL,r:'company',s:1}],
+ cols:['title','kind','person','company','salary']},
+bizcontract:{ic:'🏁',n:'قراردادهای تجاری',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'عنوان قرارداد',t:TXT},
+ {k:'status',n:'وضعیت اجرایی',t:SEL,o:['در حال مذاکره','در حال امضاء','در حال اجراء','اتمام یافته']},
+ {k:'amount',n:'مبلغ قرارداد',t:NUM},{k:'signed',n:'تاریخ امضاء',t:DAT},
+ {k:'us',n:'شرکت ما (طرف داخلی)',t:REL,r:'company',s:1},
+ {k:'party',n:'طرف قرارداد',t:REL,r:'crm'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'}],
+ cols:['title','status','amount','us','party']},
+bank:{ic:'🏦',n:'حساب‌های بانکی',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'عنوان حساب',t:TXT},{k:'bank',n:'نام بانک',t:TXT},
+ {k:'no',n:'شماره حساب',t:TXT},{k:'iban',n:'شماره شبا',t:TXT},
+ {k:'kind',n:'نوع حساب',t:SEL,o:['جاری','کوتاه‌مدت','بلندمدت']},
+ {k:'company',n:'شرکت صاحب حساب',t:REL,r:'company',s:1}],
+ cols:['title','bank','kind','company'],comp:'bankBalance'},
+tx:{ic:'💳',n:'تراکنش‌های مالی',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'شرح تراکنش',t:TXT},
+ {k:'kind',n:'نوع',t:SEL,o:['دریافت','پرداخت']},
+ {k:'cat',n:'دسته',t:SEL,o:['فروش','خرید','حقوق','اجاره','خدمات','حق الزحمه','سایر']},
+ {k:'amount',n:'مبلغ',t:NUM},{k:'date',n:'تاریخ',t:DAT},
+ {k:'bank',n:'حساب بانکی',t:REL,r:'bank',s:1},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company',s:1},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project',s:1},
+ {k:'budget',n:'بودجه مرتبط',t:REL,r:'budget',s:1}],
+ cols:['title','kind','cat','amount','date','company']},
+budget:{ic:'💹',n:'بودجه‌ها',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'عنوان بودجه',t:TXT},
+ {k:'cat',n:'دسته',t:SEL,o:['فروش','خرید','حقوق','اجاره','خدمات','حق الزحمه','سایر']},
+ {k:'year',n:'سال',t:SEL,o:['1404','1405','1406','1407']},
+ {k:'amount',n:'مبلغ مصوب',t:NUM},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company',s:1}],
+ cols:['title','cat','year','amount','company'],comp:'budgetState'},
+leave:{ic:'⛳',n:'مرخصی‌ها',grp:'مالی و حقوقی',f:[
+ {k:'title',n:'درخواست مرخصی',t:TXT},
+ {k:'kind',n:'نوع',t:SEL,o:['استحقاقی','استعلاجی','بدون حقوق']},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'range',n:'بازه',t:DAT},
+ {k:'person',n:'فرد مرتبط',t:REL,r:'hr',s:1}],
+ cols:['title','kind','status','range','person']},
+risk:{ic:'🤨',n:'مدیریت ریسک',grp:'حاکمیت',f:[
+ {k:'title',n:'عنوان ریسک',t:TXT},
+ {k:'area',n:'حوزه',t:SEL,o:['بازار','رگولاتوری','فنی','نقدشوندگی','امنیت','نوسان نرخ ارز','ذینفعان']},
+ {k:'prob',n:'احتمال وقوع',t:SEL,o:['قطعی','محتمل','ممکن','بعید','نادر']},
+ {k:'impact',n:'شدت اثر',t:SEL,o:['زیاد','متوسط','کم']},
+ {k:'owner',n:'مالک ریسک',t:REL,r:'hr',s:1},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'}],
+ cols:['title','area','prob','impact','owner'],comp:'riskScore'},
+idea:{ic:'💡',n:'بانک ایده‌ها',grp:'حاکمیت',f:[
+ {k:'title',n:'عنوان ایده',t:TXT},{k:'desc',n:'شرح ایده',t:LNG},
+ {k:'status',n:'وضعیت ارزیابی',t:SEL,o:['💭 خام','🔍 در حال ارزیابی','✅ تأیید شده','🚀 تبدیل به پروژه','❌ رد شده']},
+ {k:'prio',n:'اولویت',t:SEL,o:PRIO},
+ {k:'due',n:'مهلت تصمیم‌گیری',t:DAT},
+ {k:'owner',n:'مسئول ارزیابی',t:REL,r:'hr',s:1},
+ {k:'objective',n:'هدف مرتبط',t:REL,r:'objective'},
+ {k:'project',n:'پروژه حاصل',t:REL,r:'project',s:1},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
+ {k:'company',n:'شرکت مرتبط',t:REL,r:'company'}],
+ cols:['title','status','prio','due','owner']},
+};
+const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','حاکمیت'];
+
+/* ================= STORE & SYNC ================= */
+let recs={};            // id -> {id,e,d,u,del}
+let sb=null, session=null, rt=null;
+const cfg=JSON.parse(localStorage.getItem('xr_cfg')||'{}');
+const MU='00000000-0000-4000-8000-00000000aaaa', MO='00000000-0000-4000-8000-00000000bbbb';
+function saveLocal(){localStorage.setItem('xr_data',JSON.stringify(recs));}
+function loadLocal(){try{recs=JSON.parse(localStorage.getItem('xr_data')||'{}');}catch(e){recs={};}
+  // مهاجرت شناسه‌های متا به UUID (رفع مشکل سینک نقش‌ها و گزینه‌ها)
+  [['meta-users',MU],['meta-opts',MO]].forEach(([old,nid])=>{
+    if(recs[old]){if(!recs[nid])recs[nid]={...recs[old],id:nid};delete recs[old];}});
+  queue=queue.map(id=>id==='meta-users'?MU:id==='meta-opts'?MO:id).filter(id=>recs[id]);saveQ();
+  saveLocal();
+}
+let queue=JSON.parse(localStorage.getItem('xr_q')||'[]');
+function saveQ(){localStorage.setItem('xr_q',JSON.stringify(queue));}
+function uid(){return crypto.randomUUID();}
+function setSync(cls,txt){document.getElementById('syncdot').className=cls;document.getElementById('synctxt').textContent=txt;}
+
+function put(rec,push=true){recs[rec.id]=rec;saveLocal();if(push){queue.push(rec.id);saveQ();flush();}render();}
+function byE(e){return Object.values(recs).filter(r=>r.e===e&&!r.del);}
+function get(id){return recs[id];}
+function nameOf(id){const r=recs[id];return r&&!r.del?(r.d.title||'—'):'—';}
+function relIds(r,k){const v=r.d[k];return Array.isArray(v)?v.filter(id=>recs[id]&&!recs[id].del):[];}
+function backRefs(id,ent,key){return byE(ent).filter(r=>Array.isArray(r.d[key])&&r.d[key].includes(id));}
+
+async function initSupabase(){
+  if(!cfg.url||!cfg.key)return false;
+  if(!window.supabase){
+    await new Promise((res,rej)=>{const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+      s.onload=res;s.onerror=rej;document.head.appendChild(s);}).catch(()=>null);
+  }
+  if(!window.supabase)return false;
+  sb=window.supabase.createClient(cfg.url,cfg.key);
+  const {data}=await sb.auth.getSession(); session=data.session;
+  return !!session;
+}
+async function pullAll(){
+  if(!sb||!session)return;
+  setSync('','در حال سینک…');
+  let from=0, page=1000;
+  while(true){
+    const {data,error}=await sb.from('records').select('*').range(from,from+page-1);
+    if(error){setSync('err','خطای سینک');return;}
+    (data||[]).forEach(row=>{
+      const loc=recs[row.id];
+      const remoteU=new Date(row.updated_at).getTime();
+      if(!loc||loc.u<=remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data,u:remoteU,del:row.deleted};}
+    });
+    if(!data||data.length<page)break; from+=page;
+  }
+  saveLocal();setSync('ok','سینک شد');render();
+}
+async function flush(){
+  if(!sb||!session){if(cfg.url)setSync('off','آفلاین — ذخیره محلی');return;}
+  while(queue.length){
+    const id=queue[0], r=recs[id]; if(!r){queue.shift();saveQ();continue;}
+    const {error}=await sb.from('records').upsert({id:r.id,entity:r.e,data:r.d,updated_at:new Date(r.u).toISOString(),deleted:!!r.del});
+    if(error){setSync('err','خطا در ارسال — بعداً تلاش می‌شود');return;}
+    queue.shift();saveQ();
+  }
+  setSync('ok','سینک شد');
+}
+function subscribeRT(){
+  if(!sb||!session)return;
+  rt=sb.channel('recs').on('postgres_changes',{event:'*',schema:'public',table:'records'},p=>{
+    const row=p.new&&p.new.id?p.new:p.old; if(!row||!row.id)return;
+    const remoteU=new Date(row.updated_at||Date.now()).getTime();
+    const loc=recs[row.id];
+    if(!loc||loc.u<remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};saveLocal();render();}
+  }).subscribe();
+}
+
+/* ================= کاربران و سطح دسترسی ================= */
+const ROLES=['ادمین','مدیرارشد','مدیر','معاون','کارشناس ارشد','کارشناس','کاربر'];
+const FIN=['bank','tx','budget','hrcontract','bizcontract'];
+const MIDSET=['project','task','meeting','idea','kpi','crm','letter','leave'];
+const LOWSET=['task','idea','kpi','leave'];
+function myEmail(){return session&&session.user?session.user.email:'local';}
+function usersList(){const m=recs[MU];return (m&&!m.del&&m.d.list)||[];}
+function saveUsers(list){const m=recs[MU]||{id:MU,e:'_users',d:{}};m.d={...m.d,list};m.u=Date.now();m.del=false;put(m);}
+function myRole(){
+  if(!session)return 'ادمین'; // حالت محلی
+  const u=usersList().find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
+  if(u)return u.role;
+  if(!usersList().length)return 'ادمین'; // اولین کاربر
+  return 'کاربر';
+}
+function bootstrapAdmin(){
+  if(session&&!usersList().length){saveUsers([{email:myEmail(),role:'ادمین'}]);}
+}
+function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
+  const r=myRole();
+  if(r==='ادمین'||r==='مدیرارشد')return true;
+  // هرکس پروفایل خودش را می‌تواند ویرایش کند
+  if(a==='e'&&e==='hr'&&rec&&(rec.d.email||'').toLowerCase()===myEmail().toLowerCase())return true;
+  if(r==='مدیر')return a!=='d'||(rec&&rec.d._by===myEmail());
+  if(r==='معاون')return a!=='d'&&!FIN.includes(e);
+  if(r==='کارشناس ارشد')return a!=='d'&&MIDSET.includes(e);
+  if(r==='کارشناس')return a!=='d'&&LOWSET.includes(e);
+  if(r==='کاربر')return a!=='d'&&['leave','idea'].includes(e);
+  return false;
+}
+function isAdmin(){return myRole()==='ادمین';}
+function whoami(){
+  const el=document.getElementById('who');if(el)el.textContent=session?myEmail()+' · '+myRole():'حالت محلی · ادمین';
+  const ab=document.getElementById('authbtn');if(ab)ab.textContent=session?'🚪 خروج':'ورود';
+}
+async function authAction(){
+  if(session){
+    if(!confirm('از حساب خارج می‌شوید؟'))return;
+    try{await sb.auth.signOut();}catch(e){}
+    session=null;if(rt){try{sb.removeChannel(rt);}catch(e){}rt=null;}
+    setSync('off','خارج شدید');whoami();
+    fillLoginForm();document.getElementById('login').classList.add('show');
+  } else openSettings();
+}
+function myHR(){const em=myEmail().toLowerCase();return byE('hr').find(h=>(h.d.email||'').toLowerCase()===em)||null;}
+function mkProfile(){
+  const name=prompt('نام و نام خانوادگی شما:'); if(!name)return;
+  put({id:uid(),e:'hr',d:{title:name,email:myEmail(),_by:myEmail()},u:Date.now()});
+  go('me');
+}
+
+/* ================= گزینه‌های سفارشی فیلدها ================= */
+function customOpts(ent,fk){const m=recs[MO];return (m&&!m.del&&m.d[ent+'.'+fk])||[];}
+function optsFor(ent,f){const c=customOpts(ent,f.k).filter(o=>!f.o.includes(o));return f.o.concat(c);}
+function addOpt(fk){
+  const val=prompt('گزینه جدید:'); if(!val||!val.trim())return;
+  harvest();
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};
+  const key=cur.e+'.'+fk, arr=(m.d[key]||[]).slice();
+  if(!arr.includes(val.trim()))arr.push(val.trim());
+  m.d={...m.d,[key]:arr};m.u=Date.now();m.del=false;put(m);
+  drawModal();
+}
+
+/* ================= COMPUTED (زنجیره آبشاری) ================= */
+function taskProg(t){
+  const subs=byE('task').filter(x=>x.d.parent&&x.d.parent[0]===t.id);
+  if(subs.length)return avg(subs.map(taskProg));
+  return t.d.status==='Done'?100:t.d.status==='In progress'?50:0;
+}
+function projectProg(p){
+  const parts=[];
+  const tasks=byE('task').filter(t=>relIds(t,'project').includes(p.id)&&!(t.d.parent&&t.d.parent[0]));
+  if(tasks.length)parts.push(avg(tasks.map(taskProg)));
+  const subs=byE('project').filter(x=>x.d.parent&&x.d.parent[0]===p.id);
+  if(subs.length)parts.push(avg(subs.map(projectProg)));
+  if(!parts.length)return p.d.status==='تمام شده'?100:0;
+  return avg(parts);
+}
+function objectiveProg(o){
+  const parts=[];
+  if(o.d.target>0)parts.push(Math.min(100,(o.d.current||0)/o.d.target*100));
+  const prjs=byE('project').filter(p=>relIds(p,'objective').includes(o.id));
+  if(prjs.length)parts.push(avg(prjs.map(projectProg)));
+  const subs=byE('objective').filter(x=>x.d.parent&&x.d.parent[0]===o.id);
+  if(subs.length)parts.push(avg(subs.map(objectiveProg)));
+  if(!parts.length)return o.d.status==='Done'?100:0;
+  return avg(parts);
+}
+function strategyProg(s){
+  const obs=byE('objective').filter(o=>relIds(o,'strategy').includes(s.id));
+  if(!obs.length)return 0;
+  return avg(obs.map(objectiveProg));
+}
+function riskScore(r){
+  const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1}[r.d.prob]||0;
+  const I={'زیاد':3,'متوسط':2,'کم':1}[r.d.impact]||0;
+  return {label:'امتیاز ریسک',v:P*I? (P*I)+' از 15':'—',bad:P*I>=10};
+}
+function bankBalance(b){
+  const txs=byE('tx').filter(t=>relIds(t,'bank').includes(b.id));
+  const s=txs.reduce((a,t)=>a+(t.d.kind==='دریافت'?1:-1)*(t.d.amount||0),0);
+  return {label:'موجودی',v:fmtN(s),bad:s<0};
+}
+function budgetState(b){
+  const txs=byE('tx').filter(t=>relIds(t,'budget').includes(b.id)&&t.d.kind==='پرداخت');
+  const spent=txs.reduce((a,t)=>a+(t.d.amount||0),0);
+  const rem=(b.d.amount||0)-spent;
+  return {label:'هزینه‌شده / مانده',v:fmtN(spent)+' / '+fmtN(rem),bad:rem<0};
+}
+function projectSpent(p){
+  const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
+  return txs.reduce((a,t)=>a+(t.d.amount||0),0);
+}
+const PROGFN={taskProg,projectProg,objectiveProg,strategyProg};
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
+function fmtN(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('fa-IR');}
+/* --- تاریخ شمسی --- */
+function g2j(gy,gm,gd){var g_d_m=[0,31,59,90,120,151,181,212,243,273,304,334];var jy=(gy<=1600)?0:979;gy-=(gy<=1600)?621:1600;var gy2=(gm>2)?(gy+1):gy;var days=(365*gy)+(~~((gy2+3)/4))-(~~((gy2+99)/100))+(~~((gy2+399)/400))-80+gd+g_d_m[gm-1];jy+=33*(~~(days/12053));days%=12053;jy+=4*(~~(days/1461));days%=1461;jy+=~~((days-1)/365);if(days>365)days=(days-1)%365;var jm=(days<186)?1+~~(days/31):7+~~((days-186)/30);var jd=1+((days<186)?(days%31):((days-186)%30));return[jy,jm,jd];}
+function j2g(jy,jm,jd){var gy=(jy<=979)?621:1600;jy-=(jy<=979)?0:979;var days=(365*jy)+((~~(jy/33))*8)+(~~(((jy%33)+3)/4))+78+jd+((jm<7)?(jm-1)*31:((jm-7)*30)+186);gy+=400*(~~(days/146097));days%=146097;if(days>36524){gy+=100*(~~(--days/36524));days%=36524;if(days>=365)days++;}gy+=4*(~~(days/1461));days%=1461;gy+=~~((days-1)/365);if(days>365)days=(days-1)%365;var gd=days+1;var sal_a=[0,31,((gy%4===0&&gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];var gm;for(gm=0;gm<13&&gd>sal_a[gm];gm++)gd-=sal_a[gm];return[gy,gm,gd];}
+function faNum(s){return String(s||'').replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));}
+function parseJDate(str,time){
+  str=faNum(str).trim(); if(!str)return null;
+  const m=str.match(/^(\d{2,4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/); if(!m)return undefined;
+  let jy=+m[1]; if(jy<100)jy+=1400;
+  const [gy,gm,gd]=j2g(jy,+m[2],+m[3]);
+  let iso=gy+'-'+String(gm).padStart(2,'0')+'-'+String(gd).padStart(2,'0');
+  time=faNum(time||'').trim();
+  if(time&&/^\d{1,2}:\d{2}$/.test(time))iso+='T'+time.padStart(5,'0');
+  return iso;
+}
+function iso2jstr(iso){if(!iso)return '';const [y,mo,d]=iso.slice(0,10).split('-').map(Number);const j=g2j(y,mo,d);return j[0]+'/'+String(j[1]).padStart(2,'0')+'/'+String(j[2]).padStart(2,'0');}
+function isoTime(iso){return iso&&iso.includes('T')?iso.slice(11,16):'';}
+function dVal(v){if(!v)return null;if(typeof v==='string')return{s:v,e:null};return v.s||v.e?v:null;}
+function ds(v){const d=dVal(v);return d&&d.s?d.s.slice(0,10):null;}
+function fmtOne(iso){if(!iso)return '';try{const o={dateStyle:'medium'};if(iso.includes('T'))o.timeStyle='short';return new Intl.DateTimeFormat('fa-IR-u-ca-persian',o).format(new Date(iso));}catch(e){return iso;}}
+function fmtD(v){const d=dVal(v);if(!d)return '—';return d.e?fmtOne(d.s)+' ← '+fmtOne(d.e):fmtOne(d.s);}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function today(){return new Date().toISOString().slice(0,10);}
+
+/* ================= RENDER ================= */
+let view={type:'dash'};
+function nav(){
+  const el=document.getElementById('nav');
+  let h=`<div class="nav-i ${view.type==='dash'?'on':''}" onclick="go('dash')">🎛️ اتاق کنترل</div>
+  <div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>
+  <div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`;
+  if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>`;
+  GROUPS.forEach(g=>{
+    h+=`<div class="nav-h">${g}</div>`;
+    Object.entries(E).filter(([k,v])=>v.grp===g).forEach(([k,v])=>{
+      h+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${byE(k).length}</span></div>`;
+    });
+  });
+  el.innerHTML=h;
+}
+let hist=[];
+function go(type,e,id,flt){
+  if(view)hist.push(view);
+  if(hist.length>30)hist.shift();
+  view={type,e,id,flt};document.getElementById('side').classList.remove('open');
+  document.getElementById('content').scrollTop=0;render();
+}
+function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
+function render(){
+  nav();
+  const c=document.getElementById('content');
+  if(view.type==='rec'&&(!recs[view.id]||recs[view.id].del))view={type:'list',e:view.e};
+  document.getElementById('ttl').textContent=
+    view.type==='dash'?'🎛️ اتاق کنترل':
+    view.type==='users'?'👤 کاربران و دسترسی':
+    view.type==='me'?'🗂️ میز کار من':
+    view.type==='charts'?'📊 نمودارها و شاخص‌ها':
+    view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
+    E[view.e].ic+' '+E[view.e].n;
+  if(view.type==='dash')c.innerHTML=dashHTML();
+  else if(view.type==='users')c.innerHTML=usersHTML();
+  else if(view.type==='me')c.innerHTML=meHTML();
+  else if(view.type==='charts')c.innerHTML=chartsHTML();
+  else if(view.type==='rec')c.innerHTML=recHTML(view.e,view.id);
+  else c.innerHTML=listHTML(view.e);
+  whoami();
+}
+function tagCls(v){
+  if(['Done','انجام شد','فعال','شاغل','طبق برنامه','✅ تأیید شده','در حال اجراء','رشد','استحقاقی','دریافت'].includes(v))return 'g';
+  if(['In progress','در حال اجرا','در حال مذاکره','🔍 در حال ارزیابی','تاخیر دارد','مرخصی بلندمدت','بالا','محتمل'].includes(v))return v==='تاخیر دارد'?'y':'b';
+  if(['بحرانی','متوقف','❌ رد شده','قطع همکاری','خیلی محرمانه','قطعی','زیاد','پرداخت'].includes(v))return 'r';
+  if(['متوسط','محرمانه','در حال امضاء','راکد','ممکن'].includes(v))return 'y';
+  if(['🚀 تبدیل به پروژه','هلدینگ'].includes(v))return 'p';
+  return '';
+}
+function cellHTML(r,f){
+  const v=r.d[f.k];
+  if(f.t===REL)return relIds(r,f.k).map(id=>`<span class="tag">${esc(nameOf(id))}</span>`).join('')||'—';
+  if(f.t===SEL||f.t===STA)return v?`<span class="tag ${tagCls(v)}">${esc(STATFA[v]||v)}</span>`:'—';
+  if(f.t===MUL)return (v||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join('')||'—';
+  if(f.t===DAT)return fmtD(v);
+  if(f.t===NUM)return fmtN(v);
+  return esc(v||'—');
+}
+function pbarHTML(p){p=Math.round(p);const col=p>=80?'var(--ok)':p>=40?'var(--ac)':'var(--warn)';
+  return `<span class="pbar"><i style="width:${p}%;background:${col}"></i></span><span class="pnum">${p.toLocaleString('fa-IR')}٪</span>`;}
+const FILTERS={
+  activePrj:{n:'پروژه‌های فعال',f:r=>r.d.status==='در حال اجرا'},
+  openTask:{n:'تسک‌های باز',f:r=>r.d.status!=='Done'},
+  overdueTask:{n:'تسک‌های عقب‌افتاده',f:r=>r.d.status!=='Done'&&ds(r.d.due)&&ds(r.d.due)<today()},
+  activeObj:{n:'اهداف فعال',f:r=>r.d.status!=='Done'},
+};
+function listHTML(e){
+  const def=E[e];
+  const q=(view.q||'').trim();
+  let rows=byE(e).sort((a,b)=>b.u-a.u);
+  if(view.flt&&FILTERS[view.flt])rows=rows.filter(FILTERS[view.flt].f);
+  if(q)rows=rows.filter(r=>JSON.stringify(r.d).includes(q));
+  const cols=def.cols.map(k=>def.f.find(f=>f.k===k));
+  let h=`<div class="tools">
+    ${can('c',e)?`<button class="btn" onclick="openRec('${e}')">＋ افزودن</button>`:''}
+    <input placeholder="جستجو…" value="${esc(q)}" oninput="view.q=this.value;render()">
+    ${view.flt&&FILTERS[view.flt]?`<span class="tag y" style="cursor:pointer" onclick="view.flt=null;render()">فیلتر: ${FILTERS[view.flt].n} ✕</span>`:''}
+    <span style="color:var(--tx2);font-size:12px">${rows.length.toLocaleString('fa-IR')} مورد</span></div>`;
+  h+=`<div class="tblwrap"><table><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${def.prog?'<th>پیشرفت</th>':''}${def.comp?'<th>محاسبه</th>':''}</tr></thead><tbody>`;
+  if(!rows.length)h+=`<tr><td colspan="9"><div class="empty">هنوز موردی ثبت نشده — با «＋ افزودن» شروع کنید</div></td></tr>`;
+  rows.forEach(r=>{
+    h+=`<tr onclick="go('rec','${e}','${r.id}')">${cols.map(f=>`<td>${cellHTML(r,f)}</td>`).join('')}`;
+    if(def.prog)h+=`<td>${pbarHTML(PROGFN[def.prog](r))}</td>`;
+    if(def.comp){const c=window[def.comp](r);h+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;}
+    h+=`</tr>`;
+  });
+  return h+'</tbody></table></div>';
+}
+window.bankBalance=bankBalance;window.budgetState=budgetState;window.riskScore=riskScore;
+
+/* ================= RECORD PAGE (نمای کامل مثل نوشن) ================= */
+function relChip(id,ent){return `<span class="tag b" style="cursor:pointer" onclick="event.stopPropagation();go('rec','${ent}','${id}')">${E[ent].ic} ${esc(nameOf(id))}</span>`;}
+function propHTML(r,f){
+  const v=r.d[f.k];
+  if(f.t===REL){const ids=relIds(r,f.k);return ids.length?ids.map(id=>relChip(id,f.r)).join(''):'—';}
+  return cellHTML(r,f);
+}
+function recHTML(e,id){
+  const def=E[e], r=recs[id];
+  let h=`<div class="crumb"><a onclick="goBack()">→ بازگشت</a> / <a onclick="go('list','${e}')">${def.ic} ${def.n}</a> / <span>${esc(r.d.title||'—')}</span></div>`;
+  h+=`<div class="rhead"><h2>${def.ic} ${esc(r.d.title||'—')}</h2>
+    <span style="flex:1"></span>
+    ${can('e',e,r)?`<button class="btn sm" onclick="openRec('${e}','${id}')">✏️ ویرایش</button>`:''}</div>`;
+  // computed chips
+  const chips=[];
+  if(def.prog)chips.push(['پیشرفت کل',pbarHTML(PROGFN[def.prog](r))]);
+  if(def.comp){const c=window[def.comp](r);chips.push([c.label,`<b style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</b>`]);}
+  if(e==='project')chips.push(['هزینه واقعی',`<b>${fmtN(projectSpent(r))}</b>`]);
+  if(e==='objective'&&r.d.target)chips.push(['مقدار فعلی / هدف',`<b>${fmtN(r.d.current||0)} / ${fmtN(r.d.target)} ${esc(r.d.unit||'')}</b>`]);
+  if(chips.length)h+=`<div class="comp" style="margin-bottom:12px">${chips.map(c=>`<div class="chip">${c[0]}: ${c[1]}</div>`).join('')}</div>`;
+  // properties
+  h+=`<div class="props">`;
+  def.f.filter(f=>f.k!=='title').forEach(f=>{
+    h+=`<div class="prop"><span class="pk">${f.n}</span><span class="pv">${propHTML(r,f)}</span></div>`;
+  });
+  h+=`</div>`;
+  // related sections: back references grouped as mini tables
+  Object.entries(E).forEach(([ek,ed])=>{
+    ed.f.forEach(f=>{
+      if(f.t!==REL||f.r!==e)return;
+      const rs=backRefs(id,ek,f.k);
+      const selfParent=(ek===e&&f.k==='parent');
+      const secTitle=selfParent?'زیرمجموعه‌ها':`${ed.ic} ${ed.n} — ${f.n}`;
+      if(!rs.length&&!selfParent)return;
+      h+=`<div class="sec relsec"><h3>${secTitle} <span class="c">${rs.length.toLocaleString('fa-IR')}</span>
+        <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}',null,{k:'${f.k}',id:'${id}'})">＋ افزودن</button>`:''}</h3>`;
+      if(rs.length){
+        const cols=ed.cols.map(k=>ed.f.find(x=>x.k===k)).slice(0,5);
+        h+=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f2=>`<th>${f2.n}</th>`).join('')}${ed.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
+        rs.sort((a,b)=>b.u-a.u).forEach(x=>{
+          h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f2=>`<td>${cellHTML(x,f2)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(PROGFN[ed.prog](x))}</td>`:''}</tr>`;
+        });
+        h+=`</tbody></table></div>`;
+      } else h+=`<div class="empty">موردی ثبت نشده</div>`;
+      h+=`</div>`;
+    });
+  });
+  if(can('d',e,r))h+=`<div style="margin:8px 0 24px"><button class="btn bad sm" onclick="delFromPage('${e}','${id}')">🗑 حذف این مورد</button></div>`;
+  return h;
+}
+/* ================= میز کار من ================= */
+function miniTable(ek,rows,extraCol){
+  const ed=E[ek];
+  if(!rows.length)return `<div class="empty">موردی نیست</div>`;
+  const cols=ed.cols.map(k=>ed.f.find(x=>x.k===k)).slice(0,5);
+  let h=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${ed.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
+  rows.forEach(x=>{h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f=>`<td>${cellHTML(x,f)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(PROGFN[ed.prog](x))}</td>`:''}</tr>`;});
+  return h+'</tbody></table></div>';
+}
+function meHTML(){
+  const hr=myHR();
+  const mine=(ent,key)=>hr?byE(ent).filter(r=>relIds(r,key).includes(hr.id)):[];
+  const byMe=ent=>byE(ent).filter(r=>r.d._by===myEmail());
+  let h='';
+  // پروفایل
+  h+=`<div class="sec"><h3>👤 پروفایل من <span style="flex:1"></span>
+    ${hr?`<button class="btn sm" onclick="openRec('hr','${hr.id}')">✏️ ویرایش اطلاعات فردی</button>`:`<button class="btn sm" onclick="mkProfile()">＋ ساخت پروفایل من</button>`}</h3>`;
+  if(hr){
+    h+=`<div class="comp">
+      <div class="chip">نام: <b>${esc(hr.d.title)}</b></div>
+      <div class="chip">سمت: <b>${esc(hr.d.role||'—')}</b></div>
+      <div class="chip">واحد: <b>${esc(hr.d.unit||'—')}</b></div>
+      <div class="chip">ایمیل: <b dir="ltr">${esc(hr.d.email)}</b></div>
+      <div class="chip">تلفن: <b dir="ltr">${esc(hr.d.phone||'—')}</b></div>
+      <div class="chip">نقش در سیستم: <b>${myRole()}</b></div>
+    </div>`;
+  } else {
+    h+=`<div class="empty">پروفایل شما هنوز به پرونده منابع انسانی وصل نیست — با «ساخت پروفایل من» بسازید تا تسک‌ها و پروژه‌هایی که به شما سپرده می‌شود اینجا دیده شود.<br>
+    <span style="font-size:11px">(اگر قبلاً در HR ثبت شده‌اید، کافی است فیلد «ایمیل» همان رکورد برابر <b dir="ltr">${esc(myEmail())}</b> باشد.)</span></div>`;
+  }
+  h+=`</div>`;
+  const tasks=[...new Set([...mine('task','owner'),...byMe('task')])].filter(t=>t.d.status!=='Done')
+    .sort((a,b)=>(ds(a.d.due)||'9999').localeCompare(ds(b.d.due)||'9999'));
+  const od=tasks.filter(t=>ds(t.d.due)&&ds(t.d.due)<today());
+  h+=`<div class="cards">
+    ${card('📘 تسک باز من',tasks.length)}
+    ${card('⏰ عقب‌افتاده',od.length,od.length?'var(--bad)':null)}
+    ${card('🏗️ پروژه‌های من',mine('project','pm').length)}
+    ${card('🎯 اهداف من',mine('objective','owner').filter(o=>o.d.status!=='Done').length)}
+  </div>`;
+  const secs=[
+    ['📘 تسک‌های من','task',tasks],
+    ['🏗️ پروژه‌های تحت مدیریت من','project',mine('project','pm')],
+    ['🎯 اهداف تحت مسئولیت من','objective',mine('objective','owner')],
+    ['🗃️ جلسات من','meeting',mine('meeting','internal')],
+    ['✉️ مکاتبات در کارتابل من','letter',mine('letter','owner').filter(l=>l.d.astatus!=='Done')],
+    ['💡 ایده‌های من','idea',[...new Set([...mine('idea','owner'),...byMe('idea')])]],
+    ['⛳ مرخصی‌های من','leave',[...new Set([...mine('leave','person'),...byMe('leave')])]],
+  ];
+  secs.forEach(([t,ek,rows])=>{
+    if(ek!=='task'&&!rows.length)return;
+    h+=`<div class="sec relsec"><h3>${t} <span class="c">${rows.length.toLocaleString('fa-IR')}</span>
+      <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}'${hr&&['task','objective'].includes(ek)?`,null,{k:'owner',id:'${hr.id}'}`:hr&&ek==='leave'?`,null,{k:'person',id:'${hr.id}'}`:''})">＋ افزودن</button>`:''}</h3>${miniTable(ek,rows)}</div>`;
+  });
+  return h;
+}
+
+/* ================= نمودارها و شاخص‌ها ================= */
+const CH={blue:'#3987e5',aqua:'#199e70',yellow:'#c98500',violet:'#9085e9',red:'#e66767',good:'#0ca30c',muted:'#898781',grid:'#2c2c2a',ink:'#e8edf3',ink2:'#9aa7b5'};
+function abbrN(n){
+  const a=Math.abs(n);
+  if(a>=1e9)return (n/1e9).toLocaleString('fa-IR',{maximumFractionDigits:1})+' میلیارد';
+  if(a>=1e6)return (n/1e6).toLocaleString('fa-IR',{maximumFractionDigits:1})+' میلیون';
+  if(a>=1e3)return (n/1e3).toLocaleString('fa-IR',{maximumFractionDigits:0})+' هزار';
+  return n.toLocaleString('fa-IR');
+}
+function donutSVG(items){ // [{l,v,c}]
+  const total=items.reduce((a,x)=>a+x.v,0);
+  if(!total)return `<div class="empty">داده‌ای نیست</div>`;
+  const R=62,C=2*Math.PI*R;let off=0;
+  let segs='';
+  items.filter(x=>x.v>0).forEach(x=>{
+    const frac=x.v/total, len=Math.max(0,frac*C-2.5);
+    segs+=`<circle r="${R}" cx="90" cy="90" fill="none" stroke="${x.c}" stroke-width="26"
+      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"><title>${esc(x.l)}: ${x.v.toLocaleString('fa-IR')}</title></circle>`;
+    off+=frac*C;
+  });
+  let leg=items.map(x=>`<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;padding:3px 0">
+    <span style="width:10px;height:10px;border-radius:3px;background:${x.c};flex-shrink:0"></span>
+    <span style="color:var(--tx2)">${esc(x.l)}</span><b style="margin-inline-start:auto">${x.v.toLocaleString('fa-IR')}</b></div>`).join('');
+  return `<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+    <svg width="180" height="180" viewBox="0 0 180 180" style="flex-shrink:0">${segs}
+      <text x="90" y="86" text-anchor="middle" fill="${CH.ink}" font-size="26" font-weight="800" font-family="inherit">${total.toLocaleString('fa-IR')}</text>
+      <text x="90" y="106" text-anchor="middle" fill="${CH.ink2}" font-size="11" font-family="inherit">مجموع</text></svg>
+    <div style="flex:1;min-width:150px">${leg}</div></div>`;
+}
+function hbarsHTML(items,color){ // [{l,v(0..100),href}]
+  if(!items.length)return `<div class="empty">داده‌ای نیست</div>`;
+  return items.map(x=>`<div style="margin:9px 0;cursor:${x.href?'pointer':'default'}" ${x.href?`onclick="${x.href}"`:''}>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75%">${esc(x.l)}</span>
+      <b>${Math.round(x.v).toLocaleString('fa-IR')}٪</b></div>
+    <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden">
+      <div style="width:${Math.min(100,Math.round(x.v))}%;height:100%;border-radius:99px;background:${color}"></div></div>
+  </div>`).join('');
+}
+function monthlySVG(){
+  // ۶ ماه شمسی اخیر: دریافت و پرداخت
+  const now=new Date();const [cy,cm]=g2j(now.getFullYear(),now.getMonth()+1,now.getDate());
+  const months=[];const MN=['فرو','ارد','خرد','تیر','مرد','شهر','مهر','آبا','آذر','دی','بهم','اسف'];
+  for(let i=5;i>=0;i--){let y=cy,m=cm-i;while(m<1){m+=12;y--;}months.push({y,m,inc:0,exp:0});}
+  byE('tx').forEach(t=>{
+    const iso=ds(t.d.date);if(!iso)return;
+    const [y,mo,d]=iso.split('-').map(Number);const j=g2j(y,mo,d);
+    const slot=months.find(x=>x.y===j[0]&&x.m===j[1]);if(!slot)return;
+    if(t.d.kind==='دریافت')slot.inc+=t.d.amount||0;else if(t.d.kind==='پرداخت')slot.exp+=t.d.amount||0;
+  });
+  const max=Math.max(1,...months.flatMap(m=>[m.inc,m.exp]));
+  if(!months.some(m=>m.inc||m.exp))return `<div class="empty">تراکنشی در ۶ ماه اخیر ثبت نشده</div>`;
+  const W=560,H=210,pb=30,pt=14,bw=26,gap=4,gw=W/6;
+  let bars='',labels='';
+  months.forEach((m,i)=>{
+    const x0=W-(i+1)*gw+gw/2; // RTL: جدیدترین سمت چپ؟ نه — راست‌به‌چپ: قدیمی راست
+    const hInc=(m.inc/max)*(H-pb-pt), hExp=(m.exp/max)*(H-pb-pt);
+    bars+=`<rect x="${x0-bw-gap/2}" y="${H-pb-hInc}" width="${bw}" height="${Math.max(hInc,1)}" rx="4" fill="${CH.aqua}"><title>دریافت ${MN[m.m-1]}: ${abbrN(m.inc)}</title></rect>
+           <rect x="${x0+gap/2}" y="${H-pb-hExp}" width="${bw}" height="${Math.max(hExp,1)}" rx="4" fill="${CH.red}"><title>پرداخت ${MN[m.m-1]}: ${abbrN(m.exp)}</title></rect>`;
+    labels+=`<text x="${x0}" y="${H-9}" text-anchor="middle" fill="${CH.ink2}" font-size="11.5" font-family="inherit">${MN[m.m-1]} ${String(m.y).slice(2)}</text>`;
+  });
+  const grid=[0.25,0.5,0.75,1].map(f=>`<line x1="0" x2="${W}" y1="${H-pb-f*(H-pb-pt)}" y2="${H-pb-f*(H-pb-pt)}" stroke="${CH.grid}" stroke-width="1"/>`).join('');
+  return `<div style="display:flex;gap:16px;font-size:12px;color:var(--tx2);margin-bottom:6px">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${CH.aqua};margin-inline-end:5px"></span>دریافت</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${CH.red};margin-inline-end:5px"></span>پرداخت</span>
+    <span style="margin-inline-start:auto">سقف: ${abbrN(max)}</span></div>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" dir="ltr">${grid}
+    <line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="#383835" stroke-width="1.5"/>${bars}${labels}</svg>`;
+}
+function chartsHTML(){
+  const tasks=byE('task'),prjs=byE('project'),obs=byE('objective');
+  // دونات وضعیت تسک‌ها (شامل گزینه‌های سفارشی)
+  const stMap={};tasks.forEach(t=>{const s=t.d.status||'Not started';stMap[s]=(stMap[s]||0)+1;});
+  const stColor={'Done':CH.good,'In progress':CH.blue,'Not started':CH.muted};
+  const extra=[CH.yellow,CH.violet,CH.aqua,CH.red];let xi=0;
+  const donutItems=Object.entries(stMap).map(([s,v])=>({l:STATFA[s]||s,v,c:stColor[s]||extra[xi++%extra.length]}));
+  // پروژه‌ها
+  const prjItems=prjs.map(p=>({l:p.d.title,v:projectProg(p),href:`go('rec','project','${p.id}')`}))
+    .sort((a,b)=>b.v-a.v).slice(0,8);
+  const objItems=obs.map(o=>({l:o.d.title,v:objectiveProg(o),href:`go('rec','objective','${o.id}')`}))
+    .sort((a,b)=>b.v-a.v).slice(0,8);
+  const avgP=prjs.length?Math.round(avg(prjs.map(projectProg))):0;
+  const avgO=obs.length?Math.round(avg(obs.map(objectiveProg))):0;
+  const openRisks=byE('risk').filter(r=>{const s=riskScore(r);return s.bad;}).length;
+  let h=`<div class="cards">
+    ${card('میانگین پیشرفت پروژه‌ها',avgP+'٪')}
+    ${card('میانگین تحقق اهداف',avgO+'٪')}
+    ${card('تسک‌های انجام‌شده',tasks.filter(t=>t.d.status==='Done').length)}
+    ${card('ریسک‌های پرخطر',openRisks,openRisks?'var(--bad)':null,"go('list','risk')")}
+  </div>
+  <div class="chartgrid">
+    <div class="sec"><h3>📘 وضعیت تسک‌ها</h3>${donutSVG(donutItems)}</div>
+    <div class="sec"><h3>💳 دریافت و پرداخت — ۶ ماه اخیر</h3>${monthlySVG()}</div>
+    <div class="sec"><h3>🏗️ پیشرفت پروژه‌ها</h3>${hbarsHTML(prjItems,CH.blue)}</div>
+    <div class="sec"><h3>🎯 درصد تحقق اهداف</h3>${hbarsHTML(objItems,CH.violet)}</div>
+  </div>`;
+  return h;
+}
+
+/* ================= صفحه کاربران ================= */
+function usersHTML(){
+  const list=usersList();
+  let h=`<div class="sec"><h3>👤 کاربران و سطح دسترسی</h3>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">هر کاربر با ایمیل و رمز خودش وارد می‌شود (بار اول در صفحه ورود، خودش ثبت‌نام می‌کند). اینجا نقش هر ایمیل را تعیین می‌کنید. ایمیلی که در این لیست نباشد، نقش «کاربر» می‌گیرد.</p>
+  <div class="tblwrap"><table><thead><tr><th>ایمیل</th><th>نقش</th><th></th></tr></thead><tbody>`;
+  list.forEach((u,i)=>{
+    h+=`<tr><td dir="ltr" style="text-align:left">${esc(u.email)}</td>
+      <td><select onchange="setRole(${i},this.value)" style="max-width:180px">${ROLES.map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select></td>
+      <td><button class="btn bad sm" onclick="rmUser(${i})">حذف</button></td></tr>`;
+  });
+  h+=`</tbody></table></div>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <input id="nu_email" dir="ltr" type="email" placeholder="email@example.com" style="max-width:240px">
+    <select id="nu_role" style="max-width:160px">${ROLES.map(r=>`<option>${r}</option>`).join('')}</select>
+    <button class="btn" onclick="addUser()">افزودن کاربر</button>
+  </div></div>
+  <div class="sec"><h3>📋 شرح سطوح دسترسی</h3><div style="font-size:13px;color:var(--tx2);line-height:2.1">
+  <b style="color:var(--tx)">ادمین:</b> همه‌کاره + مدیریت کاربران و تنظیمات.<br>
+  <b style="color:var(--tx)">مدیرارشد:</b> ایجاد، ویرایش و حذف در همه بخش‌ها.<br>
+  <b style="color:var(--tx)">مدیر:</b> ایجاد و ویرایش همه بخش‌ها؛ حذف فقط مواردی که خودش ساخته.<br>
+  <b style="color:var(--tx)">معاون:</b> ایجاد و ویرایش همه بخش‌ها به‌جز مالی (حساب‌ها، تراکنش‌ها، بودجه، قراردادها — فقط مشاهده)؛ بدون حذف.<br>
+  <b style="color:var(--tx)">کارشناس ارشد:</b> ایجاد و ویرایش در پروژه‌ها، تسک‌ها، جلسات، ایده‌ها، KPI، CRM، مکاتبات و مرخصی‌ها؛ بقیه فقط مشاهده.<br>
+  <b style="color:var(--tx)">کارشناس:</b> ایجاد و ویرایش فقط تسک‌ها، ایده‌ها، KPI و مرخصی‌ها.<br>
+  <b style="color:var(--tx)">کاربر:</b> مشاهده همه‌چیز + ثبت مرخصی و ایده.</div></div>`;
+  return h;
+}
+function setRole(i,role){const l=usersList().slice();l[i].role=role;saveUsers(l);}
+function rmUser(i){const l=usersList().slice();if(!confirm('حذف '+l[i].email+'؟'))return;l.splice(i,1);saveUsers(l);}
+function addUser(){
+  const em=document.getElementById('nu_email').value.trim(),role=document.getElementById('nu_role').value;
+  if(!em||!em.includes('@')){alert('ایمیل معتبر وارد کنید');return;}
+  const l=usersList().slice();
+  const ex=l.find(u=>u.email.toLowerCase()===em.toLowerCase());
+  if(ex)ex.role=role;else l.push({email:em,role});
+  saveUsers(l);
+}
+function delFromPage(e,id){
+  if(!can('d',e,recs[id])){alert('اجازه حذف ندارید');return;}
+  if(!confirm('حذف شود؟'))return;
+  const r=recs[id];r.del=true;r.u=Date.now();put(r);
+  go('list',e);
+}
+
+/* ================= DASHBOARD ================= */
+function dashHTML(){
+  const prjs=byE('project'),tasks=byE('task'),obs=byE('objective');
+  const overdue=tasks.filter(t=>t.d.status!=='Done'&&ds(t.d.due)&&ds(t.d.due)<today());
+  const noObj=prjs.filter(p=>!relIds(p,'objective').length);
+  const noOwner=tasks.filter(t=>t.d.status!=='Done'&&(!relIds(t,'owner').length||!ds(t.d.due)));
+  const crmDue=byE('crm').filter(c=>ds(c.d.next)&&ds(c.d.next)<=today());
+  const ideasDue=byE('idea').filter(i=>['💭 خام','🔍 در حال ارزیابی'].includes(i.d.status)&&ds(i.d.due)&&ds(i.d.due)<=today());
+  const lettersOpen=byE('letter').filter(l=>l.d.astatus!=='Done'&&l.d.kind==='وارده 📥');
+  const delayed=prjs.filter(p=>p.d.sched==='تاخیر دارد');
+  let h=`<div class="cards">
+    ${card('🏢 شرکت‌ها',byE('company').length,null,"go('list','company')")}
+    ${card('🧢 کسب‌وکارها',byE('business').length,null,"go('list','business')")}
+    ${card('🏗️ پروژه فعال',prjs.filter(p=>p.d.status==='در حال اجرا').length,null,"go('list','project',null,'activePrj')")}
+    ${card('📘 تسک باز',tasks.filter(t=>t.d.status!=='Done').length,null,"go('list','task',null,'openTask')")}
+    ${card('⏰ تسک عقب‌افتاده',overdue.length,overdue.length?'var(--bad)':null,"go('list','task',null,'overdueTask')")}
+    ${card('🎯 اهداف فعال',obs.filter(o=>o.d.status!=='Done').length,null,"go('list','objective',null,'activeObj')")}
+  </div>`;
+  // آبشار
+  h+=`<div class="sec"><h3>📐 زنجیره آبشاری: استراتژی ← اهداف ← پروژه‌ها ← تسک‌ها</h3>`;
+  const strats=byE('strategy').filter(s=>!(s.d.parent&&s.d.parent[0]));
+  if(!strats.length)h+=`<div class="empty">اولین استراتژی را در بخش «🔗 استراتژی» ثبت کنید</div>`;
+  strats.forEach(s=>{h+=stratNode(s);});
+  h+=`</div>`;
+  // هشدارها
+  h+=`<div class="sec"><h3>📜 هشدارهای آیین‌نامه</h3>`;
+  const alerts=[];
+  noObj.forEach(p=>alerts.push(['🏗️ پروژه بدون هدف استراتژیک: '+p.d.title,'project',p.id]));
+  noOwner.forEach(t=>alerts.push(['📘 تسک بدون مسئول یا ددلاین: '+t.d.title,'task',t.id]));
+  overdue.forEach(t=>alerts.push(['⏰ ددلاین گذشته: '+t.d.title+' ('+fmtD(t.d.due)+')','task',t.id]));
+  delayed.forEach(p=>alerts.push(['🐢 پروژه دارای تاخیر: '+p.d.title,'project',p.id]));
+  crmDue.forEach(c=>alerts.push(['📞 پیگیری CRM سررسید شده: '+c.d.title,'crm',c.id]));
+  ideasDue.forEach(i=>alerts.push(['💡 مهلت تصمیم‌گیری ایده: '+i.d.title,'idea',i.id]));
+  lettersOpen.forEach(l=>alerts.push(['✉️ نامه وارده بدون اقدام: '+l.d.title,'letter',l.id]));
+  if(!alerts.length)h+=`<div class="empty">✅ همه‌چیز طبق آیین‌نامه است — هیچ کاری زمین نمانده</div>`;
+  alerts.slice(0,30).forEach(a=>h+=`<div class="alert" onclick="go('rec','${a[1]}','${a[2]}')">${esc(a[0])}</div>`);
+  h+=`</div>`;
+  return h;
+}
+function card(l,v,col,click){return `<div class="card" ${click?`style="cursor:pointer" onclick="${click}"`:''}><div class="l">${l}</div><div class="v" style="${col?'color:'+col:''}">${typeof v==='number'?v.toLocaleString('fa-IR'):v}</div></div>`;}
+function stratNode(s){
+  let h=`<div class="tnode"><div class="tline" onclick="go('rec','strategy','${s.id}')">🔗 <span class="nm">${esc(s.d.title)}</span> ${pbarHTML(strategyProg(s))}</div>`;
+  byE('objective').filter(o=>relIds(o,'strategy').includes(s.id)).forEach(o=>{
+    h+=`<div class="tnode"><div class="tline" onclick="go('rec','objective','${o.id}')">🎯 <span class="nm">${esc(o.d.title)}</span> ${pbarHTML(objectiveProg(o))}</div>`;
+    byE('project').filter(p=>relIds(p,'objective').includes(o.id)).forEach(p=>{
+      const tcount=byE('task').filter(t=>relIds(t,'project').includes(p.id)).length;
+      h+=`<div class="tnode"><div class="tline" onclick="go('rec','project','${p.id}')">🏗️ ${esc(p.d.title)} ${pbarHTML(projectProg(p))} <span class="pnum">${tcount.toLocaleString('fa-IR')} تسک</span></div></div>`;
+    });
+    h+=`</div>`;
+  });
+  return h+`</div>`;
+}
+
+/* ================= RECORD MODAL ================= */
+let cur=null;
+function openRec(e,id,preset){
+  if(!can(id?'e':'c',e,id?recs[id]:null)){alert('سطح دسترسی شما ('+myRole()+') اجازه این کار را نمی‌دهد');return;}
+  cur=id?JSON.parse(JSON.stringify(recs[id])):{id:uid(),e,d:{},u:0,_new:true};
+  if(preset&&preset.k&&!id)cur.d[preset.k]=[preset.id];
+  drawModal();
+}
+function dateInputHTML(f){
+  const d=dVal(cur.d[f.k])||{};
+  return `<div style="display:grid;grid-template-columns:1fr 105px;gap:5px">
+    <input data-dk="${f.k}" data-p="sd" dir="ltr" placeholder="شروع: ۱۴۰۵/۰۳/۱۱" value="${iso2jstr(d.s)}">
+    <input data-dk="${f.k}" data-p="st" dir="ltr" type="time" value="${isoTime(d.s)}">
+    <input data-dk="${f.k}" data-p="ed" dir="ltr" placeholder="پایان (اختیاری)" value="${iso2jstr(d.e)}">
+    <input data-dk="${f.k}" data-p="et" dir="ltr" type="time" value="${isoTime(d.e)}">
+  </div>`;
+}
+function drawModal(){
+  const e=cur.e, def=E[e], id=cur._new?null:cur.id;
+  let h=`<h3>${def.ic} ${id?esc(cur.d.title||''):'مورد جدید — '+def.n}</h3>`;
+  if(id){
+    const chips=[];
+    if(def.prog)chips.push(['پیشرفت',Math.round(PROGFN[def.prog](recs[id]))+'٪']);
+    if(def.comp){const c=window[def.comp](recs[id]);chips.push([c.label,c.v]);}
+    if(e==='project')chips.push(['هزینه واقعی',fmtN(projectSpent(recs[id]))]);
+    if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
+  }
+  h+=`<div class="mrow">`;
+  def.f.forEach(f=>{
+    const v=cur.d[f.k];
+    const full=(f.t===LNG||f.t===REL||f.t===DAT)?'full':'';
+    const plus=(f.t===SEL||f.t===MUL||f.t===STA)?` <a onclick="addOpt('${f.k}')" style="color:var(--ac);cursor:pointer;font-size:11px">＋ گزینه جدید</a>`:'';
+    h+=`<div class="${full}"><label>${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}</label>`;
+    if(f.t===TXT)h+=`<input data-k="${f.k}" value="${esc(v||'')}">`;
+    else if(f.t===LNG)h+=`<textarea data-k="${f.k}" rows="2">${esc(v||'')}</textarea>`;
+    else if(f.t===NUM)h+=`<input data-k="${f.k}" type="number" dir="ltr" value="${v??''}">`;
+    else if(f.t===DAT)h+=dateInputHTML(f);
+    else if(f.t===SEL||f.t===STA){const oo=optsFor(e,f);h+=`<select data-k="${f.k}"><option value="">—</option>${oo.concat(v&&!oo.includes(v)?[v]:[]).map(o=>`<option ${v===o?'selected':''} value="${esc(o)}">${esc(STATFA[o]||o)}</option>`).join('')}</select>`;}
+    else if(f.t===MUL){const oo=optsFor(e,f);h+=`<select data-k="${f.k}" multiple size="3">${oo.map(o=>`<option ${(v||[]).includes(o)?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;}
+    else if(f.t===REL)h+=relPicker(f);
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+  if(id){
+    const back=[];
+    Object.entries(E).forEach(([ek,ed])=>ed.f.forEach(f=>{
+      if(f.t===REL&&f.r===e){const rs=backRefs(id,ek,f.k);if(rs.length)back.push([ed.ic+' '+ed.n+' ← '+f.n,ek,rs]);}
+    }));
+    if(back.length){h+=`<div style="margin-top:14px"><label>ارجاعات معکوس</label>`;
+      back.forEach(b=>{h+=`<div style="margin:4px 0;font-size:12px;color:var(--tx2)">${b[0]}: ${b[2].map(r=>`<span class="tag" style="cursor:pointer" onclick="closeModal();go('rec','${b[1]}','${r.id}')">${esc(r.d.title||'—')}</span>`).join('')}</div>`;});
+      h+=`</div>`;}
+  }
+  h+=`<div class="mfoot"><button class="btn" onclick="saveRec()">ذخیره</button>
+      ${id&&can('d',e,recs[id])?`<button class="btn bad" onclick="delRec()">حذف</button>`:''}
+      <span style="flex:1"></span><button class="btn gh" onclick="closeModal()">بستن</button></div>`;
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('ovl').classList.add('show');
+}
+function relPicker(f){
+  const sel=relIds(cur,f.k);
+  const opts=byE(f.r).sort((a,b)=>(a.d.title||'').localeCompare(b.d.title||'','fa'));
+  const canNew=can('c',f.r);
+  return `<div class="relbox" onclick="toggleRelList(event,'${f.k}')">${sel.map(id=>`<span class="tag b">${esc(nameOf(id))}</span>`).join('')||'<span style="color:var(--tx2);font-size:12px">انتخاب کنید…</span>'}</div>
+  <div class="rellist" id="rl_${f.k}" style="display:none">
+    <div style="display:flex;gap:5px;padding:6px;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line)">
+      <input id="rq_${f.k}" placeholder="جستجو${canNew?' یا نام مورد جدید':''}…" oninput="filtRel('${f.k}')" onclick="event.stopPropagation()" style="padding:5px 8px;font-size:12px">
+      ${canNew?`<button class="btn sm" style="white-space:nowrap" onclick="event.stopPropagation();newRel('${f.k}')">＋ ساخت جدید</button>`:''}
+    </div>
+    <div id="ro_${f.k}">${opts.map(o=>`<div class="${sel.includes(o.id)?'sel':''}" data-t="${esc((o.d.title||'').toLowerCase())}" onclick="toggleRel('${f.k}','${o.id}',${f.s?1:0})">${esc(o.d.title||'—')}</div>`).join('')||'<div style="color:var(--tx2);padding:7px 10px;font-size:12px">موردی وجود ندارد — نام را بنویسید و «＋ ساخت جدید» بزنید</div>'}</div>
+  </div>`;
+}
+function toggleRelList(ev,k){const el=document.getElementById('rl_'+k);el.style.display=el.style.display==='none'?'block':'none';}
+function filtRel(k){
+  const q=(document.getElementById('rq_'+k).value||'').toLowerCase().trim();
+  document.querySelectorAll('#ro_'+CSS.escape(k)+' [data-t]').forEach(el=>{
+    el.style.display=!q||el.dataset.t.includes(q)?'block':'none';
+  });
+}
+function newRel(k){
+  const f=E[cur.e].f.find(f=>f.k===k);
+  const inp=document.getElementById('rq_'+k);
+  const name=(inp&&inp.value||'').trim()||prompt('نام مورد جدید در «'+E[f.r].n+'»:');
+  if(!name)return;
+  if(!can('c',f.r)){alert('اجازه ایجاد در «'+E[f.r].n+'» را ندارید');return;}
+  // اگر رکوردی با همین نام هست، همان را انتخاب کن
+  const ex=byE(f.r).find(r=>(r.d.title||'').trim()===name);
+  const id=ex?ex.id:uid();
+  if(!ex)put({id,e:f.r,d:{title:name,_by:myEmail()},u:Date.now()});
+  if(!(Array.isArray(cur.d[k])&&cur.d[k].includes(id)))toggleRel(k,id,f.s?1:0);
+}
+function toggleRel(k,id,single){
+  let v=Array.isArray(cur.d[k])?cur.d[k].slice():[];
+  if(v.includes(id))v=v.filter(x=>x!==id);
+  else{if(single)v=[id];else v.push(id);}
+  cur.d[k]=v;
+  // re-render just this picker
+  const f=E[cur.e].f.find(f=>f.k===k);
+  const list=document.getElementById('rl_'+k);
+  const box=list.previousElementSibling;
+  const wrap=document.createElement('div');wrap.innerHTML=relPicker(f);
+  box.replaceWith(wrap.children[0]);list.replaceWith(wrap.children[0]);
+  document.getElementById('rl_'+k).style.display='block';
+}
+function harvest(){
+  document.querySelectorAll('#modal [data-k]').forEach(el=>{
+    const k=el.dataset.k, f=E[cur.e].f.find(f=>f.k===k);
+    if(f.t===NUM)cur.d[k]=el.value===''?null:Number(el.value);
+    else if(f.t===MUL)cur.d[k]=[...el.selectedOptions].map(o=>o.value);
+    else cur.d[k]=el.value||null;
+  });
+  // تاریخ‌ها
+  const dk={};
+  document.querySelectorAll('#modal [data-dk]').forEach(el=>{
+    const k=el.dataset.dk;(dk[k]=dk[k]||{})[el.dataset.p]=el.value;
+  });
+  let err=null;
+  Object.entries(dk).forEach(([k,p])=>{
+    const s=parseJDate(p.sd,p.st), e=parseJDate(p.ed,p.et);
+    if(s===undefined||e===undefined){err='فرمت تاریخ «'+E[cur.e].f.find(f=>f.k===k).n+'» درست نیست (مثال: ۱۴۰۵/۰۳/۱۱)';return;}
+    cur.d[k]=(s||e)?{s:s||e,e:s&&e?e:null}:null;
+  });
+  return err;
+}
+function saveRec(){
+  const err=harvest();
+  if(err){alert(err);return;}
+  if(!cur.d.title){alert('عنوان الزامی است');return;}
+  if(cur._new)cur.d._by=myEmail();
+  cur.u=Date.now();delete cur._new;
+  put(cur);closeModal();
+}
+function delRec(){
+  if(!can('d',cur.e,recs[cur.id])){alert('اجازه حذف ندارید');return;}
+  if(!confirm('حذف شود؟'))return;
+  cur.del=true;cur.u=Date.now();const e=cur.e,id=cur.id;put(cur);closeModal();
+  if(view.type==='rec'&&view.id===id)go('list',e);
+}
+function closeModal(){document.getElementById('ovl').classList.remove('show');cur=null;}
+document.getElementById('ovl').addEventListener('click',e=>{if(e.target.id==='ovl')closeModal();});
+
+/* ================= LOGIN / SETTINGS ================= */
+let authMode='in';
+function setAuthMode(m){
+  authMode=m;
+  document.getElementById('at_in').classList.toggle('on',m==='in');
+  document.getElementById('at_up').classList.toggle('on',m==='up');
+  document.getElementById('l_go').textContent=m==='in'?'ورود':'ایجاد حساب';
+  document.getElementById('l_err').textContent='';
+}
+function fillLoginForm(){
+  if(cfg.url)document.getElementById('l_url').value=cfg.url;
+  if(cfg.key)document.getElementById('l_key').value=cfg.key;
+  if(!cfg.url||!cfg.key)document.getElementById('l_conn').open=true;
+}
+async function doLogin(){
+  const url=document.getElementById('l_url').value.trim(),key=document.getElementById('l_key').value.trim(),
+        em=document.getElementById('l_email').value.trim(),pw=document.getElementById('l_pass').value;
+  const errEl=document.getElementById('l_err');errEl.textContent='';
+  if(!url||!key){errEl.textContent='در «تنظیمات اتصال»، URL و Anon Key را وارد کنید';document.getElementById('l_conn').open=true;return;}
+  if(!em||!pw){errEl.textContent='ایمیل و رمز عبور را وارد کنید';return;}
+  cfg.url=url;cfg.key=key;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
+  session=null;await initSupabase().catch(()=>false);
+  if(!sb){errEl.textContent='اتصال به Supabase برقرار نشد (اینترنت/URL را چک کنید)';return;}
+  if(!session){
+    if(authMode==='up'){
+      if(pw.length<6){errEl.textContent='رمز عبور حداقل ۶ کاراکتر باشد';return;}
+      const su=await sb.auth.signUp({email:em,password:pw});
+      if(su.error){errEl.textContent='ثبت‌نام ناموفق: '+su.error.message;return;}
+      session=su.data.session;
+      if(!session){errEl.textContent='حساب ساخته شد ✅ اگر تایید ایمیل فعال است، ایمیل‌تان را تایید و سپس وارد شوید.';setAuthMode('in');return;}
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email:em,password:pw});
+      if(error){errEl.textContent='ورود ناموفق: '+(error.message.includes('Invalid')?'ایمیل یا رمز اشتباه است':error.message);return;}
+      session=data.session;
+    }
+  }
+  document.getElementById('login').classList.remove('show');
+  await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();
+}
+function localOnly(){cfg.local=1;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
+  document.getElementById('login').classList.remove('show');setSync('off','بدون سینک (محلی)');render();}
+function openSettings(){
+  delete cfg.local;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
+  fillLoginForm();
+  document.getElementById('login').classList.add('show');
+}
+
+/* ================= BOOT ================= */
+loadLocal();render();fillLoginForm();
+(async()=>{
+  if(cfg.url&&cfg.key){
+    const ok=await initSupabase().catch(()=>false);
+    if(ok){await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();}
+    else if(cfg.local!==1)document.getElementById('login').classList.add('show');
+    else setSync('off','بدون سینک (محلی)');
+  } else if(cfg.local===1){setSync('off','بدون سینک (محلی)');}
+  else document.getElementById('login').classList.add('show');
+})();
+window.addEventListener('online',()=>{flush();});
+// با برگشت به اپ، آخرین تغییرات (از جمله نقش‌ها) دوباره گرفته می‌شود
+let lastPull=0;
+window.addEventListener('focus',()=>{if(sb&&session&&Date.now()-lastPull>15000){lastPull=Date.now();pullAll().then(()=>flush());}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sb&&session&&Date.now()-lastPull>15000){lastPull=Date.now();pullAll().then(()=>flush());}});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
