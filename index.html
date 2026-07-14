@@ -120,6 +120,15 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 /* toolbar */
 .tools{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
 .tools input{max-width:260px}
+/* pomodoro */
+#pomo{position:fixed;bottom:18px;left:18px;z-index:60;width:235px;padding:16px;border-radius:18px;text-align:center;
+  background:rgba(18,22,19,.93);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.28);box-shadow:0 18px 50px rgba(0,0,0,.55);display:none}
+#pomo.show{display:block}
+#pomo_time{font-size:44px;font-weight:800;color:#ecd98f;font-variant-numeric:tabular-nums;letter-spacing:1px}
+#pomo .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ac);margin:0 2px}
+#pomo .dot.off{background:var(--bg3)}
+@media (max-width:760px){#pomo{left:10px;right:10px;width:auto;bottom:12px}}
 /* login */
 #login{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow:auto;
   background:radial-gradient(1100px 600px at 85% -10%,rgba(212,175,55,.16) 0%,transparent 55%),
@@ -185,6 +194,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
       <span id="ttl">اتاق کنترل</span><span class="sp"></span>
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
+      <button class="btn gh sm" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
       <button class="btn gh sm" id="authbtn" onclick="authAction()">ورود</button>
       <button class="btn gh sm" onclick="openSettings()">⚙️</button>
     </div>
@@ -192,6 +202,19 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   </div>
 </div>
 
+<div id="pomo">
+  <div style="display:flex;align-items:center"><b style="font-size:14px">🍅 پومودورو</b><span style="flex:1"></span>
+    <span id="pomo_x" onclick="togglePomo()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
+  <div id="pomo_mode" class="tag b" style="margin:10px 0 2px"></div>
+  <div id="pomo_time">۲۵:۰۰</div>
+  <div style="display:flex;gap:6px;justify-content:center;margin:10px 0 8px">
+    <button class="btn sm" id="pomo_go" onclick="pomoStart()">شروع</button>
+    <button class="btn gh sm" onclick="pomoSkip()">رد کردن</button>
+    <button class="btn gh sm" onclick="pomoReset()">ریست</button>
+  </div>
+  <div id="pomo_stats" style="font-size:12px;color:var(--tx2)"></div>
+  <div style="font-size:10.5px;color:var(--tx2);margin-top:8px;line-height:1.9">۲۵ دقیقه تمرکز → ۵ دقیقه استراحت<br>هر ۴ دور: استراحت بلند ۱۵ دقیقه</div>
+</div>
 <div id="ovl"><div id="modal"></div></div>
 
 <script>
@@ -249,6 +272,7 @@ objective:{ic:'🎯',n:'اهداف',grp:'زنجیره آبشاری',f:[
  {k:'horizon',n:'افق زمانی',t:SEL,o:['پنج ساله','سه ساله','دوساله','سالانه','فصلی']},
  {k:'year',n:'سال',t:SEL,o:['1405','1406','1407']},
  {k:'month',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'start',n:'مقدار شروع',t:NUM},
  {k:'target',n:'مقدار هدف',t:NUM},{k:'current',n:'مقدار فعلی',t:NUM},
  {k:'unit',n:'واحد سنجش',t:SEL,o:['تومان','میلیون تومان','میلیارد تومان','درصد','تعداد','نفر','کیلووات','مگاوات']},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
@@ -397,6 +421,7 @@ growth:{ic:'🌱',n:'اهداف رشد',grp:'رشد شخصی',f:[
  {k:'areas',n:'حوزه‌ها',t:MUL,o:['یادگیری','مراقبت از خود','فروش','مذاکره','روابط شخصی','مالی','ارتباطات']},
  {k:'horizon',n:'افق',t:SEL,o:['سالانه','فصلی','ماهانه']},
  {k:'prio',n:'اولویت',t:SEL,o:PRIO},
+ {k:'start',n:'مقدار شروع',t:NUM},
  {k:'current',n:'مقدار فعلی',t:NUM},{k:'target',n:'مقدار هدف',t:NUM},
  {k:'src',n:'منبع',t:TXT},
  {k:'parent',n:'هدف والد',t:REL,r:'growth',s:1}],
@@ -431,12 +456,32 @@ asset:{ic:'💰',n:'ثروت و دارایی‌ها',grp:'رشد شخصی',f:[
 area:{ic:'🧭',n:'حوزه‌های زندگی',grp:'رشد شخصی',f:[
  {k:'title',n:'عنوان',t:TXT},{k:'parent',n:'حوزه والد',t:REL,r:'area',s:1}],
  cols:['title','parent']},
+book:{ic:'📚',n:'کتاب‌ها (Read & Learn)',grp:'رشد شخصی',f:[
+ {k:'title',n:'نام کتاب',t:TXT},
+ {k:'author',n:'نام نویسنده',t:TXT},
+ {k:'translator',n:'مترجم',t:TXT},
+ {k:'status',n:'وضعیت',t:STA,o:STATUS},
+ {k:'topic',n:'موضوع',t:MUL,o:['برنامه ریزی','موفقیت','داستان','روانشناسی','کسب و کار','مدیریت','مدیریت و تجربه فردی']},
+ {k:'cat',n:'دسته‌بندی',t:MUL,o:['رهبری','روانشناسی','کسب و کار','مدیریت استراتژی','مدیریت مالی','مذاکره']},
+ {k:'kind',n:'نوع کتاب',t:SEL,o:['الکترونیکی','فیزیکی','صوتی']},
+ {k:'source',n:'نوع منبع',t:SEL,o:['فیدیبو','فیدی پلاس','کتاب فیزیکی']},
+ {k:'pages',n:'تعداد صفحات',t:NUM},{k:'read',n:'خوانده شده (صفحه)',t:NUM},
+ {k:'rating',n:'امتیاز',t:SEL,o:['★★★★★','★★★★','★★★','★★','★']},
+ {k:'start',n:'شروع مطالعه',t:DAT},{k:'finish',n:'پایان مطالعه',t:DAT},
+ {k:'growth',n:'اهداف رشد مرتبط',t:REL,r:'growth'}],
+ cols:['title','author','status','rating','pages','read'],prog:'bookProg'},
+booknote:{ic:'🧠',n:'دانش کتاب (نکات)',grp:'رشد شخصی',f:[
+ {k:'title',n:'عنوان',t:TXT},
+ {k:'book',n:'کتاب مرتبط',t:REL,r:'book',s:1},
+ {k:'link',n:'لینک منبع',t:TXT},
+ {k:'body',n:'نکات جذاب کتاب',t:LNG}],
+ cols:['title','book','link']},
 note:{ic:'📝',n:'یادداشت‌ها',grp:'رشد شخصی',f:[
  {k:'title',n:'عنوان',t:TXT},{k:'body',n:'متن',t:LNG}],
  cols:['title','body']},
 };
 const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','حاکمیت','رشد شخصی'];
-const GROWTH=['growth','habit','win','plan','asset','area','note'];
+const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote'];
 
 /* ================= STORE & SYNC ================= */
 let recs={};            // id -> {id,e,d,u,del}
@@ -598,7 +643,8 @@ function projectProg(p){
 }
 function objectiveProg(o){
   const parts=[];
-  if(o.d.target>0)parts.push(Math.min(100,(o.d.current||0)/o.d.target*100));
+  const np=numProg(o.d);
+  if(np!=null)parts.push(np);
   const prjs=byE('project').filter(p=>relIds(p,'objective').includes(o.id));
   if(prjs.length)parts.push(avg(prjs.map(projectProg)));
   const subs=byE('objective').filter(x=>x.d.parent&&x.d.parent[0]===o.id);
@@ -611,12 +657,28 @@ function strategyProg(s){
   if(!obs.length)return 0;
   return avg(obs.map(objectiveProg));
 }
+// درصد پیشرفت عددی — کاهش یا افزایش، هر دو درست محاسبه می‌شود
+function numProg(d){
+  const cur=d.current, tgt=d.target, st=d.start;
+  if(tgt==null)return null;
+  if(st!=null&&st!==tgt){ // با مقدار شروع: (فعلی−شروع)/(هدف−شروع) → کاهش وزن ۹۸→۸۶ هم درست
+    return Math.max(0,Math.min(100,((cur??st)-st)/(tgt-st)*100));
+  }
+  if(tgt<=0)return null;
+  return Math.max(0,Math.min(100,(cur||0)/tgt*100));
+}
 function growthProg(g){
   const parts=[];
-  if(g.d.target>0)parts.push(Math.min(100,(g.d.current||0)/g.d.target*100));
+  const np=numProg(g.d);
+  if(np!=null)parts.push(np);
   const subs=byE('growth').filter(x=>x.d.parent&&x.d.parent[0]===g.id);
   if(subs.length)parts.push(avg(subs.map(growthProg)));
   return parts.length?avg(parts):0;
+}
+function bookProg(b){
+  if(b.d.status==='Done')return 100;
+  if(b.d.pages>0)return Math.min(100,(b.d.read||0)/b.d.pages*100);
+  return b.d.status==='In progress'?50:0;
 }
 function habitPct(h){
   const ks=E.habit.f.filter(f=>f.t===CHK);
@@ -650,7 +712,7 @@ function projectSpent(p){
   const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
   return txs.reduce((a,t)=>a+(t.d.amount||0),0);
 }
-const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct};
+const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg};
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
 function fmtN(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('fa-IR');}
 /* --- تاریخ شمسی --- */
@@ -861,6 +923,7 @@ function meHTML(){
     ${card('⏰ عقب‌افتاده',od.length,od.length?'var(--bad)':null)}
     ${card('🏗️ پروژه‌های من',mine('project','pm').length)}
     ${card('🎯 اهداف من',mine('objective','owner').filter(o=>o.d.status!=='Done').length)}
+    ${card('🍅 پومودورو امروز',pomoCount(),null,"togglePomo()")}
   </div>`;
   const secs=[
     ['📘 تسک‌های من','task',tasks],
@@ -1000,7 +1063,7 @@ function habitTrendSVG(){
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" dir="ltr">${grid}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="#383a35" stroke-width="1.5"/>${bars}${labels}</svg>`;
 }
 function gdashHTML(){
-  const gs=visE('growth'),hs=visE('habit'),as=visE('asset'),ps=visE('plan'),ws=visE('win');
+  const gs=visE('growth'),hs=visE('habit'),as=visE('asset'),ps=visE('plan'),ws=visE('win'),bs=visE('book');
   const t=today();
   const todayH=hs.find(h=>ds(h.d.date)===t);
   const last30=hs.filter(h=>ds(h.d.date)&&ds(h.d.date)>new Date(Date.now()-30*86400000).toISOString().slice(0,10));
@@ -1011,7 +1074,9 @@ function gdashHTML(){
     ${card('📈 میانگین ۳۰ روز',avg30+'٪')}
     ${card('🌱 اهداف رشد فعال',gs.filter(g=>growthProg(g)<100).length,null,"go('list','growth')")}
     ${card('💰 ارزش دارایی‌ها',abbrN(wealth),null,"go('list','asset')")}
+    ${card('📚 کتاب تمام‌شده',bs.filter(b=>bookProg(b)>=100).length+' از '+bs.length,null,"go('list','book')")}
     ${card('🏆 دستاوردها',ws.length,null,"go('list','win')")}
+    ${card('🍅 پومودورو امروز',pomoCount(),null,"togglePomo()")}
   </div>`;
   // نمودارها
   const kindMap={};gs.forEach(g=>{const k=g.d.kind||'هدف';kindMap[k]=(kindMap[k]||0)+1;});
@@ -1027,6 +1092,7 @@ function gdashHTML(){
     <div class="sec"><h3>🌱 اهداف رشد بر اساس نوع</h3>${donutSVG(kindItems)}</div>
     <div class="sec"><h3>🎯 درصد تحقق اهداف رشد</h3>${hbarsHTML(growthBars,CH.blue)}</div>
     <div class="sec"><h3>💰 ترکیب دارایی‌ها (به ارزش خرید)</h3>${donutSVG(assetItems)}</div>
+    <div class="sec"><h3>📚 پیشرفت مطالعه</h3>${hbarsHTML(bs.filter(b=>bookProg(b)<100).map(b=>({l:b.d.title,v:bookProg(b),href:`go('rec','book','${b.id}')`})).sort((a,b)=>b.v-a.v).slice(0,8),CH.aqua)}</div>
   </div>
   <div class="sec relsec"><h3>🗓️ برنامه‌های پیش رو <span style="flex:1"></span><button class="btn gh sm" onclick="openRec('plan')">＋ برنامه جدید</button></h3>
   ${openPlans.length?miniTable('plan',openPlans):'<div class="empty">برنامه بازی نیست</div>'}</div>`;
@@ -1318,6 +1384,53 @@ function openSettings(){
   fillLoginForm();
   document.getElementById('login').classList.add('show');
 }
+
+/* ================= پومودورو 🍅 ================= */
+const PDUR={focus:25*60,break:5*60,long:15*60};
+const PNAME={focus:'⏳ تمرکز',break:'☕ استراحت کوتاه',long:'🌿 استراحت بلند'};
+let pomo={mode:'focus',left:PDUR.focus,run:false,iv:null};
+function pomoKey(){return 'xr_pomo_'+today();}
+function pomoCount(){return +(localStorage.getItem(pomoKey())||0);}
+function fmtT(s){const m=String(Math.floor(s/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');return (m+':'+ss).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);}
+function togglePomo(){document.getElementById('pomo').classList.toggle('show');drawPomo();}
+function drawPomo(){
+  const t=document.getElementById('pomo_time');if(!t)return;
+  t.textContent=fmtT(pomo.left);
+  t.style.color=pomo.mode==='focus'?'#ecd98f':'#7fd6ac';
+  document.getElementById('pomo_mode').textContent=PNAME[pomo.mode];
+  document.getElementById('pomo_go').textContent=pomo.run?'مکث':'شروع';
+  const n=pomoCount();
+  document.getElementById('pomo_stats').innerHTML=
+    'امروز: <b style="color:var(--tx)">'+n.toLocaleString('fa-IR')+'</b> پومودورو &nbsp; '+
+    [0,1,2,3].map(i=>`<span class="dot ${ (n%4)>i?'':'off'}"></span>`).join('');
+  const b=document.getElementById('pomobtn');
+  b.textContent=pomo.run?'🍅 '+fmtT(pomo.left):'🍅 پومودورو';
+  b.style.background=pomo.run?(pomo.mode==='focus'?'rgba(212,175,55,.18)':'rgba(63,174,124,.18)'):'';
+}
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();
+  [0,.25,.5].forEach(dt=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);
+    o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime+dt);g.gain.exponentialRampToValueAtTime(.3,c.currentTime+dt+.02);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dt+.2);o.start(c.currentTime+dt);o.stop(c.currentTime+dt+.22);});}catch(e){}}
+function pomoTick(){
+  pomo.left--;
+  if(pomo.left<=0){
+    beep();
+    if(pomo.mode==='focus'){
+      localStorage.setItem(pomoKey(),pomoCount()+1);
+      pomo.mode=(pomoCount()%4===0)?'long':'break';
+    } else pomo.mode='focus';
+    pomo.left=PDUR[pomo.mode];
+    document.getElementById('pomo').classList.add('show');
+  }
+  drawPomo();
+}
+function pomoStart(){
+  if(pomo.run){clearInterval(pomo.iv);pomo.run=false;}
+  else{pomo.run=true;pomo.iv=setInterval(pomoTick,1000);}
+  drawPomo();
+}
+function pomoSkip(){pomo.left=1;if(!pomo.run)pomoTick();drawPomo();}
+function pomoReset(){clearInterval(pomo.iv);pomo.run=false;pomo.mode='focus';pomo.left=PDUR.focus;drawPomo();}
 
 /* ================= BOOT ================= */
 loadLocal();render();fillLoginForm();
