@@ -1015,8 +1015,16 @@ function msLight(m){
 window.msLight=msLight;
 function saleAmt(s){return (s.d.qty||0)*(s.d.price||0)+(s.d.extra||0);}
 function purchAmt(s){return (s.d.qty||0)*(s.d.price||0)+(s.d.extra||0);}
+function saleProfit(s){ // سود FIFO این فاکتور
+  const pid=relIds(s,'product')[0];
+  if(!pid)return null;
+  const f=fifoCalc(recs[pid]);
+  return f.bySale[s.id]!=null?f.bySale[s.id]:null;
+}
 function saleTotal(s){const a=saleAmt(s);const open=s.d.kind==='اعتباری'&&!s.d.settled;
-  return{label:'مبلغ کل'+(open?' │ تسویه نشده':''),v:money(a),bad:open};}
+  const pr=saleProfit(s);
+  return{label:'مبلغ کل'+(pr!=null?' │ سود این فاکتور (FIFO)':'')+(open?' │ تسویه نشده':''),
+    v:money(a)+(pr!=null?' │ '+money(pr):''),bad:open||(pr!=null&&pr<0)};}
 function purchTotal(s){const a=purchAmt(s);const open=s.d.kind==='اعتباری'&&!s.d.settled;
   return{label:'مبلغ کل'+(open?' │ تسویه نشده':''),v:money(a),bad:open};}
 function stockNow(p){ // تعدادی: اول دوره + خرید − فروش
@@ -1035,7 +1043,7 @@ function fifoCalc(p){
     .forEach(x=>{const q=x.d.qty||0;if(q>0)layers.push({q,c:(x.d.price||0)+((x.d.extra||0)/q)});});
   let lastCost=layers.length?layers[layers.length-1].c:(p.d.buy||0);
   // مصرف لایه‌ها با فروش‌ها به ترتیب تاریخ
-  let profit=0,cogs=0,shortage=0;
+  let profit=0,cogs=0,shortage=0;const bySale={};
   byE('sale').filter(x=>relIds(x,'product').includes(p.id))
     .sort((a,b)=>dkey(a).localeCompare(dkey(b)))
     .forEach(s=>{
@@ -1047,11 +1055,12 @@ function fifoCalc(p){
       }
       if(need>0){cost+=need*lastCost;shortage+=need;} // فروش بیش از موجودی: با آخرین بهای شناخته‌شده
       cogs+=cost;
-      profit+=(s.d.qty||0)*(s.d.price||0)-(s.d.extra||0)-cost;
+      const pr=(s.d.qty||0)*(s.d.price||0)-(s.d.extra||0)-cost;
+      bySale[s.id]=pr; profit+=pr;
     });
   const value=layers.reduce((a,L)=>a+L.q*L.c,0);
   const qty=layers.reduce((a,L)=>a+L.q,0)-0;
-  return {value,profit,cogs,shortage,layerQty:qty,avg:qty>0?value/qty:lastCost};
+  return {value,profit,cogs,shortage,layerQty:qty,avg:qty>0?value/qty:lastCost,bySale};
 }
 function productProfit(p){return fifoCalc(p).profit;} // سود تحقق‌یافته FIFO
 function stockValue(p){return fifoCalc(p).value;}     // ارزش انبار FIFO
@@ -1652,7 +1661,11 @@ function bizdashHTML(){
   if(!view.biz||!recs[view.biz])view.biz=bizList[0].id;
   const B=view.biz;
   const inB=(e,k='biz')=>byE(e).filter(r=>relIds(r,k).includes(B));
-  const sales=inB('sale'),purs=inB('purchase'),prods=inB('product'),chans=inB('channel');
+  // کالاهای این کسب‌وکار + کالاهای بدون کسب‌وکار (تا چیزی از قلم نیفتد)
+  const prods=byE('product').filter(r=>relIds(r,'biz').includes(B)||!relIds(r,'biz').length);
+  const prodIds=new Set(prods.map(p=>p.id));
+  const byBizOrProd=e=>byE(e).filter(r=>relIds(r,'biz').includes(B)||(!relIds(r,'biz').length&&relIds(r,'product').some(id=>prodIds.has(id))));
+  const sales=byBizOrProd('sale'),purs=byBizOrProd('purchase'),chans=inB('channel');
   const rev=sales.reduce((a,s)=>a+saleAmt(s),0);
   const cogs=purs.reduce((a,s)=>a+purchAmt(s),0);
   const chCost=chans.reduce((a,c)=>a+(c.d.cost||0),0);
@@ -1662,6 +1675,8 @@ function bizdashHTML(){
   const recv=sales.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled).reduce((a,s)=>a+saleAmt(s),0);
   const pay=purs.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled).reduce((a,s)=>a+purchAmt(s),0);
   const stockVal=prods.reduce((a,p)=>a+fifoCalc(p).value,0);
+  const stockQty=prods.reduce((a,p)=>a+stockNow(p),0);
+  const goodsProfit=prods.reduce((a,p)=>a+fifoCalc(p).profit,0);
   let h=`<div class="tools">
     <label style="margin:0">کسب‌وکار:</label>
     <select onchange="view.biz=this.value;render()" style="max-width:240px">
@@ -1676,8 +1691,10 @@ function bizdashHTML(){
     ${card('🚚 هزینه خرید',abbrN(cogs))}
     ${card('📣 هزینه کانال/تبلیغات',abbrN(chCost))}
     ${card('📈 سود ناخالص',abbrN(profit-chCost),profit-chCost<0?'var(--bad)':'var(--ok)')}
+    ${card('💰 سود فروش کالاها (FIFO)',abbrN(goodsProfit),goodsProfit<0?'var(--bad)':'var(--ok)')}
     ${card('🧾 مطالبات (فروش نسیه)',abbrN(recv),recv?'var(--warn)':null)}
     ${card('💳 بدهی به تامین‌کنندگان',abbrN(pay),pay?'var(--warn)':null)}
+    ${card('📦 موجودی انبار (تعدادی)',stockQty)}
     ${card('📦 ارزش انبار (FIFO)',abbrN(stockVal))}
   </div>`;
   // فروش/خرید ماهانه این کسب‌وکار (۶ ماه)
@@ -1716,6 +1733,16 @@ function bizdashHTML(){
       <td style="color:${low?'var(--bad)':'var(--tx)'}">${st.toLocaleString('fa-IR')}${low?' ⚠️':''}</td>
       <td>${fmtN(p.d.minstock)}</td><td>${abbrN(f.avg)}</td><td>${abbrN(f.value)}</td></tr>`;}).join('')}
     </tbody></table></div>`:'<div class="empty">کالایی ثبت نشده</div>'}</div>
+  <div class="sec relsec"><h3>🧾 سود هر فاکتور فروش (FIFO)</h3>
+    ${sales.length?`<div class="tblwrap"><table><thead><tr><th>فاکتور</th><th>کالا</th><th>تعداد</th><th>مبلغ فروش</th><th>سود (FIFO)</th><th>تاریخ</th></tr></thead><tbody>
+    ${sales.slice().sort((a,b)=>(ds(b.d.date)||'').localeCompare(ds(a.d.date)||'')).slice(0,15).map(s=>{
+      const pr=saleProfit(s);
+      return `<tr onclick="go('rec','sale','${s.id}')"><td>${esc(s.d.title)}</td>
+      <td>${relIds(s,'product').map(id=>esc(nameOf(id))).join('')||'—'}</td>
+      <td>${fmtN(s.d.qty)}</td><td>${abbrN(saleAmt(s))}</td>
+      <td style="color:${pr==null?'var(--tx2)':pr<0?'var(--bad)':'var(--ok)'};font-weight:700">${pr==null?'—':abbrN(pr)}</td>
+      <td>${fmtD(s.d.date)}</td></tr>`;}).join('')}
+    </tbody></table></div>`:'<div class="empty">فروشی ثبت نشده</div>'}</div>
   <div class="sec relsec"><h3>🧾 تسویه‌نشده‌ها (اعتباری)</h3>
     ${miniTable('sale',sales.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled))}
     ${miniTable('purchase',purs.filter(s=>s.d.kind==='اعتباری'&&!s.d.settled))}</div>`;
@@ -2163,6 +2190,12 @@ function saveRec(){
   const err=harvest();
   if(err){alert(err);return;}
   if(!cur.d.title){alert('عنوان الزامی است');return;}
+  // فروش/خرید: اگر کسب‌وکار خالی است، از روی کالا خودکار وصل شود
+  if((cur.e==='sale'||cur.e==='purchase')&&!relIds(cur,'biz').length){
+    const pid=relIds(cur,'product')[0];
+    const bz=pid&&relIds(recs[pid],'biz')[0];
+    if(bz)cur.d.biz=[bz];
+  }
   if(cur._new)cur.d._by=myEmail();
   cur.u=Date.now();delete cur._new;
   put(cur);closeModal();
