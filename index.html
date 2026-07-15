@@ -400,13 +400,26 @@ crm:{ic:'🧑‍🤝‍🧑',n:'CRM | ذینفعان',grp:'روابط',f:[
  {k:'kind',n:'شخصیت',t:SEL,o:['حقیقی','حقوقی']},
  {k:'rel',n:'نوع رابطه',t:SEL,o:['مشتری','سرمایه‌گذار','بانک','بیمه','پیمانکار','تامین‌کننده','شریک تجاری','مشاور','دولتی']},
  {k:'imp',n:'اهمیت رابطه',t:SEL,o:['بسیار مهم','مهم','معمولی','غیرفعال']},
- {k:'contact',n:'فرد رابط',t:TXT},{k:'role',n:'سمت',t:TXT},
- {k:'phone',n:'تلفن',t:TXT},{k:'email',n:'ایمیل',t:TXT},
+ {k:'phone',n:'تلفن سازمان',t:TXT},{k:'email',n:'ایمیل سازمان',t:TXT},
  {k:'last',n:'آخرین تماس',t:DAT},{k:'next',n:'پیگیری بعدی',t:DAT},
  {k:'note',n:'یادداشت',t:LNG},
  {k:'company',n:'شرکت طرف رابطه',t:REL,r:'company'},
  {k:'projects',n:'پروژه‌های مرتبط',t:REL,r:'project'}],
- cols:['title','rel','imp','next','phone']},
+ cols:['title','kind','rel','imp','next'],comp:'crmContacts'},
+contact:{ic:'📇',n:'مخاطبین (افراد رابط)',grp:'روابط',f:[
+ {k:'title',n:'نام و نام خانوادگی',t:TXT},
+ {k:'crm',n:'ذینفع / مشتری',t:REL,r:'crm',s:1},
+ {k:'position',n:'سمت',t:TXT},
+ {k:'role',n:'نقش در رابطه',t:SEL,o:['تصمیم‌گیر نهایی','تأثیرگذار','رابط اجرایی','کارشناس','مالی','فنی','حقوقی','خرید','فروش']},
+ {k:'dept',n:'واحد / دپارتمان',t:TXT},
+ {k:'mobile',n:'موبایل',t:TXT},
+ {k:'phone',n:'تلفن مستقیم / داخلی',t:TXT},
+ {k:'email',n:'ایمیل',t:TXT},
+ {k:'imp',n:'میزان اهمیت',t:SEL,o:['کلیدی','مهم','معمولی']},
+ {k:'main',n:'رابط اصلی',t:CHK},
+ {k:'note',n:'یادداشت',t:LNG},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1}],
+ cols:['title','crm','position','role','mobile']},
 meeting:{ic:'🗃️',n:'جلسات',grp:'روابط',f:[
  {k:'title',n:'عنوان جلسه',t:TXT},
  {k:'kind',n:'نوع جلسه',t:SEL,o:['هیات مدیره','شورای مدیران','جلسه داخلی','جلسه پروژه','جلسه با مشتریان','مجمع']},
@@ -761,7 +774,7 @@ function subscribeRT(){
 /* ================= کاربران و سطح دسترسی ================= */
 const ROLES=['ادمین','مدیرارشد','مدیر','معاون','کارشناس ارشد','کارشناس','کاربر'];
 const FIN=['bank','tx','budget','hrcontract','bizcontract'];
-const MIDSET=['project','task','meeting','idea','kpi','crm','letter','leave','milestone','product','sale','purchase','channel','bsc','efqm'];
+const MIDSET=['project','task','meeting','idea','kpi','crm','contact','letter','leave','milestone','product','sale','purchase','channel','bsc','efqm'];
 const LOWSET=['task','idea','kpi','leave'];
 function myEmail(){return session&&session.user?session.user.email:'local';}
 function usersList(){const m=recs[MU];return (m&&!m.del&&m.d.list)||[];}
@@ -863,12 +876,14 @@ function addOpt(fk){
 }
 
 /* ================= COMPUTED (زنجیره آبشاری) ================= */
-function taskProg(t){
+function taskProg(t,seen){
+  seen=seen||new Set(); if(seen.has(t.id))return 0; seen.add(t.id); // محافظ حلقه والد/فرزند
   const subs=byE('task').filter(x=>x.d.parent&&x.d.parent[0]===t.id);
-  if(subs.length)return avg(subs.map(taskProg));
+  if(subs.length)return avg(subs.map(x=>taskProg(x,seen)));
   return t.d.status==='Done'?100:t.d.status==='In progress'?50:0;
 }
-function projectProg(p){
+function projectProg(p,seen){
+  seen=seen||new Set(); if(seen.has(p.id))return 0; seen.add(p.id);
   const parts=[];
   // مایلستون‌های وزن‌دار (PMBOK)
   const ms=byE('milestone').filter(m=>relIds(m,'project').includes(p.id));
@@ -879,12 +894,13 @@ function projectProg(p){
   const tasks=byE('task').filter(t=>relIds(t,'project').includes(p.id)&&!(t.d.parent&&t.d.parent[0]));
   if(tasks.length)parts.push(avg(tasks.map(taskProg)));
   const subs=byE('project').filter(x=>x.d.parent&&x.d.parent[0]===p.id);
-  if(subs.length)parts.push(avg(subs.map(projectProg)));
+  if(subs.length)parts.push(avg(subs.map(x=>projectProg(x,seen))));
   if(!parts.length)return p.d.status==='تمام شده'?100:0;
   return avg(parts);
 }
 function msProg(m){return m.d.status==='Done'?100:m.d.status==='In progress'?50:0;}
-function objectiveProg(o){
+function objectiveProg(o,seen){
+  seen=seen||new Set(); if(seen.has(o.id))return 0; seen.add(o.id);
   // هدف تحویلی: انجام/عدم انجام
   if((o.d.nature||'').startsWith('تحویلی'))return o.d.status==='Done'?100:o.d.status==='In progress'?50:0;
   const parts=[];
@@ -898,7 +914,7 @@ function objectiveProg(o){
   const prjs=byE('project').filter(p=>relIds(p,'objective').includes(o.id));
   if(prjs.length)parts.push(avg(prjs.map(projectProg)));
   const subs=byE('objective').filter(x=>x.d.parent&&x.d.parent[0]===o.id);
-  if(subs.length)parts.push(avg(subs.map(objectiveProg)));
+  if(subs.length)parts.push(avg(subs.map(x=>objectiveProg(x,seen))));
   if(!parts.length)return o.d.status==='Done'?100:0;
   return avg(parts);
 }
@@ -917,7 +933,8 @@ function numProg(d){
   if(tgt<=0)return null;
   return Math.max(0,Math.min(100,(cur||0)/tgt*100));
 }
-function growthProg(g){
+function growthProg(g,seen){
+  seen=seen||new Set(); if(seen.has(g.id))return 0; seen.add(g.id);
   if((g.d.nature||'').startsWith('تحویلی'))return g.d.done?100:0;
   const parts=[];
   if((g.d.nature||'').startsWith('کیفی')){
@@ -927,7 +944,7 @@ function growthProg(g){
     if(np!=null)parts.push(np);
   }
   const subs=byE('growth').filter(x=>x.d.parent&&x.d.parent[0]===g.id);
-  if(subs.length)parts.push(avg(subs.map(growthProg)));
+  if(subs.length)parts.push(avg(subs.map(x=>growthProg(x,seen))));
   return parts.length?avg(parts):0;
 }
 function bookProg(b){
@@ -963,6 +980,12 @@ function sharePct(s){
   return{label:'درصد سهام',v:(s.d.count/comp.d.shares*100).toLocaleString('fa-IR',{maximumFractionDigits:2})+'٪'};
 }
 window.holdEquity=holdEquity;window.sharePct=sharePct;
+function crmContacts(c){
+  const cs=byE('contact').filter(x=>relIds(x,'crm').includes(c.id));
+  const main=cs.find(x=>x.d.main);
+  return{label:'مخاطبین',v:cs.length?cs.length.toLocaleString('fa-IR')+' نفر'+(main?' — رابط اصلی: '+esc(main.d.title):''):'—'};
+}
+window.crmContacts=crmContacts;
 /* --- کسب‌وکار ویژه --- */
 function bscProg(b){const np=numProg(b.d);return np!=null?np:0;}
 function saleAmt(s){return (s.d.qty||0)*(s.d.price||0)+(s.d.extra||0);}
@@ -1250,7 +1273,7 @@ function recHTML(e,id){
       const rs=backRefs(id,ek,f.k);
       const selfParent=(ek===e&&f.k==='parent');
       const secTitle=selfParent?'زیرمجموعه‌ها':`${ed.ic} ${ed.n} — ${f.n}`;
-      const alwaysShow=(ek==='booknote')||(ek==='share'&&e==='company'); // بانک دانش و سهامداران همیشه دم دست
+      const alwaysShow=(ek==='booknote')||(ek==='share'&&e==='company')||(ek==='contact'&&e==='crm'); // بانک دانش، سهامداران و مخاطبین همیشه دم دست
       if(!rs.length&&!selfParent&&!alwaysShow)return;
       h+=`<div class="sec relsec"><h3>${secTitle} <span class="c">${rs.length.toLocaleString('fa-IR')}</span>
         <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}',null,{k:'${f.k}',id:'${id}'})">＋ افزودن</button>`:''}</h3>`;
@@ -1968,7 +1991,8 @@ function drawModal(){
 }
 function relPicker(f){
   const sel=relIds(cur,f.k);
-  const opts=byE(f.r).sort((a,b)=>(a.d.title||'').localeCompare(b.d.title||'','fa'));
+  const opts=byE(f.r).filter(o=>o.id!==cur.id) // جلوگیری از ارجاع رکورد به خودش (حلقه)
+    .sort((a,b)=>(a.d.title||'').localeCompare(b.d.title||'','fa'));
   const canNew=can('c',f.r);
   return `<div class="relbox" onclick="toggleRelList(event,'${f.k}')">${sel.map(id=>`<span class="tag b">${esc(nameOf(id))}</span>`).join('')||'<span style="color:var(--tx2);font-size:12px">انتخاب کنید…</span>'}</div>
   <div class="rellist" id="rl_${f.k}" style="display:none">
