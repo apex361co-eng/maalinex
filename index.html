@@ -1261,8 +1261,8 @@ function render(){
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
     view.type==='cal'?'📅 تقویم':
     view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
-    view.type==='bscmap'?'🗺️ نقشه استراتژی و BSC':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
+    view.type==='bscmap'?'🗺️ نقشه استراتژی و BSC':
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
@@ -1278,8 +1278,8 @@ function render(){
     else if(view.type==='gdash')c.innerHTML=gdashHTML();
     else if(view.type==='cal')c.innerHTML=calHTML();
     else if(view.type==='bizdash')c.innerHTML=bizdashHTML();
-    else if(view.type==='bscmap')c.innerHTML=bscmapHTML();
     else if(view.type==='charts')c.innerHTML=chartsHTML();
+    else if(view.type==='bscmap')c.innerHTML=bscmapHTML();
     else if(view.type==='rec')c.innerHTML=recHTML(view.e,view.id);
     else c.innerHTML=listHTML(view.e);
   }catch(err){
@@ -1481,6 +1481,18 @@ function abbrN(n){
   if(a>=1e6)return (n/1e6).toLocaleString('fa-IR',{maximumFractionDigits:1})+' میلیون';
   if(a>=1e3)return (n/1e3).toLocaleString('fa-IR',{maximumFractionDigits:0})+' هزار';
   return n.toLocaleString('fa-IR');
+}
+function gaugeSVG(pct,size){ // گیج نیم‌دایره کوچک (مثل BSC Designer)
+  pct=Math.max(0,Math.min(100,Math.round(pct||0)));
+  const t=traffic(pct), s=size||44, r=17, cx=24, cy=24;
+  const C=Math.PI*r; // طول نیم‌دایره
+  const ang=Math.PI*(1-pct/100), nx=cx+r*0.72*Math.cos(ang), ny=cy-r*0.72*Math.sin(ang);
+  return `<svg width="${s}" height="${s*0.62}" viewBox="0 0 48 30" style="flex-shrink:0">
+    <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="var(--line)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="${t.c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(pct/100*C).toFixed(1)} ${C.toFixed(1)}"/>
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${t.c}" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="2.4" fill="${t.c}"/>
+  </svg>`;
 }
 function donutSVG(items){ // [{l,v,c}]
   const total=items.reduce((a,x)=>a+x.v,0);
@@ -1972,7 +1984,7 @@ function bscmapHTML(){
   if(!view.bscT)view.bscT='_h';
   const T=view.bscT;
   const items=byE('bsc').filter(x=>bscDomain(x)===T||(T==='_h'&&x.d.scope==='هلدینگ'));
-  const PERSPS=[['مالی','💰','#b48a1e'],['مشتری','🤝','#2f9e6e'],['فرآیندهای داخلی','⚙️','#8a7fd6'],['یادگیری و رشد','🌱','#d9a441']];
+  const PERSPS=[['مالی','💰','#e2b93b'],['مشتری','🤝','#5ca94f'],['فرآیندهای داخلی','⚙️','#e08b3d'],['یادگیری و رشد','🌱','#5b93d3']];
   let h=`<div class="tools">
     <label style="margin:0">دامنه:</label>
     <select onchange="view.bscT=this.value;render()" style="max-width:250px">
@@ -2004,25 +2016,53 @@ function bscmapHTML(){
       </div></div>`;
     }
   }
-  PERSPS.forEach(([p,ic,c])=>{
+  // 🗺️ نقشه استراتژی به سبک BSC Designer: خطوط منظر + کارت هدف با گیج، ردیف سنجه‌ها و اتصال آبشاری
+  PERSPS.forEach(([p,ic,c],pi)=>{
     const rows=items.filter(x=>x.d.persp===p);
-    h+=`<div class="sec" style="border-inline-start:3px solid ${c}"><h3>${ic} منظر ${p} <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">`;
+    h+=`<div class="sec" style="padding:0;overflow:hidden;margin-bottom:10px">
+    <div style="display:flex;align-items:stretch">
+      <div style="writing-mode:vertical-rl;transform:rotate(180deg);background:${c};color:#101210;font-weight:800;font-size:12.5px;padding:14px 6px;text-align:center;min-width:34px;display:flex;align-items:center;justify-content:center">${ic} منظر ${p}</div>
+      <div style="flex:1;padding:12px;background:linear-gradient(180deg,${c}12,transparent)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px">`;
     if(!rows.length)h+=`<div class="empty" style="grid-column:1/-1;padding:10px">هدفی در این منظر ثبت نشده</div>`;
     rows.forEach(x=>{
       const par=x.d.parent&&x.d.parent[0]&&recs[x.d.parent[0]];
       const owner=relIds(x,'owner')[0];
       const ms=bscMeasures(x), kids=bscKids(x);
-      h+=`<div style="background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px;cursor:pointer" onclick="go('rec','bsc','${x.id}')">
-        <div style="font-weight:600;font-size:13px;margin-bottom:5px">${traffic(bscProg(x)).ic} ${esc(x.d.title)} ${par?`<span class="tag y" title="آبشار از: ${esc(par.d.title)}" onclick="event.stopPropagation();go('rec','bsc','${par.id}')">⬆ ${esc(par.d.title)}</span>`:''}</div>
-        ${owner?`<div style="font-size:10.5px;color:var(--tx2);margin-bottom:4px">مسئول: ${esc(nameOf(owner))}</div>`:''}
-        ${ms.map(m=>{const t=traffic(measureProg(m));
-          return `<div style="font-size:11px;color:var(--tx2);margin-bottom:3px">${t.ic} ${esc(m.d.title)}: <b style="color:${t.c}">${fmtN(m.d.current)} از ${fmtN(m.d.target)}</b> ${esc(m.d.unit||'')}</div>`;}).join('')}
-        ${kids.length?`<div style="font-size:10.5px;margin:2px 0 4px">${kids.map(k=>{const kt=traffic(bscProg(k));return `<span class="tag" style="margin:1px;cursor:pointer" title="هدف پایین‌دستی (${esc(k.d.scope||'')})" onclick="event.stopPropagation();go('rec','bsc','${k.id}')">⬇ ${scopeIc(k)} ${esc(k.d.title)} ${kt.ic}</span>`;}).join(' ')}</div>`:''}
-        ${pbarHTML(bscProg(x))}
+      const pct=bscProg(x), t=traffic(pct);
+      // ردیف سنجه: [مقدار فعلی] [٪ بج] نام سنجه — مثل تصویر BSC Designer
+      const mRow=m=>{const mp=measureProg(m),mt=traffic(mp);
+        return `<div onclick="event.stopPropagation();go('rec','measure','${m.id}')" style="display:flex;align-items:center;gap:6px;background:var(--bg);border-top:1px solid var(--line);padding:4px 8px;font-size:11px;cursor:pointer">
+          <b style="min-width:56px;color:var(--tx)" dir="ltr">${fmtN(m.d.current)}${m.d.unit?' <span style="font-weight:400;color:var(--tx2);font-size:9.5px">'+esc(m.d.unit)+'</span>':''}</b>
+          <span style="background:${mt.c};color:#101210;font-weight:800;border-radius:5px;padding:1px 6px;font-size:10px;min-width:38px;text-align:center">${Math.round(mp).toLocaleString('fa-IR')}٪</span>
+          <span style="flex:1;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.d.title)}</span>
+          <span style="color:var(--tx2);font-size:9.5px">هدف: ${fmtN(m.d.target)}</span>
+        </div>`;};
+      // ردیف اتصال آبشاری (فرزندان = پیشران‌ها، مثل ردیف‌های سبز تصویر)
+      const kRow=k=>{const kp=bscProg(k),kt=traffic(kp);
+        return `<div onclick="event.stopPropagation();go('rec','bsc','${k.id}')" style="display:flex;align-items:center;gap:6px;background:${kt.c}18;border-top:1px solid var(--line);padding:4px 8px;font-size:11px;cursor:pointer">
+          <span style="background:${kt.c};color:#101210;font-weight:800;border-radius:5px;padding:1px 6px;font-size:10px;min-width:38px;text-align:center">${Math.round(kp).toLocaleString('fa-IR')}٪</span>
+          <span style="flex:1;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⬇ ${scopeIc(k)} ${esc(k.d.title)}</span>
+          <span class="tag" style="font-size:9px">${esc(k.d.scope||'')}</span>
+        </div>`;};
+      h+=`<div style="background:var(--card,rgba(255,255,255,.03));border:1px solid var(--line);border-radius:11px;overflow:hidden;cursor:pointer;align-self:start" onclick="go('rec','bsc','${x.id}')">
+        <div style="display:flex;align-items:center;gap:9px;padding:9px 10px">
+          ${gaugeSVG(pct,44)}
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:12.5px;line-height:1.6">${esc(x.d.title)}</div>
+            ${owner?`<div style="font-size:10px;color:var(--tx2)">👤 ${esc(nameOf(owner))}</div>`:''}
+          </div>
+          <b style="color:${t.c};font-size:13px">${Math.round(pct).toLocaleString('fa-IR')}٪</b>
+        </div>
+        ${par?`<div onclick="event.stopPropagation();go('rec','bsc','${par.id}')" style="display:flex;align-items:center;gap:6px;background:${c}14;border-top:1px dashed ${c}66;padding:3px 8px;font-size:10px;color:var(--tx2);cursor:pointer">⬆ پشتیبانِ: <b style="color:var(--tx)">${scopeIc(par)} ${esc(par.d.title)}</b></div>`:''}
+        ${ms.map(mRow).join('')}
+        ${!ms.length?`<div style="border-top:1px solid var(--line);padding:4px 8px;font-size:10px;color:var(--tx2)">سنجه‌ای ثبت نشده</div>`:''}
+        ${kids.map(kRow).join('')}
       </div>`;
     });
-    h+=`</div></div>`;
+    h+=`</div></div></div></div>`;
+    // فلش اتصال بین منظرها (پایین ← بالا مثل تصویر)
+    if(pi<PERSPS.length-1)h+=`<div style="text-align:center;margin:-4px 0 6px;color:${c};font-size:15px;line-height:1">▲</div>`;
   });
   // 📋 کارت امتیازی متوازن (جدول)
   if(items.length){
