@@ -53,8 +53,10 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;color:var(--tx);font-size:14px;
 .btn.gh{background:var(--bg3);color:var(--tx);box-shadow:none;border:1px solid var(--line)}
 .btn.sm{padding:5px 10px;font-size:12px}
 .btn.bad{background:var(--bad)}
-input,select,textarea{background:var(--bg);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;width:100%}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)}
+input,select,textarea{background:#252b26;border:1px solid rgba(212,175,55,.28);color:#f2eee2;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;width:100%}
+input::placeholder,textarea::placeholder{color:#8d968f}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);background:#2b322c;box-shadow:0 0 0 3px rgba(212,175,55,.14)}
+select option{background:#252b26;color:#f2eee2}
 label{font-size:12px;color:var(--tx2);display:block;margin:10px 0 4px}
 /* table */
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass)}
@@ -82,7 +84,14 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 .comp .chip{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--tx2)}
 .comp .chip b{color:var(--tx)}
 /* rel picker */
-.relbox{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px;min-height:38px;cursor:pointer}
+.relbox{background:#252b26;border:1px solid rgba(212,175,55,.28);border-radius:8px;padding:6px;min-height:38px;cursor:pointer}
+.relbox:hover{background:#2b322c}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+#modal.shake{animation:shake .35s}
+#draftbar{position:fixed;bottom:16px;right:50%;transform:translateX(50%);z-index:90;display:none;
+  background:rgba(20,24,21,.96);border:1px solid rgba(212,175,55,.4);border-radius:12px;padding:10px 14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:12.5px;align-items:center;gap:10px}
+#draftbar.show{display:flex}
 .relbox .tag{cursor:pointer}
 .rellist{border:1px solid var(--line);border-radius:8px;margin-top:4px;max-height:180px;overflow:auto;background:var(--bg)}
 .rellist div{padding:7px 10px;cursor:pointer;font-size:13px}
@@ -266,6 +275,9 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   <div style="font-size:10.5px;color:var(--tx2);margin-top:8px;line-height:1.9">۲۵ دقیقه تمرکز → ۵ دقیقه استراحت<br>هر ۴ دور: استراحت بلند ۱۵ دقیقه</div>
 </div>
 <div id="ovl"><div id="modal"></div></div>
+<div id="draftbar">📝 یک فرم ذخیره‌نشده دارید:&nbsp;<b id="draft_t"></b>
+  <button class="btn sm" onclick="restoreDraft()">بازیابی</button>
+  <button class="btn gh sm" onclick="dropDraft()">رد کردن</button></div>
 
 <script>
 /* ================= SCHEMA ================= */
@@ -875,7 +887,21 @@ async function authAction(){
     fillLoginForm();document.getElementById('login').classList.add('show');
   } else openSettings();
 }
-function myHR(){const em=myEmail().toLowerCase();return byE('hr').find(h=>(h.d.email||'').toLowerCase()===em)||null;}
+function myHR(){
+  const em=myEmail().toLowerCase();
+  // ۱) اتصال صریح ادمین (صفحه کاربران)
+  const u=usersList().find(x=>x.email&&x.email.toLowerCase()===em);
+  if(u&&u.hr&&recs[u.hr]&&!recs[u.hr].del)return recs[u.hr];
+  // ۲) تطبیق ایمیل پرونده HR
+  return byE('hr').find(h=>(h.d.email||'').toLowerCase()===em)||null;
+}
+function setUserHR(i,hrId){
+  const l=usersList().slice();
+  l[i]={...l[i],hr:hrId||null};
+  saveUsers(l);
+  // ایمیل کاربر روی پرونده HR هم ثبت شود تا اتصال در همه‌جا برقرار باشد
+  if(hrId&&recs[hrId]){const h=recs[hrId];h.d.email=l[i].email;h.u=Date.now();put(h);}
+}
 function mkProfile(){
   const name=prompt('نام و نام خانوادگی شما:'); if(!name)return;
   put({id:uid(),e:'hr',d:{title:name,email:myEmail(),_by:myEmail()},u:Date.now()});
@@ -1131,7 +1157,9 @@ function projectSpent(p){
   const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
   return txs.reduce((a,t)=>a+(t.d.amount||0),0);
 }
-const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg,courseProg,msProg,bscProg};
+const PROGFN={taskProg,projectProg,objectiveProg,strategyProg,growthProg,habitPct,bookProg,courseProg,msProg,bscProg,measureProg};
+// دسترسی امن: اگر تابعی ثبت نشده بود، به‌جای کرش صفر برگردان
+function progOf(key,r){const f=PROGFN[key];return f?f(r):0;}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
 function fmtN(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('fa-IR');}
 /* --- تاریخ شمسی --- */
@@ -1292,7 +1320,7 @@ function listHTML(e){
   if(!rows.length)h+=`<tr><td colspan="9"><div class="empty">هنوز موردی ثبت نشده — با «＋ افزودن» شروع کنید</div></td></tr>`;
   rows.forEach(r=>{
     h+=`<tr onclick="go('rec','${e}','${r.id}')">${cols.map(f=>`<td>${cellHTML(r,f)}</td>`).join('')}`;
-    if(def.prog)h+=`<td>${pbarHTML(PROGFN[def.prog](r))}</td>`;
+    if(def.prog)h+=`<td>${pbarHTML(progOf(def.prog,r))}</td>`;
     if(def.comp){const c=window[def.comp](r);h+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;}
     h+=`</tr>`;
   });
@@ -1317,14 +1345,14 @@ function recHTML(e,id){
     ${can('e',e,r)?`<button class="btn sm" onclick="openRec('${e}','${id}')">✏️ ویرایش</button>`:''}</div>`;
   // computed chips
   const chips=[];
-  if(def.prog)chips.push(['پیشرفت کل',pbarHTML(PROGFN[def.prog](r))]);
+  if(def.prog)chips.push(['پیشرفت کل',pbarHTML(progOf(def.prog,r))]);
   if(def.comp){const c=window[def.comp](r);chips.push([c.label,`<b style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</b>`]);}
   if(e==='project'){
     const ac=projectSpent(r);
     chips.push(['هزینه واقعی',`<b>${money(ac)}</b>`]);
     // شاخص عملکرد هزینه PMBOK: CPI = EV/AC
     if(r.d.budget>0&&ac>0){
-      const cpi=(PROGFN.projectProg(r)/100*r.d.budget)/ac;
+      const cpi=(progOf("projectProg",r)/100*r.d.budget)/ac;
       chips.push(['CPI (شاخص عملکرد هزینه)',`<b style="color:${cpi>=1?'var(--ok)':'var(--bad)'}">${cpi.toLocaleString('fa-IR',{maximumFractionDigits:2})}</b>`]);
     }
     // وابستگی‌های باز
@@ -1359,7 +1387,7 @@ function recHTML(e,id){
         const cols=ed.cols.map(k=>ed.f.find(x=>x.k===k)).slice(0,5);
         h+=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f2=>`<th>${f2.n}</th>`).join('')}${ed.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
         rs.sort((a,b)=>b.u-a.u).forEach(x=>{
-          h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f2=>`<td>${cellHTML(x,f2)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(PROGFN[ed.prog](x))}</td>`:''}</tr>`;
+          h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f2=>`<td>${cellHTML(x,f2)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(progOf(ed.prog,x))}</td>`:''}</tr>`;
         });
         h+=`</tbody></table></div>`;
       } else h+=`<div class="empty">موردی ثبت نشده</div>`;
@@ -1375,7 +1403,7 @@ function miniTable(ek,rows,extraCol){
   if(!rows.length)return `<div class="empty">موردی نیست</div>`;
   const cols=ed.cols.map(k=>ed.f.find(x=>x.k===k)).slice(0,5);
   let h=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${ed.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
-  rows.forEach(x=>{h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f=>`<td>${cellHTML(x,f)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(PROGFN[ed.prog](x))}</td>`:''}</tr>`;});
+  rows.forEach(x=>{h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f=>`<td>${cellHTML(x,f)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(progOf(ed.prog,x))}</td>`:''}</tr>`;});
   return h+'</tbody></table></div>';
 }
 function meHTML(){
@@ -1871,11 +1899,18 @@ function usersHTML(){
   const list=usersList();
   let h=`<div class="sec"><h3>👤 کاربران و سطح دسترسی</h3>
   <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">هر کاربر با ایمیل و رمز خودش وارد می‌شود (بار اول در صفحه ورود، خودش ثبت‌نام می‌کند). اینجا نقش هر ایمیل را تعیین می‌کنید. ایمیلی که در این لیست نباشد، نقش «کاربر» می‌گیرد.</p>
-  <div class="tblwrap"><table><thead><tr><th>ایمیل</th><th>نقش</th><th></th></tr></thead><tbody>`;
+  <div class="tblwrap"><table><thead><tr><th>ایمیل</th><th>نقش</th><th>👥 پرونده منابع انسانی</th><th></th></tr></thead><tbody>`;
   list.forEach((u,i)=>{
+    const hrLinked=u.hr&&recs[u.hr]&&!recs[u.hr].del?u.hr:'';
+    const emailMatch=!hrLinked&&byE('hr').find(x=>(x.d.email||'').toLowerCase()===(u.email||'').toLowerCase());
     h+=`<tr><td dir="ltr" style="text-align:left">${esc(u.email)}</td>
-      <td><select onchange="setRole(${i},this.value)" style="max-width:180px;${u.role===PENDING?'border-color:var(--warn)':''}">${aclRoles().concat([PENDING]).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select>
+      <td><select onchange="setRole(${i},this.value)" style="max-width:170px;${u.role===PENDING?'border-color:var(--warn)':''}">${aclRoles().concat([PENDING]).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select>
       ${u.role===PENDING?'<div style="font-size:10.5px;color:var(--warn)">تازه ثبت‌نام کرده — منتظر تایید شما</div>':''}</td>
+      <td><select onchange="setUserHR(${i},this.value)" style="max-width:190px">
+        <option value="">— بدون اتصال —</option>
+        ${byE('hr').sort((a,b)=>(a.d.title||'').localeCompare(b.d.title||'','fa')).map(x=>`<option value="${x.id}" ${hrLinked===x.id?'selected':''}>${esc(x.d.title||'—')}</option>`).join('')}</select>
+      ${emailMatch?`<div style="font-size:10.5px;color:var(--ok)">✓ از طریق ایمیل به «${esc(emailMatch.d.title)}» وصل است</div>`:''}
+      ${!hrLinked&&!emailMatch?`<div style="font-size:10.5px;color:var(--tx2)">وصل کنید تا میز کارش پر شود</div>`:''}</td>
       <td><button class="btn bad sm" onclick="rmUser(${i})">حذف</button></td></tr>`;
   });
   h+=`</tbody></table></div>
@@ -2079,7 +2114,7 @@ function drawModal(){
   let h=`<h3>${def.ic} ${id?esc(cur.d.title||''):'مورد جدید — '+def.n}</h3>`;
   if(id){
     const chips=[];
-    if(def.prog)chips.push(['پیشرفت',Math.round(PROGFN[def.prog](recs[id]))+'٪']);
+    if(def.prog)chips.push(['پیشرفت',Math.round(progOf(def.prog,recs[id]))+'٪']);
     if(def.comp){const c=window[def.comp](recs[id]);chips.push([c.label,c.v]);}
     if(e==='project')chips.push(['هزینه واقعی',fmtN(projectSpent(recs[id]))]);
     if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
@@ -2240,8 +2275,38 @@ function delRec(){
   cur.del=true;cur.u=Date.now();const e=cur.e,id=cur.id;put(cur);closeModal();
   if(view.type==='rec'&&view.id===id)go('list',e);
 }
-function closeModal(){document.getElementById('ovl').classList.remove('show');cur=null;}
-document.getElementById('ovl').addEventListener('click',e=>{if(e.target.id==='ovl')closeModal();});
+function closeModal(){document.getElementById('ovl').classList.remove('show');cur=null;clearDraft();}
+/* کلیک اشتباهی بیرون فرم دیگر فرم را نمی‌بندد — فقط تکان می‌خورد تا یادآوری کند */
+document.getElementById('ovl').addEventListener('click',e=>{
+  if(e.target.id==='ovl'){
+    const m=document.getElementById('modal');
+    m.classList.remove('shake');void m.offsetWidth;m.classList.add('shake');
+  }
+});
+/* 📝 پیش‌نویس خودکار: هر تغییری در فرم بلافاصله حفظ می‌شود (حتی با بستن اشتباهی اپ) */
+function saveDraft(){
+  if(!cur)return;
+  try{harvest();}catch(e){}
+  localStorage.setItem('xr_draft',JSON.stringify({e:cur.e,id:cur._new?null:cur.id,d:cur.d,ts:Date.now()}));
+}
+function clearDraft(){localStorage.removeItem('xr_draft');}
+['input','change'].forEach(ev=>document.getElementById('modal').addEventListener(ev,()=>{if(cur)saveDraft();}));
+function checkDraft(){
+  try{
+    const dr=JSON.parse(localStorage.getItem('xr_draft')||'null');
+    if(!dr||!E[dr.e]||Date.now()-dr.ts>86400000){clearDraft();return;}
+    document.getElementById('draft_t').textContent=(E[dr.e].ic+' '+(dr.d.title||E[dr.e].n));
+    document.getElementById('draftbar').classList.add('show');
+  }catch(e){}
+}
+function restoreDraft(){
+  const dr=JSON.parse(localStorage.getItem('xr_draft')||'null');if(!dr)return;
+  document.getElementById('draftbar').classList.remove('show');
+  cur={id:dr.id||uid(),e:dr.e,d:dr.d,u:0};
+  if(!dr.id||!recs[dr.id])cur._new=true;
+  drawModal();
+}
+function dropDraft(){clearDraft();document.getElementById('draftbar').classList.remove('show');}
 
 /* ================= LOGIN / SETTINGS ================= */
 let authMode='in';
@@ -2473,7 +2538,7 @@ function pomoSkip(){pomo.left=1;if(!pomo.run)pomoTick();drawPomo();}
 function pomoReset(){clearInterval(pomo.iv);pomo.run=false;pomo.mode='focus';pomo.left=PDUR.focus;drawPomo();}
 
 /* ================= BOOT ================= */
-loadLocal();render();fillLoginForm();
+loadLocal();render();fillLoginForm();checkDraft();
 (async()=>{
   if(cfg.url&&cfg.key){
     const ok=await initSupabase().catch(()=>false);
