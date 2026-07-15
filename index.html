@@ -816,7 +816,17 @@ function saveAcl(fn){
 function aclRoles(){const a=acl();return [...ROLES,...Object.keys(a.roles||{}).filter(r=>!ROLES.includes(r))];}
 function aclFor(){ // تنظیمات مؤثر برای کاربر جاری: نقش + جایگزینی فردی
   const a=acl(), roleCfg=(a.roles||{})[myRole()]||{}, userCfg=(a.users||{})[myEmail().toLowerCase()]||{};
-  return {ent:{...(roleCfg.ent||{}),...(userCfg.ent||{})},fld:{...(roleCfg.fld||{}),...(userCfg.fld||{})}};
+  return {ent:{...(roleCfg.ent||{}),...(userCfg.ent||{})},fld:{...(roleCfg.fld||{}),...(userCfg.fld||{})},views:{...(roleCfg.views||{}),...(userCfg.views||{})}};
+}
+/* صفحات و ابزارهای ویژه که ادمین می‌تواند مخفی کند */
+const VIEWS_ACL=[
+ ['me','🗂️ میز کار من'],['cal','📅 تقویم'],['charts','📊 نمودارها و شاخص‌ها'],
+ ['gdash','✨ داشبورد رشد'],['bizdash','🏪 داشبورد کسب‌وکار'],['bscmap','🗺️ نقشه استراتژی و BSC'],
+ ['pomo','🍅 پومودورو'],['quicknote','⚡ ثبت سریع نکته']];
+function canView(v){
+  if(isPending())return false;
+  if(isAdmin())return true;
+  return (aclFor().views||{})[v]!=='hide';
 }
 function entLevel(e){if(isAdmin())return null;return aclFor().ent[e]||null;} // hide|read|edit|full|null
 function fldMode(e,k){if(isAdmin())return null;return aclFor().fld[e+'.'+k]||null;} // hide|read|null
@@ -852,7 +862,8 @@ function whoami(){
   const el=document.getElementById('who');if(el)el.textContent=session?myEmail()+' · '+myRole():'حالت محلی · ادمین';
   const ab=document.getElementById('authbtn');if(ab)ab.textContent=session?'🚪 خروج':'ورود';
   const pend=isPending();
-  ['quickbtn','pomobtn','rembtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=pend?'none':'';});
+  const bmap={quickbtn:'quicknote',pomobtn:'pomo'};
+  ['quickbtn','pomobtn','rembtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=(pend||(bmap[i]&&!canView(bmap[i])))?'none':'';});
   const fb=document.getElementById('fxbtn');if(fb)fb.style.display=(!pend&&isAdmin())?'':'none';
 }
 async function authAction(){
@@ -1152,16 +1163,16 @@ function nav(){
   const el=document.getElementById('nav');
   if(isPending()){el.innerHTML='';return;}
   let h=`<div class="nav-i ${view.type==='dash'?'on':''}" onclick="go('dash')">🎛️ اتاق کنترل</div>
-  <div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>
-  <div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>
-  <div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`;
+  ${canView('me')?`<div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>`:''}
+  ${canView('cal')?`<div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>`:''}
+  ${canView('charts')?`<div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`:''}`;
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>`;
   GROUPS.forEach(g=>{
     h+=`<div class="nav-h">${g}</div>`;
-    if(g==='رشد شخصی')h+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
-    if(g==='کسب‌وکار ویژه'&&canSee('sale'))h+=`<div class="nav-i ${view.type==='bizdash'?'on':''}" onclick="go('bizdash')">🏪 داشبورد کسب‌وکار</div>`;
-    if(g==='استراتژی و تعالی'&&canSee('bsc'))h+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
+    if(g==='رشد شخصی'&&canView('gdash'))h+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
+    if(g==='کسب‌وکار ویژه'&&canSee('sale')&&canView('bizdash'))h+=`<div class="nav-i ${view.type==='bizdash'?'on':''}" onclick="go('bizdash')">🏪 داشبورد کسب‌وکار</div>`;
+    if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bscmap'))h+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
     Object.entries(E).filter(([k,v])=>v.grp===g&&canSee(k)).forEach(([k,v])=>{
       h+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${visE(k).length}</span></div>`;
     });
@@ -1208,6 +1219,11 @@ function render(){
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
+  // محافظ صفحات ویژه بر اساس ماتریس دسترسی
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap'};
+  if(VG[view.type]&&!canView(VG[view.type])){
+    c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
+  }
   try{
     if(view.type==='dash')c.innerHTML=dashHTML();
     else if(view.type==='users')c.innerHTML=usersHTML();
@@ -1531,6 +1547,13 @@ function setAclEnt(ek,val){
     const c=b[key]=b[key]||{};c.ent=c.ent||{};
     if(val)c.ent[ek]=val;else delete c.ent[ek];});
 }
+function setAclView(vk,val){
+  const {t,v}=aclTarget(); if(!v)return;
+  const key=t==='user'?String(v).toLowerCase():v;
+  saveAcl(d=>{const b=t==='role'?(d.roles=d.roles||{}):(d.users=d.users||{});
+    const c=b[key]=b[key]||{};c.views=c.views||{};
+    if(val)c.views[vk]=val;else delete c.views[vk];});
+}
 function setAclFld(ek,fk,val){
   const {t,v}=aclTarget(); if(!v)return;
   const key=t==='user'?String(v).toLowerCase():v;
@@ -1567,6 +1590,17 @@ function aclHTML(){
     ${t==='role'&&!ROLES.includes(v)?`<button class="btn bad sm" onclick="rmRole()">🗑 حذف نقش</button>`:''}
   </div></div>`;
   if(!v)return h+`<div class="empty">کاربری ثبت نشده است</div>`;
+  // صفحات و ابزارهای ویژه
+  h+=`<div class="sec"><h3>🖥️ صفحات و ابزارها (داشبوردها)</h3>
+  <div class="tblwrap"><table><thead><tr><th>صفحه / ابزار</th><th>دسترسی</th></tr></thead><tbody>
+  ${VIEWS_ACL.map(([vk,vn])=>{
+    const curV=(cfg.views||{})[vk]||'';
+    return `<tr><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
+      <option value="" ${curV===''?'selected':''}>نمایش (پیش‌فرض)</option>
+      <option value="hide" ${curV==='hide'?'selected':''}>مخفی 🚫</option></select></td></tr>`;
+  }).join('')}
+  </tbody></table></div>
+  <p style="font-size:11px;color:var(--tx2);margin-top:8px">با «مخفی»، آن صفحه/ابزار برای این ${t==='role'?'نقش':'کاربر'} از منو و نوار بالا حذف می‌شود. کنترل خودِ دیتابیس‌ها و تک‌تک فیلدهایشان در جدول‌های پایین است — دکمه «تنظیم فیلدها» جلوی هر بخش، همه فیلدهای همان بخش را باز می‌کند (شامل بخش‌های رشد شخصی).</p></div>`;
   GROUPS.forEach(g=>{
     h+=`<div class="sec"><h3>${g}</h3><div class="tblwrap"><table><thead><tr><th>بخش</th><th>دسترسی</th><th>فیلدها</th></tr></thead><tbody>`;
     Object.entries(E).filter(([k,d])=>d.grp===g).forEach(([ek,ed])=>{
