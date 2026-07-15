@@ -739,6 +739,7 @@ function loadLocal(){try{recs=JSON.parse(localStorage.getItem('xr_data')||'{}');
   [['meta-users',MU],['meta-opts',MO]].forEach(([old,nid])=>{
     if(recs[old]){if(!recs[nid])recs[nid]={...recs[old],id:nid};delete recs[old];}});
   queue=queue.map(id=>id==='meta-users'?MU:id==='meta-opts'?MO:id).filter(id=>recs[id]);saveQ();
+  Object.values(recs).forEach(r=>{if(!r.d||typeof r.d!=='object')r.d={};}); // رکورد ناقص، اپ را نیندازد
   saveLocal();
 }
 let queue=JSON.parse(localStorage.getItem('xr_q')||'[]');
@@ -747,7 +748,7 @@ function uid(){return crypto.randomUUID();}
 function setSync(cls,txt){document.getElementById('syncdot').className=cls;document.getElementById('synctxt').textContent=txt;}
 
 function put(rec,push=true){recs[rec.id]=rec;saveLocal();if(push){queue.push(rec.id);saveQ();flush();}render();}
-function byE(e){return Object.values(recs).filter(r=>r.e===e&&!r.del);}
+function byE(e){return Object.values(recs).filter(r=>r.e===e&&!r.del&&(r.d&&typeof r.d==='object'||(r.d={},true)));}
 // رکوردهای «رشد شخصی» فقط برای صاحبشان (و ادمین) نمایش داده می‌شوند
 function visE(e){const rows=byE(e);if(!GROWTH.includes(e))return rows;
   return rows.filter(r=>!r.d._by||r.d._by===myEmail()||isAdmin());}
@@ -778,7 +779,7 @@ async function pullAll(){
     (data||[]).forEach(row=>{
       const loc=recs[row.id];
       const remoteU=new Date(row.updated_at).getTime();
-      if(!loc||loc.u<=remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data,u:remoteU,del:row.deleted};}
+      if(!loc||loc.u<=remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};}
     });
     if(!data||data.length<page)break; from+=page;
   }
@@ -2263,7 +2264,15 @@ function relPicker(f){
     <div id="ro_${f.k}">${opts.map(o=>`<div class="${sel.includes(o.id)?'sel':''}" data-t="${esc((o.d.title||'').toLowerCase())}" onclick="toggleRel('${f.k}','${o.id}',${f.s?1:0})">${esc(o.d.title||'—')}</div>`).join('')||'<div style="color:var(--tx2);padding:7px 10px;font-size:12px">موردی وجود ندارد — نام را بنویسید و «＋ ساخت جدید» بزنید</div>'}</div>
   </div>`;
 }
-function toggleRelList(ev,k){const el=document.getElementById('rl_'+k);el.style.display=el.style.display==='none'?'block':'none';}
+function toggleRelList(ev,k){
+  if(ev)ev.stopPropagation();
+  const el=document.getElementById('rl_'+k);const open=el.style.display==='none';
+  closeRelLists();
+  el.style.display=open?'block':'none';
+}
+function closeRelLists(except){document.querySelectorAll('.rellist').forEach(el=>{if(el!==except)el.style.display='none';});}
+// کلیک بیرون از لیست انتخاب → بسته شدن لیست
+document.addEventListener('click',ev=>{if(!ev.target.closest('.rellist')&&!ev.target.closest('.relbox'))closeRelLists();});
 function filtRel(k){
   const q=(document.getElementById('rq_'+k).value||'').toLowerCase().trim();
   document.querySelectorAll('#ro_'+CSS.escape(k)+' [data-t]').forEach(el=>{
@@ -2293,7 +2302,8 @@ function toggleRel(k,id,single){
   const box=list.previousElementSibling;
   const wrap=document.createElement('div');wrap.innerHTML=relPicker(f);
   box.replaceWith(wrap.children[0]);list.replaceWith(wrap.children[0]);
-  document.getElementById('rl_'+k).style.display='block';
+  // تک‌انتخابی: بعد از انتخاب بسته شود │ چندانتخابی: باز بماند تا موارد بعدی هم انتخاب شوند
+  document.getElementById('rl_'+k).style.display=single?'none':'block';
 }
 /* --- آپلود فایل (Supabase Storage یا محلی) --- */
 async function upFile(k,inp){
