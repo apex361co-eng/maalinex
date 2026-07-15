@@ -905,7 +905,17 @@ const VIEWS_ACL=[
  ['dash_tree','🎛️ ↳ زنجیره آبشاری استراتژی'],
  ['dash_alerts','🎛️ ↳ هشدارهای آیین‌نامه'],
  ['cal','📅 تقویم'],['charts','📊 نمودارها و شاخص‌ها'],
- ['gdash','✨ داشبورد رشد'],['bizdash','🏪 داشبورد کسب‌وکار'],['bscmap','🗺️ نقشه استراتژی و BSC'],
+ ['gdash','✨ داشبورد رشد'],
+ ['gdash_stats','✨ ↳ کارت‌های آماری رشد'],
+ ['gdash_charts','✨ ↳ نمودارهای رشد'],
+ ['gdash_plans','✨ ↳ برنامه‌های پیش رو'],
+ ['bizdash','🏪 داشبورد کسب‌وکار'],
+ ['bscmap','🗺️ نقشه استراتژی و BSC'],
+ ['bscmap_head','🗺️ ↳ چشم‌انداز و ماموریت'],
+ ['bscmap_map','🗺️ ↳ نقشه چهار منظر'],
+ ['bscmap_score','🗺️ ↳ کارت امتیازی متوازن'],
+ ['bscmap_tree','🗺️ ↳ آبشار کامل استراتژی'],
+ ['bscmap_efqm','🗺️ ↳ تعالی سازمانی EFQM'],
  ['pomo','🍅 پومودورو'],['quicknote','⚡ ثبت سریع نکته']];
 function canView(v){
   if(isPending())return false;
@@ -923,6 +933,15 @@ function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
   if(r==='ادمین')return true;
   // هرکس پروفایل خودش را می‌تواند ویرایش کند
   if(a==='e'&&e==='hr'&&rec&&(rec.d.email||'').toLowerCase()===myEmail().toLowerCase())return true;
+  // 🛡️ اهداف BSC و سنجه‌ها: هرکس فقط مالِ خودش را ویرایش می‌کند؛
+  // دستکاری مال دیگران فقط برای ادمین یا کسی که ادمین در سطوح دسترسی صریحاً «ویرایش/کامل» داده باشد
+  if((a==='e'||a==='d')&&rec&&(e==='bsc'||e==='measure')){
+    if(bscMsMine(e,rec))return true; // مسئول خودش است
+    const xlvl=entLevel(e);
+    if(xlvl==='full')return true;
+    if(xlvl==='edit')return a!=='d';
+    return false;
+  }
   // ۱) اگر ادمین برای این نقش/کاربر تنظیم سفارشی گذاشته، همان حاکم است
   const lvl=entLevel(e);
   if(lvl){
@@ -940,6 +959,14 @@ function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
   if(r==='کاربر')return a!=='d'&&['leave','idea'].includes(e);
   // نقش سفارشی بدون تنظیم: فقط مشاهده
   return false;
+}
+function bscMsMine(e,rec){ // آیا این هدف BSC / سنجه متعلق به کاربر جاری است؟
+  const ids=myHRids(); if(!ids.size)return false;
+  const own=r=>relIds(r,'owner').some(id=>ids.has(id))||relIds(r,'person').some(id=>ids.has(id));
+  if(e==='bsc')return own(rec);
+  if(own(rec))return true; // مسئول مستقیم سنجه
+  // سنجه‌ای که هدفِ BSC آن مال کاربر است
+  return relIds(rec,'bsc').some(b=>recs[b]&&!recs[b].del&&own(recs[b]));
 }
 function isAdmin(){return myRole()==='ادمین';}
 function whoami(){
@@ -1087,6 +1114,46 @@ function habitPct(h){
   const done=ks.filter(f=>h.d[f.k]).length;
   return ks.length?done/ks.length*100:0;
 }
+/* --- 📆 عادت‌های قابل شخصی‌سازی (هر کاربر لیست خودش) --- */
+const HABIT_BASE=[['h1','خوردن دارو'],['h2','ورزش'],['h3','مانترا و مراقبه'],['h4','خواب مناسب'],['h5','مطالعه'],['h6','بررسی کارهای روز جاری'],['h7','برنامه‌ریزی روز بعد'],['h8','آموزش و یادگیری'],['h9','تغذیه سالم'],['h10','نوشیدن آب کافی'],['h11','یک پست لینکدینی']];
+function habitCfg(){
+  const m=recs[MO];const all=(m&&!m.del&&m.d._habits)||{};
+  const c=all[myEmail().toLowerCase()]||{};
+  return {custom:Array.isArray(c.custom)?c.custom:[],hide:Array.isArray(c.hide)?c.hide:[]};
+}
+function saveHabitCfg(cfg){
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};
+  m.d={...m.d,_habits:{...(m.d._habits||{}),[myEmail().toLowerCase()]:cfg}};
+  m.u=Date.now();m.del=false;put(m,true);
+}
+function rebuildHabitFields(){
+  const cfg=habitCfg();
+  const chk=[
+    ...HABIT_BASE.filter(([k])=>!cfg.hide.includes(k)).map(([k,n])=>({k,n,t:CHK})),
+    ...cfg.custom.filter(c=>c&&c.k&&!cfg.hide.includes(c.k)).map(c=>({k:c.k,n:c.n,t:CHK}))];
+  E.habit.f=[
+    {k:'title',n:'یادداشت روز',t:TXT},
+    {k:'date',n:'تاریخ',t:DAT},
+    ...chk,
+    {k:'weight',n:'وزن',t:NUM},
+    {k:'mood',n:'مود',t:SEL,o:['عالی','خوب','معمولی','بد']}];
+}
+function addHabit(){
+  const inp=document.getElementById('nh_name');
+  const name=(inp&&inp.value||'').trim(); if(!name)return;
+  const cfg=habitCfg();
+  cfg.custom=[...cfg.custom,{k:'c'+uid().slice(0,8),n:name}];
+  harvest();saveHabitCfg(cfg);rebuildHabitFields();drawModal();
+}
+window.addHabit=addHabit;
+function rmHabit(k){
+  if(!confirm('این عادت از فرم روزهای شما حذف شود؟ (تیک‌های ثبت‌شده قبلی از بین نمی‌رود؛ فقط دیگر نمایش داده نمی‌شود)'))return;
+  const cfg=habitCfg();
+  if(!cfg.hide.includes(k))cfg.hide=[...cfg.hide,k];
+  cfg.custom=cfg.custom.filter(c=>c.k!==k);
+  harvest();saveHabitCfg(cfg);rebuildHabitFields();drawModal();
+}
+window.rmHabit=rmHabit;
 function planDays(p){
   const iso=ds(p.d.due);
   if(!iso)return{label:'روز مانده',v:'—'};
@@ -1329,6 +1396,7 @@ function go(type,e,id,flt){
 }
 function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
 function render(){
+  try{rebuildHabitFields();}catch(e){} // لیست عادت‌های شخصی کاربر جاری
   nav();
   const c=document.getElementById('content');
   if(isPending()){
@@ -2023,7 +2091,8 @@ function gdashHTML(){
   const last30=hs.filter(h=>ds(h.d.date)&&ds(h.d.date)>new Date(Date.now()-30*86400000).toISOString().slice(0,10));
   const avg30=last30.length?Math.round(avg(last30.map(x=>habitPct(x)))):0;
   const wealth=as.reduce((a,x)=>a+(x.d.value||0),0);
-  let h=`<div class="cards">
+  let h='';
+  if(canView('gdash_stats'))h+=`<div class="cards">
     ${card('✅ عادت‌های امروز',todayH?Math.round(habitPct(todayH))+'٪':'ثبت نشده',null,todayH?`go('rec','habit','${todayH.id}')`:`openRec('habit')`)}
     ${card('📈 میانگین ۳۰ روز',avg30+'٪')}
     ${card('🌱 اهداف رشد فعال',gs.filter(g=>growthProg(g)<100).length,null,"go('list','growth')")}
@@ -2042,7 +2111,7 @@ function gdashHTML(){
   const assetItems=Object.entries(assetMap).sort((a,b)=>b[1]-a[1]).map(([l,v],i)=>({l:l+' ('+abbrN(v)+')',v:Math.max(1,Math.round(v/1e6)),c:acolors[i%acolors.length]}));
   const growthBars=gs.map(g=>({l:g.d.title,v:growthProg(g),href:`go('rec','growth','${g.id}')`})).sort((a,b)=>b.v-a.v).slice(0,8);
   const openPlans=ps.filter(p=>p.d.status!=='Done').sort((a,b)=>(ds(a.d.due)||'9999').localeCompare(ds(b.d.due)||'9999')).slice(0,6);
-  h+=`<div class="chartgrid">
+  if(canView('gdash_charts'))h+=`<div class="chartgrid">
     <div class="sec"><h3>📆 روند عادت‌های روزانه — ۳۰ روز اخیر</h3>${habitTrendSVG()}</div>
     <div class="sec"><h3>🌱 اهداف رشد بر اساس نوع</h3>${donutSVG(kindItems)}</div>
     <div class="sec"><h3>🎯 درصد تحقق اهداف رشد</h3>${hbarsHTML(growthBars,CH.blue)}</div>
@@ -2051,8 +2120,8 @@ function gdashHTML(){
       [...bs.filter(b=>bookProg(b)<100).map(b=>({l:'📚 '+b.d.title,v:bookProg(b),href:`go('rec','book','${b.id}')`})),
        ...visE('course').filter(c=>courseProg(c)<100).map(c=>({l:'🎓 '+c.d.title,v:courseProg(c),href:`go('rec','course','${c.id}')`}))]
       .sort((a,b)=>b.v-a.v).slice(0,8),CH.aqua)}</div>
-  </div>
-  <div class="sec relsec"><h3>🗓️ برنامه‌های پیش رو <span style="flex:1"></span><button class="btn gh sm" onclick="openRec('plan')">＋ برنامه جدید</button></h3>
+  </div>`;
+  if(canView('gdash_plans'))h+=`<div class="sec relsec"><h3>🗓️ برنامه‌های پیش رو <span style="flex:1"></span><button class="btn gh sm" onclick="openRec('plan')">＋ برنامه جدید</button></h3>
   ${openPlans.length?miniTable('plan',openPlans):'<div class="empty">برنامه بازی نیست</div>'}</div>`;
   return h;
 }
@@ -2223,8 +2292,8 @@ function bscmapHTML(){
   </div>
   <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">آبشار ۵ سطحی BSC: هلدینگ ← کسب‌وکار ← شرکت ← واحد ← فرد. هر هدف با فیلد «⬆ هدف BSC سطح بالاتر» به بالادستش وصل می‌شود و تحقق آن به‌صورت خودکار (میانگین وزنی سنجه‌ها و اهداف فرزند) تا هلدینگ بالا می‌رود — یعنی کوچک‌ترین سنجه در پایین‌ترین سطح، اثرش همه‌جا دیده می‌شود.</p>`;
   // چشم‌انداز │ ماموریت │ محورهای استراتژیک (به سبک برنامه یک‌صفحه‌ای BSC)
-  const hd=bscHead(T), canH=can('e','bsc');
-  if(!view.bscHeadEdit&&(hd.v||hd.m||hd.th)){
+  const hd=bscHead(T), canH=can('e','bsc')&&canView('bscmap_head');
+  if(canView('bscmap_head')&&!view.bscHeadEdit&&(hd.v||hd.m||hd.th)){
     h+=`<div class="sec" style="background:linear-gradient(135deg,rgba(212,175,55,.07),rgba(31,111,80,.10))"><h3>🧭 چشم‌انداز و ماموریت
       <span style="flex:1"></span>${canH?`<button class="btn gh sm" onclick="view.bscHeadEdit=1;render()">✏️ ویرایش</button>`:''}</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:12.5px">
@@ -2245,7 +2314,7 @@ function bscmapHTML(){
     }
   }
   // 🗺️ نقشه استراتژی به سبک BSC Designer: خطوط منظر + کارت هدف با گیج، ردیف سنجه‌ها و اتصال آبشاری
-  PERSPS.forEach(([p,ic,c],pi)=>{
+  if(canView('bscmap_map'))PERSPS.forEach(([p,ic,c],pi)=>{
     const rows=items.filter(x=>x.d.persp===p);
     h+=`<div class="sec" style="padding:0;overflow:hidden;margin-bottom:10px">
     <div style="display:flex;align-items:stretch">
@@ -2296,14 +2365,14 @@ function bscmapHTML(){
     if(pi<PERSPS.length-1)h+=`<div style="text-align:center;margin:-4px 0 6px;color:${c};font-size:15px;line-height:1">▲</div>`;
   });
   // اهدافی که «منظر» ندارند، گم نشوند
-  const noPersp=items.filter(x=>!PERSPS.some(([p])=>x.d.persp===p));
+  const noPersp=canView('bscmap_map')?items.filter(x=>!PERSPS.some(([p])=>x.d.persp===p)):[];
   if(noPersp.length){
     h+=`<div class="sec"><h3>⚠️ اهداف بدون منظر <span class="c">${noPersp.length.toLocaleString('fa-IR')}</span></h3>
     <p style="font-size:11px;color:var(--tx2);margin-bottom:8px">برای این اهداف فیلد «منظر» انتخاب نشده — روی هر کدام بزنید و منظرش را تعیین کنید تا در نقشه جای بگیرد.</p>
     ${noPersp.map(x=>{const pct=bscProg(x),t=traffic(pct);return `<div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin-bottom:5px;cursor:pointer;font-size:12px" onclick="openRec('bsc','${x.id}')">${t.ic} <b>${esc(x.d.title)}</b><span class="tag" style="font-size:9.5px">${esc(x.d.scope||'')}</span><span style="flex:1"></span><b style="color:${t.c}">${Math.round(pct).toLocaleString('fa-IR')}٪</b></div>`;}).join('')}</div>`;
   }
   // 📋 کارت امتیازی متوازن (جدول) — با فیلتر سطح
-  if(items.length){
+  if(items.length&&canView('bscmap_score')){
     const SLVLS=['هلدینگ','کسب‌وکار','شرکت','واحد','فرد'];
     const SLIC={'هلدینگ':'🏦','کسب‌وکار':'🧢','شرکت':'🏢','واحد':'🧩','فرد':'👤'};
     const sl=view.bscLvl||'';
@@ -2335,7 +2404,7 @@ function bscmapHTML(){
     <div style="font-size:11px;color:var(--tx2);margin-top:8px">🟢 تحقق ≥ ۸۵٪ │ 🟡 بین ۶۰ تا ۸۵٪ │ 🔴 کمتر از ۶۰٪ — درصد هر سنجه از (فعلی−شروع)÷(هدف−شروع) محاسبه می‌شود و اهداف کاهشی را هم درست می‌سنجد.</div></div>`;
   }
   // 🌊 درخت آبشار کامل: از هلدینگ تا کوچک‌ترین سنجه (مستقل از دامنه انتخابی)
-  const allBsc=byE('bsc');
+  const allBsc=canView('bscmap_tree')?byE('bsc'):[];
   const roots=allBsc.filter(x=>!(x.d.parent&&x.d.parent[0]&&recs[x.d.parent[0]]&&!recs[x.d.parent[0]].del));
   if(allBsc.length){
     const ORD={'هلدینگ':0,'کسب‌وکار':1,'شرکت':2,'واحد':3,'فرد':4};
@@ -2350,7 +2419,7 @@ function bscmapHTML(){
     if(T.startsWith('b:'))return relIds(x,'biz').includes(T.slice(2));
     return false; // EFQM فقط در سطح هلدینگ/شرکت/کسب‌وکار
   });
-  if(efs.length){
+  if(efs.length&&canView('bscmap_efqm')){
     const tot=efqmTotal(efs);
     const CL=[['جهتگیری',['۱','۲'],'#3d85c6'],['اجرا',['۳','۴','۵'],'#3c5aa6'],['نتایج',['۶','۷'],'#3a9e5f']];
     const CRIT_N={'۱':'مبنای وجودی، چشم‌انداز و استراتژی','۲':'فرهنگ سازمانی و رهبری','۳':'تعامل تنگاتنگ با ذینفعان','۴':'خلق ارزش پایدار','۵':'پیشبرد عملکرد و تحول','۶':'برداشت‌های ذینفعان','۷':'عملکردهای استراتژیک و عملیاتی'};
@@ -2376,7 +2445,7 @@ function bscmapHTML(){
       ${hbarsHTML(efs.slice().sort((a,b)=>(a.d.sub||'').localeCompare(b.d.sub||'')).map(x=>({l:(x.d.sub||x.d.crit||x.d.title||'—'),v:efqmScore(x),href:`go('rec','efqm','${x.id}')`})),CH.violet)}
       ${(()=>{const linked=efs.flatMap(x=>relIds(x,'bsc'));return linked.length?`<div style="font-size:11px;margin-top:8px;color:var(--tx2)">🔗 هم‌راستا با اهداف BSC: ${[...new Set(linked)].map(id=>recs[id]&&!recs[id].del?`<span class="tag b" style="cursor:pointer" onclick="go('rec','bsc','${id}')">${scopeIc(recs[id])} ${esc(nameOf(id))}</span>`:'').join(' ')}</div>`:'';})()}
     </div>`;
-  } else if(can('c','efqm')){
+  } else if(can('c','efqm')&&canView('bscmap_efqm')){
     h+=`<div class="sec"><h3>🏅 تعالی سازمانی — مدل EFQM 2025</h3>
       <div class="empty">هنوز ارزیابی‌ای برای این دامنه ثبت نشده — با «🏅 ارزیابی EFQM» جزءمعیارهای مدل ۲۰۲۵ را با منطق رادار امتیاز دهید (۷ معیار │ ۳۲ جزءمعیار │ ۱٬۰۰۰ امتیاز)</div></div>`;
   }
@@ -2609,6 +2678,7 @@ document.addEventListener('mousedown',e=>{
   if(p&&p.style.display==='block'&&!p.contains(e.target)&&!(e.target.closest&&e.target.closest('button')&&e.target.textContent==='📅'))p.style.display='none';
 },true);
 function drawModal(){
+  if(cur&&cur.e==='habit')rebuildHabitFields(); // لیست عادت‌های شخصی کاربر
   const e=cur.e, def=E[e], id=cur._new?null:cur.id;
   let h=`<h3>${def.ic} ${id?esc(cur.d.title||''):'مورد جدید — '+def.n}</h3>`;
   if(id){
@@ -2655,6 +2725,19 @@ function drawModal(){
     if(back.length){h+=`<div style="margin-top:14px"><label>ارجاعات معکوس</label>`;
       back.forEach(b=>{h+=`<div style="margin:4px 0;font-size:12px;color:var(--tx2)">${b[0]}: ${b[2].map(r=>`<span class="tag" style="cursor:pointer" onclick="closeModal();go('rec','${b[1]}','${r.id}')">${esc(r.d.title||'—')}</span>`).join('')}</div>`;});
       h+=`</div>`;}
+  }
+  // ⚙️ مدیریت عادت‌ها داخل فرم عادت روزانه
+  if(e==='habit'){
+    h+=`<div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:10px">
+      <label>⚙️ مدیریت عادت‌های من (برای همه روزها اعمال می‌شود)</label>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin:7px 0">
+        ${E.habit.f.filter(f=>f.t===CHK).map(f=>`<span class="tag" style="font-size:10.5px;display:inline-flex;align-items:center;gap:5px">${esc(f.n)} <b style="cursor:pointer;color:var(--bad)" title="حذف این عادت" onclick="rmHabit('${f.k}')">✕</b></span>`).join('')||'<span style="color:var(--tx2);font-size:11px">عادتی فعال نیست</span>'}
+      </div>
+      <div style="display:flex;gap:6px">
+        <input id="nh_name" placeholder="عادت جدید (مثل: پیاده‌روی صبح)…" style="font-size:12px" onclick="event.stopPropagation()">
+        <button class="btn gh sm" style="white-space:nowrap" onclick="addHabit()">＋ افزودن عادت</button>
+      </div>
+    </div>`;
   }
   h+=`<div class="mfoot"><button class="btn" onclick="saveRec()">ذخیره</button>
       ${id&&can('d',e,recs[id])?`<button class="btn bad" onclick="delRec()">حذف</button>`:''}
