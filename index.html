@@ -788,7 +788,7 @@ const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی 
 const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
 /* ================= 🧩 ساختار سفارشی: فیلدها و بخش‌های قابل تعریف توسط ادمین ================= */
 const E_BASE=JSON.parse(JSON.stringify(E)); // اسکیمای پایه — سفارشی‌ها موقع اجرا رویش سوار می‌شوند
-function schemaCfg(){const m=recs[MO];const s=(m&&!m.del&&m.d._schema)||{};return {fields:s.fields||{},ents:s.ents||{}};}
+function schemaCfg(){const m=recs[MO];const s=(m&&!m.del&&m.d._schema)||{};return {fields:s.fields||{},ents:s.ents||{},order:s.order||{}};}
 function saveSchema(mut){
   const m=recs[MO]||{id:MO,e:'_opts',d:{}};
   const s=JSON.parse(JSON.stringify(m.d._schema||{}));s.fields=s.fields||{};s.ents=s.ents||{};
@@ -805,8 +805,44 @@ function rebuildSchema(){
   Object.entries(s.fields).forEach(([ek,fl])=>{
     if(!E[ek])return;
     (fl||[]).forEach(f=>{if(f&&f.k&&!E[ek].f.some(x=>x.k===f.k))E[ek].f.push(JSON.parse(JSON.stringify(f)));});
-    if(s.ents[ek])E[ek].cols=['title',...(fl||[]).slice(0,4).map(f=>f.k)];
+    if(s.ents[ek])E[ek].cols=['title',...(fl||[]).filter(f=>f.t!=='calc').slice(0,4).map(f=>f.k)];
   });
+  // 🧲 چیدمان سفارشی فیلدها (ترتیب ذخیره‌شده توسط ادمین)
+  Object.entries(s.order||{}).forEach(([ek,ord])=>{
+    if(!E[ek]||!Array.isArray(ord))return;
+    E[ek].f.sort((a,b)=>{const ia=ord.indexOf(a.k),ib=ord.indexOf(b.k);return (ia<0?9999:ia)-(ib<0?9999:ib);});
+  });
+}
+/* --- 🧮 فیلد محاسباتی (فرمول) --- */
+function evalFx(s){ // فقط + - * / ( ) و اعداد — بدون eval
+  let i=0;
+  const ws=()=>{while(i<s.length&&s[i]===' ')i++;};
+  function num(){ws();let st=i;if(s[i]==='-')i++;while(i<s.length&&/[\d.]/.test(s[i]))i++;if(st===i||isNaN(parseFloat(s.slice(st,i))))throw 0;return parseFloat(s.slice(st,i));}
+  function factor(){ws();if(s[i]==='('){i++;const v=expr();ws();if(s[i]!==')')throw 0;i++;return v;}return num();}
+  function term(){let v=factor();for(;;){ws();if(s[i]==='*'){i++;v*=factor();}else if(s[i]==='/'){i++;const d=factor();v=v/d;}else return v;}}
+  function expr(){let v=term();for(;;){ws();if(s[i]==='+'){i++;v+=term();}else if(s[i]==='-'){i++;v-=term();}else return v;}}
+  const v=expr();ws();if(i<s.length)throw 0;return v;
+}
+function calcVal(e,f,d,depth){
+  depth=depth||0; if(depth>4||!f||!f.fx)return null;
+  let fx=String(f.fx);
+  fx=fx.replace(/\[([^\]]+)\]/g,(_,nm)=>{
+    nm=nm.trim();
+    const tf=(E[e]&&E[e].f||[]).find(x=>x.n===nm||x.k===nm);
+    if(!tf)return '(0/0)'; // فیلد ناشناخته → نتیجه نامعتبر
+    if(tf.t==='calc'){const v=calcVal(e,tf,d,depth+1);return v==null?'(0/0)':'('+v+')';}
+    const raw=faNum(String(d[tf.k]??'')).replace(/[,٬\s]/g,'');
+    const v=raw===''?0:+raw;
+    return isNaN(v)?'(0/0)':'('+v+')';
+  });
+  fx=faNum(fx).replace(/[×✕]/g,'*').replace(/÷/g,'/');
+  if(/[^\d+\-*/().\s]/.test(fx))return null;
+  try{const v=evalFx(fx);return isFinite(v)?Math.round(v*100)/100:null;}catch(_){return null;}
+}
+function canLayout(){ // جابجایی چیدمان فیلدها: پیش‌فرض فقط ادمین؛ با ACL قابل اعطا
+  if(isPending())return false;
+  if(isAdmin())return true;
+  return (aclFor().views||{}).layout==='show';
 }
 
 /* ================= STORE & SYNC ================= */
@@ -946,7 +982,8 @@ const VIEWS_ACL=[
  ['bscmap_score','🗺️ ↳ کارت امتیازی متوازن'],
  ['bscmap_tree','🗺️ ↳ آبشار کامل استراتژی'],
  ['bscmap_efqm','🗺️ ↳ تعالی سازمانی EFQM'],
- ['pomo','🍅 پومودورو'],['quicknote','⚡ ثبت سریع نکته']];
+ ['pomo','🍅 پومودورو'],['quicknote','⚡ ثبت سریع نکته'],
+ ['layout','🧲 جابجایی چیدمان فیلدها (پیش‌فرض: فقط ادمین)']];
 function canView(v){
   if(isPending())return false;
   if(isAdmin())return true;
@@ -1695,6 +1732,7 @@ function cellHTML(r,f){
     return fs.map((x,i)=>`<a href="${esc(x.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--ac);margin-inline-end:8px">📎 ${esc(x.name||'فایل')}</a>`).join('');}
   if(f.t===DAT)return fmtD(v);
   if(f.t===NUM)return fmtN(v);
+  if(f.t==='calc'){const cv=calcVal(r.e,f,r.d);return cv==null?'—':`<b style="color:#ecd98f">${fmtN(cv)}</b>`;}
   return esc(v||'—');
 }
 function pbarHTML(p){p=Math.round(p);const col=p>=80?'var(--ok)':p>=40?'var(--ac)':'var(--warn)';
@@ -2255,6 +2293,9 @@ function aclHTML(){
   <div class="tblwrap"><table><thead><tr><th>صفحه / ابزار</th><th>دسترسی</th></tr></thead><tbody>
   ${VIEWS_ACL.map(([vk,vn])=>{
     const curV=(cfg.views||{})[vk]||'';
+    if(vk==='layout')return `<tr><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
+      <option value="" ${curV===''?'selected':''}>غیرفعال (پیش‌فرض)</option>
+      <option value="show" ${curV==='show'?'selected':''}>مجاز ✅</option></select></td></tr>`;
     return `<tr><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
       <option value="" ${curV===''?'selected':''}>نمایش (پیش‌فرض)</option>
       <option value="hide" ${curV==='hide'?'selected':''}>مخفی 🚫</option></select></td></tr>`;
@@ -2764,7 +2805,7 @@ function bscmapHTML(){
 }
 
 /* ================= 🧩 صفحه فیلدها و بخش‌های سفارشی (ادمین) ================= */
-const CF_TYPES=[[TXT,'متن کوتاه'],[LNG,'متن بلند'],[NUM,'عدد'],[DAT,'تاریخ (شمسی + ساعت)'],[SEL,'انتخابی (یک گزینه)'],[MUL,'چندانتخابی'],[CHK,'چک‌باکس (بله/خیر)'],[URLF,'لینک'],[REL,'رابطه با بخش دیگر']];
+const CF_TYPES=[[TXT,'متن کوتاه'],[LNG,'متن بلند'],[NUM,'عدد'],[DAT,'تاریخ (شمسی + ساعت)'],[SEL,'انتخابی (یک گزینه)'],[MUL,'چندانتخابی'],[CHK,'چک‌باکس (بله/خیر)'],[URLF,'لینک'],[REL,'رابطه با بخش دیگر'],['calc','🧮 فرمول (محاسباتی)']];
 function schemaHTML(){
   if(!isAdmin())return `<div class="empty">فقط ادمین</div>`;
   const s=schemaCfg();
@@ -2809,6 +2850,11 @@ function render_cfx(){
   const x1=document.getElementById('cf_x1'),x2=document.getElementById('cf_x2');
   if(t.value===SEL||t.value===MUL){
     x1.innerHTML=`<label>گزینه‌ها (با «،» جدا کنید)</label><input id="cf_opts" placeholder="کم، متوسط، زیاد">`;x2.innerHTML='';
+  } else if(t.value==='calc'){
+    const ek=view.scEnt;
+    const nums=(E[ek]&&E[ek].f||[]).filter(f=>f.t===NUM||f.t==='calc').map(f=>'['+f.n+']');
+    x1.innerHTML=`<label>فرمول — نام فیلدها را در [ ] بنویسید</label><input id="cf_fx" dir="ltr" placeholder="([سود خالص] / [فروش]) * 100">`;
+    x2.innerHTML=`<div style="font-size:10px;color:var(--tx2);line-height:1.9">عملگرها: + − × ÷ ( )<br>فیلدهای عددی این بخش: ${nums.map(esc).join(' ')||'—'}</div>`;
   } else if(t.value===REL){
     x1.innerHTML=`<label>رابطه با بخش</label><select id="cf_rel">${Object.entries(E).map(([k,v])=>`<option value="${k}">${v.ic} ${esc(v.n)}</option>`).join('')}</select>`;
     x2.innerHTML=`<label>تعداد</label><select id="cf_single"><option value="1">تک‌انتخابی</option><option value="">چندانتخابی</option></select>`;
@@ -2827,6 +2873,14 @@ function addCField(){
     f.o=os;
   }
   if(t===REL){f.r=document.getElementById('cf_rel').value;if(document.getElementById('cf_single').value)f.s=1;}
+  if(t==='calc'){
+    const fx=(document.getElementById('cf_fx').value||'').trim();
+    if(!fx){alert('فرمول را بنویسید — مثل: ([سود خالص]/[فروش])*100');return;}
+    f.fx=fx;
+    // اعتبارسنجی سریع فرمول با مقادیر آزمایشی
+    const test=calcVal(ek,f,Object.fromEntries(E[ek].f.filter(x=>x.t===NUM).map(x=>[x.k,2])));
+    if(test==null&&!confirm('فرمول با داده آزمایشی جواب نداد (شاید نام فیلدی اشتباه است). با این حال ذخیره شود؟'))return;
+  }
   saveSchema(s=>{s.fields[ek]=[...(s.fields[ek]||[]),f];});
   render();
 }
@@ -3092,13 +3146,20 @@ function drawModal(){
     if(e==='project')chips.push(['هزینه واقعی',fmtN(projectSpent(recs[id]))]);
     if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
   }
-  h+=`<div class="mrow">`;
+  const drag=canLayout();
+  h+=`<div class="mrow" id="mrow_dnd">`;
   visFields(e).forEach(f=>{
     const v=cur.d[f.k];
     const ro=fldMode(e,f.k)==='read';
     const full=(f.t===LNG||f.t===REL||f.t===DAT)?'full':'';
     const plus=(f.t===SEL||f.t===MUL||f.t===STA)?` <a onclick="addOpt('${f.k}')" style="color:var(--ac);cursor:pointer;font-size:11px">＋ گزینه جدید</a>`:'';
-    h+=`<div class="${full}"><label>${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}</label>`;
+    h+=`<div class="${full}" data-fk="${f.k}" ${drag?'draggable="true"':''} ${drag?'style="cursor:grab"':''}><label>${drag?'<span class="dndh" title="بکشید و جابجا کنید" style="cursor:grab;color:var(--tx2)">⋮⋮</span> ':''}${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}</label>`;
+    if(f.t==='calc'){
+      const cv=calcVal(e,f,cur.d);
+      h+=`<div data-calck="${f.k}" style="background:var(--bg);border:1px dashed rgba(212,175,55,.4);border-radius:8px;padding:9px 10px;font-weight:700;color:#ecd98f" dir="ltr">${cv==null?'—':fmtN(cv)}</div>
+      <div style="font-size:9.5px;color:var(--tx2);margin-top:2px" dir="ltr">🧮 ${esc(f.fx||'')}</div></div>`;
+      return;
+    }
     if(f.t===TXT)h+=`<input data-k="${f.k}" value="${esc(v||'')}">`;
     else if(f.t===LNG)h+=`<textarea data-k="${f.k}" rows="2">${esc(v||'')}</textarea>`;
     else if(f.t===NUM)h+=`<input data-k="${f.k}" type="number" dir="ltr" value="${v??''}">`;
@@ -3152,6 +3213,30 @@ function drawModal(){
     document.querySelectorAll(`#modal [data-k="${f.k}"],#modal [data-dk="${f.k}"]`).forEach(el=>{el.disabled=true;el.style.opacity=.55;});
   });
   document.getElementById('ovl').classList.add('show');
+  // 🧲 جابجایی چیدمان فیلدها با درگ‌اند‌دراپ (ذخیره برای همه)
+  if(canLayout()){
+    const wrap=document.getElementById('mrow_dnd');
+    let dragK=null;
+    wrap.querySelectorAll('[data-fk]').forEach(el=>{
+      el.addEventListener('dragstart',ev=>{dragK=el.dataset.fk;el.style.opacity=.4;});
+      el.addEventListener('dragend',()=>{el.style.opacity='';});
+      el.addEventListener('dragover',ev=>{ev.preventDefault();el.style.outline='2px dashed rgba(212,175,55,.6)';});
+      el.addEventListener('dragleave',()=>{el.style.outline='';});
+      el.addEventListener('drop',ev=>{
+        ev.preventDefault();el.style.outline='';
+        const targetK=el.dataset.fk;
+        if(!dragK||dragK===targetK)return;
+        const ek=cur.e;
+        const keys=E[ek].f.map(f=>f.k);
+        const from=keys.indexOf(dragK), to=keys.indexOf(targetK);
+        if(from<0||to<0)return;
+        keys.splice(to,0,keys.splice(from,1)[0]);
+        harvest();
+        saveSchema(s=>{s.order=s.order||{};s.order[ek]=keys;});
+        rebuildSchema();drawModal();
+      });
+    });
+  }
 }
 function relPicker(f){
   const sel=relIds(cur,f.k);
@@ -3285,7 +3370,14 @@ function saveDraft(){
   localStorage.setItem('xr_draft',JSON.stringify({e:cur.e,id:cur._new?null:cur.id,d:cur.d,ts:Date.now()}));
 }
 function clearDraft(){localStorage.removeItem('xr_draft');}
-['input','change'].forEach(ev=>document.getElementById('modal').addEventListener(ev,()=>{if(cur)saveDraft();}));
+['input','change'].forEach(ev=>document.getElementById('modal').addEventListener(ev,()=>{
+  if(!cur)return;saveDraft();
+  // 🧮 به‌روزرسانی زنده فیلدهای محاسباتی
+  document.querySelectorAll('#modal [data-calck]').forEach(el=>{
+    const f=E[cur.e].f.find(x=>x.k===el.dataset.calck);if(!f)return;
+    const v=calcVal(cur.e,f,cur.d);el.textContent=v==null?'—':fmtN(v);
+  });
+}));
 function checkDraft(){
   try{
     const dr=JSON.parse(localStorage.getItem('xr_draft')||'null');
