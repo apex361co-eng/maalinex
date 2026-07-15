@@ -1126,7 +1126,17 @@ async function flush(){
   while(queue.length){
     const id=queue[0], r=recs[id]; if(!r){queue.shift();saveQ();continue;}
     const {error}=await sb.from('records').upsert({id:r.id,entity:r.e,data:r.d,updated_at:new Date(r.u).toISOString(),deleted:!!r.del});
-    if(error){setSync('err','خطا در ارسال — بعداً تلاش می‌شود');return;}
+    if(error){
+      const msg=(error.message||'')+(error.code||'');
+      if(error.code==='42501'||/row-level security|violates|مجاز نیست/i.test(msg)){
+        // 🛡️ سرور این تغییر را رد کرد (سیاست امنیتی) — از صف حذف و نسخه سرور بازیابی می‌شود
+        queue.shift();saveQ();
+        setSync('err','⛔ تغییر توسط سرور رد شد (مجوز امنیتی)');
+        try{await pullAll();}catch(e){}
+        continue;
+      }
+      setSync('err','خطا در ارسال — بعداً تلاش می‌شود');return;
+    }
     queue.shift();saveQ();
   }
   setSync('ok','سینک شد');
