@@ -147,6 +147,10 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   background:rgba(18,22,19,.95);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
   border:1px solid rgba(212,175,55,.28);box-shadow:0 18px 50px rgba(0,0,0,.55)}
 #remind.show{display:block}
+#mycal{position:fixed;top:56px;left:14px;z-index:65;width:320px;padding:14px;border-radius:16px;display:none;
+  background:rgba(18,22,19,.95);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.28);box-shadow:0 18px 50px rgba(0,0,0,.55)}
+#mycal.show{display:block}
 .remitem{display:flex;gap:7px;align-items:center;padding:7px 8px;border-radius:8px;background:var(--bg);margin-bottom:5px;font-size:12.5px}
 .remitem.due{border:1px solid var(--bad);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{box-shadow:0 0 12px rgba(224,106,95,.5)}}
@@ -236,6 +240,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
       <button class="btn gh sm" id="rembtn" onclick="toggleRemind()" title="یادآوری‌ها">⏰</button>
+      <button class="btn gh sm" id="mycalbtn" onclick="toggleMyCal()" title="تقویم من — برنامه روزهای پیش رو">📅</button>
       <button class="btn gh sm" id="fxbtn" onclick="setFx()" title="نرخ تسعیر دلار" style="display:none">💱</button>
       <button class="btn gh sm" id="quickbtn" onclick="quickNote()" title="ثبت سریع نکته در بانک دانش">⚡ نکته</button>
       <button class="btn gh sm" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
@@ -247,6 +252,12 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 </div>
 
 <div id="jcal"></div>
+<div id="mycal">
+  <div style="display:flex;align-items:center"><b style="font-size:14px">📅 تقویم من</b><span style="flex:1"></span>
+    <button class="btn gh sm" onclick="toggleMyCal();go('cal')">تقویم کامل</button>
+    <span onclick="toggleMyCal()" style="cursor:pointer;color:var(--tx2);margin-inline-start:8px">✕</span></div>
+  <div id="mycal_list" style="max-height:380px;overflow:auto;margin-top:10px;text-align:right"></div>
+</div>
 <div id="remind">
   <div style="display:flex;align-items:center"><b style="font-size:14px">⏰ یادآوری‌ها</b><span style="flex:1"></span>
     <span onclick="toggleRemind()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
@@ -888,8 +899,8 @@ function whoami(){
   const el=document.getElementById('who');if(el)el.textContent=session?myEmail()+' · '+myRole():'حالت محلی · ادمین';
   const ab=document.getElementById('authbtn');if(ab)ab.textContent=session?'🚪 خروج':'ورود';
   const pend=isPending();
-  const bmap={quickbtn:'quicknote',pomobtn:'pomo'};
-  ['quickbtn','pomobtn','rembtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=(pend||(bmap[i]&&!canView(bmap[i])))?'none':'';});
+  const bmap={quickbtn:'quicknote',pomobtn:'pomo',mycalbtn:'cal'};
+  ['quickbtn','pomobtn','rembtn','mycalbtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=(pend||(bmap[i]&&!canView(bmap[i])))?'none':'';});
   const fb=document.getElementById('fxbtn');if(fb)fb.style.display=(!pend&&isAdmin())?'':'none';
 }
 async function authAction(){
@@ -2704,7 +2715,48 @@ function openSettings(){
 /* ================= ⏰ یادآوری‌ها ================= */
 let remFired=JSON.parse(localStorage.getItem('xr_remfired')||'{}');
 function myReminders(){return visE('reminder').filter(r=>!r.d.done&&dVal(r.d.at)).sort((a,b)=>(dVal(a.d.at).s||'').localeCompare(dVal(b.d.at).s||''));}
-function toggleRemind(){const p=document.getElementById('remind');p.classList.toggle('show');drawRemind();}
+function toggleRemind(){const p=document.getElementById('remind');p.classList.toggle('show');document.getElementById('mycal').classList.remove('show');drawRemind();}
+/* 📅 تقویم من — برنامه شخصی روزهای پیش رو (هر کس فقط مال خودش) */
+function toggleMyCal(){const p=document.getElementById('mycal');p.classList.toggle('show');document.getElementById('remind').classList.remove('show');if(p.classList.contains('show'))drawMyCal();}
+window.toggleMyCal=toggleMyCal;
+function drawMyCal(){
+  const el=document.getElementById('mycal_list'); if(!el)return;
+  const hr=myHR(), me=myEmail().toLowerCase();
+  const mine=(ent,key)=>hr?byE(ent).filter(r=>relIds(r,key).includes(hr.id)):[];
+  const byMe=ent=>byE(ent).filter(r=>(r.d._by||'').toLowerCase()===me);
+  const items=[];
+  const tOf=iso=>iso&&iso.includes('T')?iso.slice(11,16):'';
+  const push=(iso,ic,label,cls,click)=>{const d=ds(iso)||((iso||'').slice(0,10));if(!d)return;items.push({d,time:tOf(dVal(iso)?(dVal(iso).s||''):String(iso)),ic,label,cls,click});};
+  // تسک‌های من با ددلاین
+  [...new Set([...mine('task','owner'),...byMe('task')])].filter(t=>t.d.status!=='Done'&&ds(t.d.due))
+    .forEach(t=>push(t.d.due,'📘',t.d.title,'',`go('rec','task','${t.id}')`));
+  // جلسات من
+  mine('meeting','internal').filter(m=>ds(m.d.date)).forEach(m=>push(m.d.date,'🗃️',m.d.title,'',`go('rec','meeting','${m.id}')`));
+  // سنجه‌های تحت مسئولیت من (موعد به‌روزرسانی)
+  mine('measure','owner').forEach(m=>{const d=measureDue(m);if(d)items.push({d,time:'',ic:'🎚️',label:'به‌روزرسانی سنجه: '+(m.d.title||''),click:`openRec('measure','${m.id}')`});});
+  // یادآوری‌های من
+  byMe('reminder').filter(r=>!r.d.done&&ds(r.d.date)).forEach(r=>push(r.d.date,'⏰',r.d.title,'',''));
+  // مرخصی‌های من
+  [...new Set([...mine('leave','person'),...byMe('leave')])].filter(l=>ds(l.d.range)).forEach(l=>push(l.d.range,'⛳',l.d.title,'',''));
+  // مکاتبات با مهلت اقدام
+  mine('letter','owner').filter(l=>l.d.astatus!=='Done'&&ds(l.d.due)).forEach(l=>push(l.d.due,'✉️','مهلت اقدام: '+(l.d.title||''),'',`go('rec','letter','${l.id}')`));
+  const T=today(), horizon=new Date(new Date(T).getTime()+14*86400000).toISOString().slice(0,10);
+  const late=items.filter(x=>x.d<T).sort((a,b)=>a.d.localeCompare(b.d));
+  const next=items.filter(x=>x.d>=T&&x.d<=horizon).sort((a,b)=>(a.d+a.time).localeCompare(b.d+b.time));
+  const row=(x,isLate)=>`<div class="remitem ${isLate?'due':''}" style="cursor:${x.click?'pointer':'default'}" ${x.click?`onclick="toggleMyCal();${x.click}"`:''}>
+    ${x.ic} <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.label||'—')}</span>
+    ${x.time?`<b dir="ltr" style="font-size:11px">${x.time}</b>`:''}</div>`;
+  let h='';
+  if(!hr)h+=`<div class="empty" style="padding:8px;font-size:11px">پروفایل شما به HR وصل نیست — از «میز کار من» بسازید تا برنامه‌تان اینجا بیاید</div>`;
+  if(late.length){h+=`<div style="font-size:11px;color:var(--bad);font-weight:700;margin:4px 0">⏰ عقب‌افتاده</div>`;late.slice(-8).forEach(x=>h+=row(x,true));}
+  let day='';
+  next.forEach(x=>{
+    if(x.d!==day){day=x.d;h+=`<div style="font-size:11px;color:#ecd98f;font-weight:700;margin:8px 0 4px">${x.d===T?'امروز — ':''}${iso2jstr(x.d)}</div>`;}
+    h+=row(x,false);
+  });
+  if(!late.length&&!next.length)h+=`<div class="empty" style="padding:10px">در ۱۴ روز آینده برنامه‌ای ندارید 🎉</div>`;
+  el.innerHTML=h;
+}
 function drawRemind(){
   const list=document.getElementById('rem_list');if(!list)return;
   const now=new Date();
