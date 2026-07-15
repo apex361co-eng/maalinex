@@ -1983,7 +1983,23 @@ function bscmapHTML(){
     ...byE('hr').filter(h=>byE('bsc').some(x=>relIds(x,'person').includes(h.id))).map(h=>({id:'p:'+h.id,t:'👤 '+h.d.title}))];
   if(!view.bscT)view.bscT='_h';
   const T=view.bscT;
-  const items=byE('bsc').filter(x=>bscDomain(x)===T||(T==='_h'&&x.d.scope==='هلدینگ'));
+  // عضویت در دامنه: هر رابطه‌ای که به دامنه اشاره کند کافی است (نه فقط اولویت bscDomain)
+  const DMAP={c:'company',b:'biz',u:'orgu',p:'person'};
+  const inT=x=>{
+    if(T==='_h')return x.d.scope==='هلدینگ'||bscDomain(x)==='_h';
+    return relIds(x,DMAP[T[0]]).includes(T.slice(2));
+  };
+  const items=byE('bsc').filter(inT);
+  // اهداف متصل از سطوح دیگر (والد/فرزند اعضای این دامنه) — با قاب خط‌چین نمایش داده می‌شوند
+  const ghost=new Set();
+  {
+    const ids=new Set(items.map(x=>x.id));
+    items.slice().forEach(x=>{
+      const p=x.d.parent&&x.d.parent[0];
+      if(p&&recs[p]&&!recs[p].del&&!ids.has(p)){ids.add(p);ghost.add(p);items.push(recs[p]);}
+      bscKids(x).forEach(k=>{if(!ids.has(k.id)){ids.add(k.id);ghost.add(k.id);items.push(k);}});
+    });
+  }
   const PERSPS=[['مالی','💰','#e2b93b'],['مشتری','🤝','#5ca94f'],['فرآیندهای داخلی','⚙️','#e08b3d'],['یادگیری و رشد','🌱','#5b93d3']];
   let h=`<div class="tools">
     <label style="margin:0">دامنه:</label>
@@ -2045,7 +2061,10 @@ function bscmapHTML(){
           <span style="flex:1;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⬇ ${scopeIc(k)} ${esc(k.d.title)}</span>
           <span class="tag" style="font-size:9px">${esc(k.d.scope||'')}</span>
         </div>`;};
-      h+=`<div style="background:var(--card,rgba(255,255,255,.03));border:1px solid var(--line);border-radius:11px;overflow:hidden;cursor:pointer;align-self:start" onclick="go('rec','bsc','${x.id}')">
+      const isG=ghost.has(x.id);
+      const gDom=bscDomain(x), gName=gDom==='_h'?'هلدینگ':nameOf(gDom.slice(2));
+      h+=`<div style="background:var(--card,rgba(255,255,255,.03));border:1px ${isG?'dashed':'solid'} ${isG?c+'aa':'var(--line)'};border-radius:11px;overflow:hidden;cursor:pointer;align-self:start;${isG?'opacity:.9':''}" onclick="go('rec','bsc','${x.id}')">
+        ${isG?`<div style="background:${c}22;padding:2px 8px;font-size:9.5px;color:var(--tx2)">🔗 متصل از سطح دیگر: <b style="color:var(--tx)">${scopeIc(x)} ${esc(x.d.scope||'')}${gName&&gName!==x.d.scope?' │ '+esc(gName):''}</b></div>`:''}
         <div style="display:flex;align-items:center;gap:9px;padding:9px 10px">
           ${gaugeSVG(pct,44)}
           <div style="flex:1;min-width:0">
@@ -2064,6 +2083,13 @@ function bscmapHTML(){
     // فلش اتصال بین منظرها (پایین ← بالا مثل تصویر)
     if(pi<PERSPS.length-1)h+=`<div style="text-align:center;margin:-4px 0 6px;color:${c};font-size:15px;line-height:1">▲</div>`;
   });
+  // اهدافی که «منظر» ندارند، گم نشوند
+  const noPersp=items.filter(x=>!PERSPS.some(([p])=>x.d.persp===p));
+  if(noPersp.length){
+    h+=`<div class="sec"><h3>⚠️ اهداف بدون منظر <span class="c">${noPersp.length.toLocaleString('fa-IR')}</span></h3>
+    <p style="font-size:11px;color:var(--tx2);margin-bottom:8px">برای این اهداف فیلد «منظر» انتخاب نشده — روی هر کدام بزنید و منظرش را تعیین کنید تا در نقشه جای بگیرد.</p>
+    ${noPersp.map(x=>{const pct=bscProg(x),t=traffic(pct);return `<div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:6px 10px;margin-bottom:5px;cursor:pointer;font-size:12px" onclick="openRec('bsc','${x.id}')">${t.ic} <b>${esc(x.d.title)}</b><span class="tag" style="font-size:9.5px">${esc(x.d.scope||'')}</span><span style="flex:1"></span><b style="color:${t.c}">${Math.round(pct).toLocaleString('fa-IR')}٪</b></div>`;}).join('')}</div>`;
+  }
   // 📋 کارت امتیازی متوازن (جدول)
   if(items.length){
     h+=`<div class="sec"><h3>📋 کارت امتیازی متوازن</h3>
