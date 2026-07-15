@@ -1591,21 +1591,23 @@ function meHTML(){
   const tasks=[...new Set([...mine('task','owner'),...byMe('task')])].filter(t=>t.d.status!=='Done')
     .sort((a,b)=>(ds(a.d.due)||'9999').localeCompare(ds(b.d.due)||'9999'));
   const od=tasks.filter(t=>ds(t.d.due)&&ds(t.d.due)<today());
-  const myMs=mine('measure','owner');
-  const msOd=myMs.filter(m=>{const d=measureDue(m);return d&&d<today();});
   const myBsc=hrIds.size?byE('bsc').filter(b=>relIds(b,'owner').some(id=>hrIds.has(id))||relIds(b,'person').some(id=>hrIds.has(id))):[];
+  // سنجه‌های من = سنجه‌هایی که مسئولش هستم + همه سنجه‌های اهداف BSC تحت مسئولیتم
+  const myMs=[...new Map([...mine('measure','owner'),...myBsc.flatMap(b=>bscMeasures(b))].map(m=>[m.id,m])).values()];
+  const msOd=myMs.filter(m=>{const d=measureDue(m);return d&&d<today();});
+  const jmp=id=>`const s=document.getElementById('${id}');if(s){s.scrollIntoView({behavior:'smooth',block:'start'});s.style.boxShadow='0 0 0 2px rgba(212,175,55,.55)';setTimeout(()=>s.style.boxShadow='',1600);}`;
   h+=`<div class="cards">
-    ${card('📘 تسک باز من',tasks.length)}
-    ${card('⏰ عقب‌افتاده',od.length,od.length?'var(--bad)':null)}
-    ${card('🏗️ پروژه‌های من',mine('project','pm').length)}
-    ${card('🎯 اهداف من',mine('objective','owner').filter(o=>o.d.status!=='Done').length)}
-    ${card('⚖️ اهداف BSC من',myBsc.length)}
-    ${card('🎚️ سنجه‌های من',myMs.length,msOd.length?'var(--bad)':null)}
+    ${card('📘 تسک باز من',tasks.length,null,jmp('sec_my_task'))}
+    ${card('⏰ عقب‌افتاده',od.length,od.length?'var(--bad)':null,jmp('sec_my_task'))}
+    ${card('🏗️ پروژه‌های من',mine('project','pm').length,null,jmp('sec_my_project'))}
+    ${card('🎯 اهداف من',mine('objective','owner').filter(o=>o.d.status!=='Done').length,null,jmp('sec_my_objective'))}
+    ${card('⚖️ اهداف BSC من',myBsc.length,null,jmp('sec_my_bsc'))}
+    ${card('🎚️ سنجه‌های من',myMs.length,msOd.length?'var(--bad)':null,jmp('sec_my_ms'))}
     ${card('🍅 پومودورو امروز',pomoCount(),null,"togglePomo()")}
   </div>`;
   // ⚖️ اهداف BSC تحت مسئولیت من — با زنجیره کامل پاسخ‌گویی
   if(myBsc.length){
-    h+=`<div class="sec relsec"><h3>⚖️ اهداف BSC تحت مسئولیت من <span class="c">${myBsc.length.toLocaleString('fa-IR')}</span></h3>
+    h+=`<div class="sec relsec" id="sec_my_bsc"><h3>⚖️ اهداف BSC تحت مسئولیت من <span class="c">${myBsc.length.toLocaleString('fa-IR')}</span></h3>
     <p style="font-size:11px;color:var(--tx2);margin-bottom:8px">شما مسئول تحقق این اهداف هستید — زنجیره «پاسخ‌گو به» نشان می‌دهد نتیجه کارتان دقیقاً به کدام هدف بالادستی و چه کسی گزارش می‌شود.</p>`;
     myBsc.sort((a,b)=>bscProg(a)-bscProg(b)).forEach(bg=>{
       const pct=bscProg(bg), t=traffic(pct), ms=bscMeasures(bg), kids=bscKids(bg);
@@ -1641,7 +1643,7 @@ function meHTML(){
   }
   // 🎚️ سنجه‌های BSC تحت مسئولیت من — با موعد به‌روزرسانی
   if(myMs.length){
-    h+=`<div class="sec relsec"><h3>🎚️ سنجه‌های BSC تحت مسئولیت من <span class="c">${myMs.length.toLocaleString('fa-IR')}</span>
+    h+=`<div class="sec relsec" id="sec_my_ms"><h3>🎚️ سنجه‌های BSC تحت مسئولیت من <span class="c">${myMs.length.toLocaleString('fa-IR')}</span>
       ${msOd.length?`<span class="tag r">⏰ ${msOd.length.toLocaleString('fa-IR')} مورد موعدش گذشته</span>`:''}</h3>
     <p style="font-size:11px;color:var(--tx2);margin-bottom:8px">مقدار فعلی هر سنجه را طبق «دوره پایش» به‌روز کنید — تغییر شما به‌صورت آبشاری تا سطح هلدینگ بالا می‌رود. با کلیک روی هر ردیف مقدار جدید را ثبت کنید.</p>`;
     myMs.sort((a,b)=>(measureDue(a)||'9999').localeCompare(measureDue(b)||'9999')).forEach(m=>{
@@ -1672,7 +1674,7 @@ function meHTML(){
   ];
   secs.forEach(([t,ek,rows])=>{
     if(ek!=='task'&&!rows.length)return;
-    h+=`<div class="sec relsec"><h3>${t} <span class="c">${rows.length.toLocaleString('fa-IR')}</span>
+    h+=`<div class="sec relsec" id="sec_my_${ek}"><h3>${t} <span class="c">${rows.length.toLocaleString('fa-IR')}</span>
       <span style="flex:1"></span>${can('c',ek)?`<button class="btn gh sm" onclick="openRec('${ek}'${hr&&['task','objective'].includes(ek)?`,null,{k:'owner',id:'${hr.id}'}`:hr&&ek==='leave'?`,null,{k:'person',id:'${hr.id}'}`:''})">＋ افزودن</button>`:''}</h3>${miniTable(ek,rows)}</div>`;
   });
   // 🎛️ اتاق کنترل سازمان — ادغام‌شده در میز کار (با کنترل دسترسی خودش و تک‌تک المان‌هایش)
