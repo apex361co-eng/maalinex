@@ -151,6 +151,12 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   background:rgba(18,22,19,.95);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
   border:1px solid rgba(212,175,55,.28);box-shadow:0 18px 50px rgba(0,0,0,.55)}
 #mycal.show{display:block}
+#imp{position:fixed;top:4%;left:50%;transform:translateX(-50%);z-index:75;width:min(880px,95vw);max-height:90vh;overflow:auto;padding:16px;border-radius:16px;display:none;
+  background:rgba(18,22,19,.97);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.3);box-shadow:0 18px 60px rgba(0,0,0,.6)}
+#imp.show{display:block}
+#imp table{font-size:11px}
+.imp-ok{color:var(--ok)}.imp-bad{color:var(--bad)}
 .remitem{display:flex;gap:7px;align-items:center;padding:7px 8px;border-radius:8px;background:var(--bg);margin-bottom:5px;font-size:12.5px}
 .remitem.due{border:1px solid var(--bad);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{box-shadow:0 0 12px rgba(224,106,95,.5)}}
@@ -258,6 +264,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <span onclick="toggleMyCal()" style="cursor:pointer;color:var(--tx2);margin-inline-start:8px">✕</span></div>
   <div id="mycal_list" style="max-height:380px;overflow:auto;margin-top:10px;text-align:right"></div>
 </div>
+<div id="imp"></div>
 <div id="remind">
   <div style="display:flex;align-items:center"><b style="font-size:14px">⏰ یادآوری‌ها</b><span style="flex:1"></span>
     <span onclick="toggleRemind()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
@@ -779,6 +786,28 @@ efqm:{ic:'🏅',n:'ارزیابی EFQM 2025',grp:'استراتژی و تعالی
 };
 const GROUPS=['زنجیره آبشاری','سازمان','روابط','مالی و حقوقی','کسب‌وکار ویژه','استراتژی و تعالی','حاکمیت','رشد شخصی'];
 const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
+/* ================= 🧩 ساختار سفارشی: فیلدها و بخش‌های قابل تعریف توسط ادمین ================= */
+const E_BASE=JSON.parse(JSON.stringify(E)); // اسکیمای پایه — سفارشی‌ها موقع اجرا رویش سوار می‌شوند
+function schemaCfg(){const m=recs[MO];const s=(m&&!m.del&&m.d._schema)||{};return {fields:s.fields||{},ents:s.ents||{}};}
+function saveSchema(mut){
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};
+  const s=JSON.parse(JSON.stringify(m.d._schema||{}));s.fields=s.fields||{};s.ents=s.ents||{};
+  mut(s);
+  m.d={...m.d,_schema:s};m.u=Date.now();m.del=false;put(m);
+}
+function rebuildSchema(){
+  const s=schemaCfg();
+  Object.keys(E).forEach(k=>{if(!E_BASE[k])delete E[k];});
+  Object.keys(E_BASE).forEach(k=>{E[k]=JSON.parse(JSON.stringify(E_BASE[k]));});
+  Object.entries(s.ents).forEach(([k,d])=>{
+    E[k]={ic:d.ic||'📁',n:d.n||k,grp:'بخش‌های سفارشی',f:[{k:'title',n:d.tname||'عنوان',t:TXT}],cols:['title']};
+  });
+  Object.entries(s.fields).forEach(([ek,fl])=>{
+    if(!E[ek])return;
+    (fl||[]).forEach(f=>{if(f&&f.k&&!E[ek].f.some(x=>x.k===f.k))E[ek].f.push(JSON.parse(JSON.stringify(f)));});
+    if(s.ents[ek])E[ek].cols=['title',...(fl||[]).slice(0,4).map(f=>f.k)];
+  });
+}
 
 /* ================= STORE & SYNC ================= */
 let recs={};            // id -> {id,e,d,u,del}
@@ -1014,6 +1043,186 @@ function mkProfile(){
   put({id:uid(),e:'hr',d:{title:name,email:myEmail(),_by:myEmail()},u:Date.now()});
   go('me');
 }
+
+/* ================= 📥 ورود گروهی داده از اکسل / CSV ================= */
+let impState=null;
+const IMP_TYPES=[TXT,LNG,NUM,DAT,SEL,STA,MUL,CHK,URLF,REL];
+function impFields(e){return E[e].f.filter(f=>IMP_TYPES.includes(f.t));}
+function impHint(e,f){
+  if(f.t===NUM)return 'عدد (مثل 1250000)';
+  if(f.t===DAT)return 'تاریخ شمسی 1405/03/11 یا میلادی 2026-07-01 — با ساعت اختیاری: 1405/03/11 09:30';
+  if(f.t===SEL||f.t===STA)return 'یکی از: '+optsFor(e,f).join('، ');
+  if(f.t===MUL)return 'چند مورد با «،» جدا — از: '+optsFor(e,f).join('، ');
+  if(f.t===CHK)return 'بله یا خیر';
+  if(f.t===REL)return 'نام دقیق رکورد در «'+E[f.r].n+'»'+(f.s?'':' — چند مورد با «،»');
+  return 'متن';
+}
+function impOpen(e){
+  if(!can('c',e)){alert('اجازه ایجاد در این بخش را ندارید');return;}
+  impState={e,valid:[],upsert:true};
+  const el=document.getElementById('imp');
+  el.innerHTML=`
+  <div style="display:flex;align-items:center;gap:8px"><b style="font-size:14px">📥 ورود گروهی — ${E[e].ic} ${E[e].n}</b>
+    <span style="flex:1"></span><span onclick="impClose()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
+  <ol style="font-size:12px;color:var(--tx2);line-height:2.1;margin:10px 18px">
+    <li>«⬇️ دانلود قالب» را بزنید — یک فایل با ستون‌های دقیق این بخش می‌گیرید (ردیف دوم راهنماست، پاکش نکنید مهم نیست؛ خودم ردش می‌کنم).</li>
+    <li>داده‌ها را در اکسل زیر همان ستون‌ها بریزید و به همان صورت CSV یا Excel ذخیره کنید.</li>
+    <li>فایل را اینجا انتخاب کنید — قبل از ثبت، پیش‌نمایش و خطاهای هر ردیف را نشان می‌دهم و فقط ردیف‌های سالم ثبت می‌شوند.</li>
+  </ol>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+    <button class="btn gh sm" onclick="impTemplate()">⬇️ دانلود قالب</button>
+    <label class="btn sm" style="cursor:pointer">📂 انتخاب فایل (Excel یا CSV)
+      <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="impFile(this)"></label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--tx2);margin:0">
+      <input type="checkbox" id="imp_upsert" checked style="width:auto"> رکورد هم‌نام موجود، به‌روزرسانی شود (به‌جای ایجاد تکراری)</label>
+  </div>
+  <div id="imp_prev"></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn" id="imp_go" onclick="impCommit()" disabled>ثبت نهایی</button>
+    <button class="btn gh" onclick="impClose()">بستن</button>
+  </div>`;
+  el.classList.add('show');
+}
+window.impOpen=impOpen;
+function impClose(){document.getElementById('imp').classList.remove('show');impState=null;}
+window.impClose=impClose;
+function impTemplate(){
+  const e=impState.e, fs=impFields(e);
+  const rows=[fs.map(f=>f.n),fs.map((f,i)=>(i===0?'راهنما: ':'')+impHint(e,f))];
+  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='قالب-'+E[e].n.replace(/[\\/:*?"<>|]/g,'-')+'.csv';
+  a.click();
+}
+window.impTemplate=impTemplate;
+function csvParse(t){
+  t=t.replace(/^﻿/,'');
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=ch;}
+    else if(ch==='"')q=true;
+    else if(ch===','){row.push(cur);cur='';}
+    else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+    else if(ch!=='\r')cur+=ch;}
+  if(cur!==''||row.length)   {row.push(cur);rows.push(row);}
+  return rows;
+}
+function loadXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res;s.onerror=()=>rej(new Error('کتابخانه Excel لود نشد — اینترنت لازم است، یا فایل را CSV ذخیره کنید'));
+    document.head.appendChild(s);
+  });
+}
+function impDate(v){
+  v=faNum(String(v)).trim(); if(!v)return null;
+  const parts=v.split(/[\sT]+/), dp=parts[0], tp=(parts[1]||'').slice(0,5);
+  let iso=null;
+  const m=dp.match(/^(\d{2,4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  if(m){
+    let y=+m[1];
+    if(y>=1700){iso=y+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');} // میلادی
+    else iso=parseJDate(dp)||null; // شمسی
+  }
+  if(!iso)return undefined;
+  if(/^\d{1,2}:\d{2}$/.test(tp))iso+='T'+tp.padStart(5,'0');
+  return {s:iso};
+}
+function impFile(inp){
+  const file=inp.files&&inp.files[0]; if(!file)return;
+  const prev=document.getElementById('imp_prev');
+  prev.innerHTML='<div class="empty">در حال خواندن فایل…</div>';
+  const done=arr=>impParse(arr);
+  const fail=e=>{prev.innerHTML=`<div class="empty" style="color:var(--bad)">⚠️ ${esc(e.message||'خطا در خواندن فایل')}</div>`;};
+  if(/\.csv$/i.test(file.name)){
+    const r=new FileReader();r.onload=()=>done(csvParse(r.result));r.onerror=()=>fail(new Error('فایل خوانده نشد'));r.readAsText(file,'utf-8');
+  } else {
+    loadXLSX().then(()=>{
+      const r=new FileReader();
+      r.onload=()=>{try{
+        const wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        done(XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''}));
+      }catch(err){fail(err);}};
+      r.onerror=()=>fail(new Error('فایل خوانده نشد'));
+      r.readAsArrayBuffer(file);
+    }).catch(fail);
+  }
+}
+window.impFile=impFile;
+function impParse(arr){
+  const e=impState.e, fs=impFields(e), prev=document.getElementById('imp_prev');
+  arr=(arr||[]).filter(r=>Array.isArray(r)&&r.some(c=>String(c??'').trim()!==''));
+  if(arr.length<2){prev.innerHTML='<div class="empty">فایل خالی است یا فقط سربرگ دارد</div>';return;}
+  const heads=arr[0].map(h=>String(h??'').trim());
+  const map=heads.map(h=>fs.find(f=>f.n===h||f.k===h)||null);
+  if(!map.some(f=>f&&f.k==='title')){prev.innerHTML=`<div class="empty" style="color:var(--bad)">⚠️ ستون «${esc(fs[0].n)}» در فایل پیدا نشد — از قالب دانلودی استفاده کنید و سربرگ‌ها را تغییر ندهید</div>`;return;}
+  const unknown=heads.filter((h,i)=>h&&!map[i]);
+  const out=[];
+  arr.slice(1).forEach((row,ri)=>{
+    const first=String(row.find(c=>String(c??'').trim()!=='')??'').trim();
+    if(first.startsWith('راهنما'))return; // ردیف راهنمای قالب
+    const d={}, errs=[];
+    map.forEach((f,ci)=>{
+      if(!f)return;
+      const raw=String(row[ci]??'').trim(); if(!raw)return;
+      if(f.t===NUM){const n=+faNum(raw).replace(/[,٬\s]/g,'');if(isNaN(n))errs.push(f.n+': عدد نامعتبر «'+raw+'»');else d[f.k]=n;}
+      else if(f.t===DAT){const dv=impDate(raw);if(dv===undefined)errs.push(f.n+': تاریخ نامعتبر «'+raw+'»');else if(dv)d[f.k]=dv;}
+      else if(f.t===SEL||f.t===STA){const os=optsFor(e,f);const hit=os.find(o=>o.trim()===raw);if(!hit)errs.push(f.n+': «'+raw+'» جزو گزینه‌ها نیست');else d[f.k]=hit;}
+      else if(f.t===MUL){const os=optsFor(e,f);const vals=raw.split(/[،;,]/).map(x=>x.trim()).filter(Boolean);const bad=vals.filter(v=>!os.includes(v));if(bad.length)errs.push(f.n+': نامعتبر: '+bad.join('، '));else d[f.k]=vals;}
+      else if(f.t===CHK){if(['بله','true','1','✓'].includes(raw.toLowerCase()))d[f.k]=true;else if(['خیر','false','0'].includes(raw.toLowerCase()))d[f.k]=null;else errs.push(f.n+': فقط بله/خیر');}
+      else if(f.t===REL){
+        const names=f.s?[raw]:raw.split(/[،;]/).map(x=>x.trim()).filter(Boolean);
+        const ids=[];
+        names.forEach(nm=>{const r2=byE(f.r).find(x=>(x.d.title||'').trim()===nm);if(r2)ids.push(r2.id);else errs.push(f.n+': «'+nm+'» در '+E[f.r].n+' یافت نشد');});
+        if(ids.length)d[f.k]=f.s?[ids[0]]:ids;
+      }
+      else d[f.k]=raw;
+    });
+    if(!d.title)errs.push('عنوان خالی است');
+    const existing=d.title?byE(e).find(x=>(x.d.title||'').trim()===String(d.title).trim()):null;
+    out.push({n:ri+2,d,errs,existing});
+  });
+  const ok=out.filter(r=>!r.errs.length);
+  impState.valid=ok;
+  let h=`<div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">
+    <span class="imp-ok">✅ ${ok.length.toLocaleString('fa-IR')} ردیف سالم</span>
+    <span class="${out.length-ok.length?'imp-bad':''}">⚠️ ${(out.length-ok.length).toLocaleString('fa-IR')} ردیف دارای خطا (ثبت نمی‌شوند)</span>
+    ${unknown.length?`<span style="color:var(--warn)">ستون‌های ناشناخته (نادیده گرفته شد): ${unknown.map(esc).join('، ')}</span>`:''}
+  </div>
+  <div class="tblwrap" style="max-height:300px;overflow:auto"><table><thead><tr><th>ردیف فایل</th><th>عنوان</th><th>وضعیت</th></tr></thead><tbody>`;
+  out.slice(0,200).forEach(r=>{
+    h+=`<tr><td>${r.n.toLocaleString('fa-IR')}</td><td>${esc(r.d.title||'—')}</td>
+      <td style="white-space:normal">${r.errs.length?'<span class="imp-bad">⚠️ '+r.errs.map(esc).join(' │ ')+'</span>':(r.existing?'<span style="color:var(--warn)">🔁 هم‌نام موجود — '+(document.getElementById('imp_upsert').checked?'به‌روزرسانی می‌شود':'رکورد جدید ساخته می‌شود')+'</span>':'<span class="imp-ok">✅ جدید</span>')}</td></tr>`;
+  });
+  h+=`</tbody></table></div>${out.length>200?'<div style="font-size:11px;color:var(--tx2);margin-top:4px">… و '+(out.length-200).toLocaleString('fa-IR')+' ردیف دیگر</div>':''}`;
+  prev.innerHTML=h;
+  document.getElementById('imp_go').disabled=!ok.length;
+  document.getElementById('imp_go').textContent='ثبت نهایی '+ok.length.toLocaleString('fa-IR')+' ردیف';
+}
+function impCommit(){
+  if(!impState||!impState.valid.length)return;
+  const e=impState.e, up=document.getElementById('imp_upsert').checked;
+  let created=0,updated=0;
+  impState.valid.forEach(r=>{
+    if(up&&r.existing){
+      const ex=recs[r.existing.id];
+      ex.d={...ex.d,...r.d};ex.u=Date.now();ex.del=false;
+      recs[ex.id]=ex;queue.push(ex.id);updated++;
+    } else {
+      const id=uid();
+      recs[id]={id,e,d:{...r.d,_by:myEmail()},u:Date.now()};
+      queue.push(id);created++;
+    }
+  });
+  saveQ();saveLocal();flush();
+  impClose();render();
+  alert('📥 ورود انجام شد: '+created.toLocaleString('fa-IR')+' رکورد جدید'+(updated?' و '+updated.toLocaleString('fa-IR')+' به‌روزرسانی':''));
+}
+window.impCommit=impCommit;
 
 /* ================= گزینه‌های سفارشی فیلدها ================= */
 function customOpts(ent,fk){const m=recs[MO];return (m&&!m.del&&m.d[ent+'.'+fk])||[];}
@@ -1381,8 +1590,9 @@ function nav(){
   ${canView('cal')?`<div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>`:''}
   ${canView('charts')?`<div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`:''}`;
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
-  <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>`;
-  GROUPS.forEach(g=>{
+  <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
+  <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>`;
+  GROUPS.concat(Object.values(E).some(v=>v.grp==='بخش‌های سفارشی')?['بخش‌های سفارشی']:[]).forEach(g=>{
     h+=`<div class="nav-h">${g}</div>`;
     if(g==='رشد شخصی'&&canView('gdash'))h+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
     if(g==='کسب‌وکار ویژه'&&canSee('sale')&&canView('bizdash'))h+=`<div class="nav-i ${view.type==='bizdash'?'on':''}" onclick="go('bizdash')">🏪 داشبورد کسب‌وکار</div>`;
@@ -1403,6 +1613,7 @@ function go(type,e,id,flt){
 }
 function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
 function render(){
+  try{rebuildSchema();}catch(e){} // فیلدها و بخش‌های سفارشی ادمین
   try{rebuildHabitFields();}catch(e){} // لیست عادت‌های شخصی کاربر جاری
   nav();
   const c=document.getElementById('content');
@@ -1427,6 +1638,7 @@ function render(){
   document.getElementById('ttl').textContent=
     view.type==='users'?'👤 کاربران و دسترسی':
     view.type==='acl'?'🛡️ سطوح دسترسی':
+    view.type==='schema'?'🧩 فیلدها و بخش‌ها':
     view.type==='me'?'🗂️ میز کار من':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
     view.type==='cal'?'📅 تقویم':
@@ -1444,6 +1656,7 @@ function render(){
   try{
     if(view.type==='users')c.innerHTML=usersHTML();
     else if(view.type==='acl')c.innerHTML=aclHTML();
+    else if(view.type==='schema')c.innerHTML=schemaHTML();
     else if(view.type==='me')c.innerHTML=meHTML();
     else if(view.type==='gdash')c.innerHTML=gdashHTML();
     else if(view.type==='cal')c.innerHTML=calHTML();
@@ -1520,6 +1733,7 @@ function listHTML(e){
   }
   let h=`<div class="tools">
     ${can('c',e)?`<button class="btn" onclick="openRec('${e}')">＋ افزودن</button>`:''}
+    ${can('c',e)?`<button class="btn gh sm" onclick="impOpen('${e}')" title="ورود گروهی داده از فایل اکسل یا CSV">📥 ورود از اکسل</button>`:''}
     <input placeholder="جستجو…" value="${esc(q)}" oninput="view.q=this.value;render()">
     ${view.flt&&FILTERS[view.flt]?`<span class="tag y" style="cursor:pointer" onclick="view.flt=null;render()">فیلتر: ${FILTERS[view.flt].n} ✕</span>`:''}
     <span style="color:var(--tx2);font-size:12px">${rows.length.toLocaleString('fa-IR')} مورد</span></div>${lvlBar}`;
@@ -2548,6 +2762,99 @@ function bscmapHTML(){
   }
   return h;
 }
+
+/* ================= 🧩 صفحه فیلدها و بخش‌های سفارشی (ادمین) ================= */
+const CF_TYPES=[[TXT,'متن کوتاه'],[LNG,'متن بلند'],[NUM,'عدد'],[DAT,'تاریخ (شمسی + ساعت)'],[SEL,'انتخابی (یک گزینه)'],[MUL,'چندانتخابی'],[CHK,'چک‌باکس (بله/خیر)'],[URLF,'لینک'],[REL,'رابطه با بخش دیگر']];
+function schemaHTML(){
+  if(!isAdmin())return `<div class="empty">فقط ادمین</div>`;
+  const s=schemaCfg();
+  if(!view.scEnt||!E[view.scEnt])view.scEnt='task';
+  const ek=view.scEnt, custom=s.fields[ek]||[];
+  const entOpts=Object.entries(E).sort((a,b)=>a[1].n.localeCompare(b[1].n,'fa'));
+  let h=`<div class="sec"><h3>🧩 فیلد جدید در بخش‌های موجود</h3>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:10px">فیلدی که اضافه کنید بلافاصله در فرم، صفحه رکورد، لیست و «قالب اکسل» همان بخش برای همه کاربران ظاهر می‌شود. فیلدهای پایه اپ قابل حذف نیستند (اگر لازم شد، از «سطوح دسترسی» مخفی‌شان کنید)؛ فیلدهای سفارشی را همین‌جا حذف می‌کنید — داده‌های واردشده در رکوردها می‌ماند و با برگرداندن فیلد دوباره دیده می‌شود.</p>
+  <div class="tools" style="margin-bottom:10px">
+    <label style="margin:0">بخش:</label>
+    <select onchange="view.scEnt=this.value;render()" style="max-width:260px">
+      ${entOpts.map(([k,v])=>`<option value="${k}" ${k===ek?'selected':''}>${v.ic} ${esc(v.n)}</option>`).join('')}</select>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+    ${E[ek].f.map(f=>{
+      const isC=custom.some(c=>c.k===f.k);
+      return `<span class="tag ${isC?'y':''}" style="font-size:10.5px">${esc(f.n)} <i style="font-size:9px;color:var(--tx2)">(${(CF_TYPES.find(t=>t[0]===f.t)||[,f.t])[1]})</i>${isC?` <b style="cursor:pointer;color:var(--bad)" title="حذف فیلد سفارشی" onclick="rmCField('${ek}','${f.k}')">✕</b>`:''}</span>`;
+    }).join('')}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;align-items:end">
+    <div><label>نام فیلد</label><input id="cf_name" placeholder="مثل: کد انبار"></div>
+    <div><label>نوع</label><select id="cf_type" onchange="render_cfx()">${CF_TYPES.map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select></div>
+    <div id="cf_x1"></div><div id="cf_x2"></div>
+    <div><button class="btn" onclick="addCField()">＋ افزودن فیلد</button></div>
+  </div></div>`;
+  // بخش‌های سفارشی
+  h+=`<div class="sec"><h3>📁 بخش (دیتابیس) جدید</h3>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:10px">بخش جدید در منو زیر «بخش‌های سفارشی» می‌آید و با یک فیلد «عنوان» شروع می‌شود — بعد از ساخت، از بالا انتخابش کنید و فیلدهایش را اضافه کنید. برای ورود گروهی هم خودکار قالب اکسل دارد.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+    ${Object.entries(s.ents).map(([k,d])=>`<span class="tag y" style="font-size:11px">${d.ic||'📁'} ${esc(d.n)} <span class="c">${byE(k).length.toLocaleString('fa-IR')}</span> <b style="cursor:pointer;color:var(--bad)" title="حذف بخش" onclick="rmCEnt('${k}')">✕</b></span>`).join('')||'<span style="color:var(--tx2);font-size:12px">هنوز بخشی نساخته‌اید</span>'}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;align-items:end">
+    <div><label>نام بخش</label><input id="ce_name" placeholder="مثل: انبارها"></div>
+    <div><label>آیکن (ایموجی)</label><input id="ce_ic" placeholder="🏬" maxlength="4" style="max-width:90px"></div>
+    <div><button class="btn" onclick="addCEnt()">＋ ساخت بخش</button></div>
+  </div></div>`;
+  setTimeout(render_cfx,0);
+  return h;
+}
+function render_cfx(){
+  const t=document.getElementById('cf_type'); if(!t)return;
+  const x1=document.getElementById('cf_x1'),x2=document.getElementById('cf_x2');
+  if(t.value===SEL||t.value===MUL){
+    x1.innerHTML=`<label>گزینه‌ها (با «،» جدا کنید)</label><input id="cf_opts" placeholder="کم، متوسط، زیاد">`;x2.innerHTML='';
+  } else if(t.value===REL){
+    x1.innerHTML=`<label>رابطه با بخش</label><select id="cf_rel">${Object.entries(E).map(([k,v])=>`<option value="${k}">${v.ic} ${esc(v.n)}</option>`).join('')}</select>`;
+    x2.innerHTML=`<label>تعداد</label><select id="cf_single"><option value="1">تک‌انتخابی</option><option value="">چندانتخابی</option></select>`;
+  } else {x1.innerHTML='';x2.innerHTML='';}
+}
+window.render_cfx=render_cfx;
+function addCField(){
+  const ek=view.scEnt, name=(document.getElementById('cf_name').value||'').trim();
+  if(!name){alert('نام فیلد را بنویسید');return;}
+  if(E[ek].f.some(f=>f.n===name)){alert('فیلدی با این نام در این بخش هست');return;}
+  const t=document.getElementById('cf_type').value;
+  const f={k:'x'+uid().replace(/-/g,'').slice(0,10),n:name,t};
+  if(t===SEL||t===MUL){
+    const os=(document.getElementById('cf_opts').value||'').split(/[،,]/).map(x=>x.trim()).filter(Boolean);
+    if(!os.length){alert('گزینه‌ها را بنویسید');return;}
+    f.o=os;
+  }
+  if(t===REL){f.r=document.getElementById('cf_rel').value;if(document.getElementById('cf_single').value)f.s=1;}
+  saveSchema(s=>{s.fields[ek]=[...(s.fields[ek]||[]),f];});
+  render();
+}
+window.addCField=addCField;
+function rmCField(ek,k){
+  if(!confirm('این فیلد سفارشی از فرم‌ها حذف شود؟ (داده‌های ثبت‌شده در رکوردها باقی می‌ماند)'))return;
+  saveSchema(s=>{s.fields[ek]=(s.fields[ek]||[]).filter(f=>f.k!==k);});
+  render();
+}
+window.rmCField=rmCField;
+function addCEnt(){
+  const name=(document.getElementById('ce_name').value||'').trim();
+  if(!name){alert('نام بخش را بنویسید');return;}
+  if(Object.values(E).some(v=>v.n===name)){alert('بخشی با این نام هست');return;}
+  const ic=(document.getElementById('ce_ic').value||'📁').trim()||'📁';
+  const k='x_'+uid().replace(/-/g,'').slice(0,10);
+  saveSchema(s=>{s.ents[k]={n:name,ic};});
+  view.scEnt=k;render();
+}
+window.addCEnt=addCEnt;
+function rmCEnt(k){
+  const n=byE(k).length;
+  if(!confirm('بخش «'+(E[k]?E[k].n:k)+'» حذف شود؟'+(n?' ('+n+' رکوردش از منو خارج می‌شود ولی در پایگاه داده می‌ماند)':'')))return;
+  saveSchema(s=>{delete s.ents[k];delete s.fields[k];});
+  if(view.scEnt===k)view.scEnt='task';
+  render();
+}
+window.rmCEnt=rmCEnt;
 
 /* ================= صفحه کاربران ================= */
 function usersHTML(){
