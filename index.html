@@ -948,10 +948,10 @@ function projectProg(p,seen){
   const ms=byE('milestone').filter(m=>relIds(m,'project').includes(p.id));
   if(ms.length){
     const totW=ms.reduce((a,m)=>a+(m.d.weight||0),0);
-    parts.push(totW>0?ms.reduce((a,m)=>a+msProg(m)*(m.d.weight||0),0)/totW:avg(ms.map(msProg)));
+    parts.push(totW>0?ms.reduce((a,m)=>a+msProg(m)*(m.d.weight||0),0)/totW:avg(ms.map(x=>msProg(x))));
   }
   const tasks=byE('task').filter(t=>relIds(t,'project').includes(p.id)&&!(t.d.parent&&t.d.parent[0]));
-  if(tasks.length)parts.push(avg(tasks.map(taskProg)));
+  if(tasks.length)parts.push(avg(tasks.map(x=>taskProg(x))));
   const subs=byE('project').filter(x=>x.d.parent&&x.d.parent[0]===p.id);
   if(subs.length)parts.push(avg(subs.map(x=>projectProg(x,seen))));
   if(!parts.length)return p.d.status==='تمام شده'?100:0;
@@ -971,7 +971,7 @@ function objectiveProg(o,seen){
     if(np!=null)parts.push(np);
   }
   const prjs=byE('project').filter(p=>relIds(p,'objective').includes(o.id));
-  if(prjs.length)parts.push(avg(prjs.map(projectProg)));
+  if(prjs.length)parts.push(avg(prjs.map(x=>projectProg(x))));
   const subs=byE('objective').filter(x=>x.d.parent&&x.d.parent[0]===o.id);
   if(subs.length)parts.push(avg(subs.map(x=>objectiveProg(x,seen))));
   if(!parts.length)return o.d.status==='Done'?100:0;
@@ -980,7 +980,7 @@ function objectiveProg(o,seen){
 function strategyProg(s){
   const obs=byE('objective').filter(o=>relIds(o,'strategy').includes(s.id));
   if(!obs.length)return 0;
-  return avg(obs.map(objectiveProg));
+  return avg(obs.map(x=>objectiveProg(x)));
 }
 // درصد پیشرفت عددی — کاهش یا افزایش، هر دو درست محاسبه می‌شود
 function numProg(d){
@@ -1058,7 +1058,7 @@ function bscProg(b,seen){ // آبشار: سنجه‌های خودش + میانگ
   seen=seen||new Set(); if(seen.has(b.id))return 0; seen.add(b.id);
   const parts=[]; // [pct, weight]
   const ms=bscMeasures(b);
-  if(ms.length)parts.push([avg(ms.map(measureProg)),1]);
+  if(ms.length)parts.push([avg(ms.map(x=>measureProg(x))),1]);
   bscKids(b).forEach(k=>parts.push([bscProg(k,seen),(+k.d.weight>0?+k.d.weight:1)]));
   if(parts.length){const W=parts.reduce((a,p)=>a+p[1],0);return parts.reduce((a,p)=>a+p[0]*p[1],0)/(W||1);}
   const np=numProg(b.d);return np!=null?np:0; // سازگاری با داده‌های قدیمی
@@ -1512,16 +1512,20 @@ function hbarsHTML(items,color){ // [{l,v(0..100),href}]
       <div style="width:${Math.min(100,Math.round(x.v))}%;height:100%;border-radius:99px;background:${color}"></div></div>
   </div>`).join('');
 }
-function monthlySVG(){
+function monthlySVG(txs){
+  txs=txs||byE('tx');
   // ۶ ماه شمسی اخیر: دریافت و پرداخت
   const now=new Date();const [cy,cm]=g2j(now.getFullYear(),now.getMonth()+1,now.getDate());
   const months=[];const MN=['فرو','ارد','خرد','تیر','مرد','شهر','مهر','آبا','آذر','دی','بهم','اسف'];
   for(let i=5;i>=0;i--){let y=cy,m=cm-i;while(m<1){m+=12;y--;}months.push({y,m,inc:0,exp:0});}
-  byE('tx').forEach(t=>{
-    const iso=ds(t.d.date);if(!iso)return;
-    const [y,mo,d]=iso.split('-').map(Number);const j=g2j(y,mo,d);
-    const slot=months.find(x=>x.y===j[0]&&x.m===j[1]);if(!slot)return;
-    if(t.d.kind==='دریافت')slot.inc+=t.d.amount||0;else if(t.d.kind==='پرداخت')slot.exp+=t.d.amount||0;
+  txs.forEach(t=>{
+    try{
+      const iso=ds(t.d.date);if(!iso)return;
+      const [y,mo,d]=iso.split('-').map(Number);if(!y||!mo||!d)return;
+      const j=g2j(y,mo,d);
+      const slot=months.find(x=>x.y===j[0]&&x.m===j[1]);if(!slot)return;
+      if(t.d.kind==='دریافت')slot.inc+=(+t.d.amount||0);else if(t.d.kind==='پرداخت')slot.exp+=(+t.d.amount||0);
+    }catch(e){}
   });
   const max=Math.max(1,...months.flatMap(m=>[m.inc,m.exp]));
   if(!months.some(m=>m.inc||m.exp))return `<div class="empty">تراکنشی در ۶ ماه اخیر ثبت نشده</div>`;
@@ -1542,33 +1546,128 @@ function monthlySVG(){
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" dir="ltr">${grid}
     <line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="#383835" stroke-width="1.5"/>${bars}${labels}</svg>`;
 }
+/* ===== 📊 داشبورد شاخص‌ها (قابل شخصی‌سازی) =====
+   دامنه را انتخاب می‌کنید (هلدینگ/شرکت/کسب‌وکار/پروژه)، بعد هر شاخصی را خواستید روشن/خاموش می‌کنید. */
+function chInDom(r,dom){ // آیا رکورد به دامنه انتخابی مربوط است؟ (بر اساس فیلدهای رابطه)
+  try{
+    if(!dom||dom==='_h')return true;
+    const kind=dom[0],id=dom.slice(2),def=E[r.e];if(!def)return false;
+    const tgt={c:'company',b:'business',p:'project'}[kind];
+    if(r.e===tgt)return r.id===id;
+    // رابطه مستقیم
+    const direct=(def.f||[]).some(f=>f.t===REL&&f.r===tgt&&relIds(r,f.k).includes(id));
+    if(direct)return true;
+    // رابطه غیرمستقیم از طریق پروژه (مثلاً تسک ← پروژه ← شرکت)
+    if(kind!=='p'){
+      const pf=(def.f||[]).find(f=>f.t===REL&&f.r==='project');
+      if(pf)return relIds(r,pf.k).some(pid=>recs[pid]&&!recs[pid].del&&chInDom(recs[pid],dom));
+    }
+    return false;
+  }catch(e){return false;}
+}
+function chE(ent,dom){return byE(ent).filter(r=>chInDom(r,dom));}
+function barsMoney(items,color){ // [{l,v(مبلغ),href}] — میله نسبت به بزرگ‌ترین مقدار
+  items=items.filter(x=>x&&x.v!=null);
+  if(!items.length)return `<div class="empty">داده‌ای نیست</div>`;
+  const mx=Math.max(1,...items.map(x=>Math.abs(x.v)));
+  return items.map(x=>`<div style="margin:9px 0;cursor:${x.href?'pointer':'default'}" ${x.href?`onclick="${x.href}"`:''}>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%">${esc(x.l)}</span>
+      <b style="color:${x.v<0?'var(--bad)':'inherit'}">${money(x.v)}</b></div>
+    <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden">
+      <div style="width:${Math.round(Math.abs(x.v)/mx*100)}%;height:100%;border-radius:99px;background:${x.v<0?CH.red:x.c||color}"></div></div>
+  </div>`).join('');
+}
+function barsTraffic(items){ // hbars با رنگ چراغ هر آیتم
+  if(!items.length)return `<div class="empty">داده‌ای نیست</div>`;
+  return items.map(x=>{const t=traffic(x.v);return `<div style="margin:9px 0;cursor:${x.href?'pointer':'default'}" ${x.href?`onclick="${x.href}"`:''}>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${t.ic} ${esc(x.l)}</span>
+      <b style="color:${t.c}">${Math.round(x.v).toLocaleString('fa-IR')}٪${x.sub?` <span style="font-weight:400;color:var(--tx2);font-size:11px">${esc(x.sub)}</span>`:''}</b></div>
+    <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden">
+      <div style="width:${Math.min(100,Math.round(x.v))}%;height:100%;border-radius:99px;background:${t.c}"></div></div>
+  </div>`;}).join('');
+}
+const INDICATORS=[
+ {k:'taskStatus',ic:'📘',n:'وضعیت تسک‌ها',fn:dom=>{
+   const tasks=chE('task',dom);
+   const stMap={};tasks.forEach(t=>{const s=t.d.status||'Not started';stMap[s]=(stMap[s]||0)+1;});
+   const stColor={'Done':CH.good,'In progress':CH.blue,'Not started':CH.muted};
+   const extra=[CH.yellow,CH.violet,CH.aqua,CH.red];let xi=0;
+   return donutSVG(Object.entries(stMap).map(([s,v])=>({l:STATFA[s]||s,v,c:stColor[s]||extra[xi++%extra.length]})));}},
+ {k:'prjProg',ic:'🏗️',n:'پیشرفت پروژه‌ها',fn:dom=>hbarsHTML(chE('project',dom).map(p=>({l:p.d.title||'—',v:projectProg(p),href:`go('rec','project','${p.id}')`})).sort((a,b)=>b.v-a.v).slice(0,10),CH.blue)},
+ {k:'objProg',ic:'🎯',n:'تحقق اهداف سازمانی',fn:dom=>barsTraffic(chE('objective',dom).map(o=>({l:o.d.title||'—',v:objectiveProg(o),href:`go('rec','objective','${o.id}')`})).sort((a,b)=>b.v-a.v).slice(0,10))},
+ {k:'stratProg',ic:'🔗',n:'تحقق استراتژی‌ها',fn:dom=>hbarsHTML(chE('strategy',dom).map(s=>({l:s.d.title||'—',v:strategyProg(s),href:`go('rec','strategy','${s.id}')`})).sort((a,b)=>b.v-a.v).slice(0,10),CH.violet)},
+ {k:'bscLights',ic:'⚖️',n:'اهداف BSC (چراغ وضعیت)',fn:dom=>barsTraffic(byE('bsc').filter(x=>dom==='_h'?true:chInDom(x,dom)).map(x=>({l:(x.d.persp?x.d.persp+' │ ':'')+(x.d.title||'—'),v:bscProg(x),href:`go('rec','bsc','${x.id}')`})).sort((a,b)=>b.v-a.v).slice(0,12))},
+ {k:'measures',ic:'🎚️',n:'سنجه‌های BSC (فعلی از هدف)',fn:dom=>barsTraffic(byE('measure').filter(m=>{const b=relIds(m,'bsc')[0];return dom==='_h'||!b||!recs[b]?dom==='_h':chInDom(recs[b],dom);}).map(m=>({l:m.d.title||'—',v:measureProg(m),sub:fmtN(m.d.current)+' از '+fmtN(m.d.target)+' '+(m.d.unit||''),href:`go('rec','measure','${m.id}')`})).slice(0,12))},
+ {k:'cash',ic:'💳',n:'دریافت و پرداخت — ۶ ماه اخیر',fn:dom=>monthlySVG(chE('tx',dom))},
+ {k:'bank',ic:'🏦',n:'موجودی حساب‌های بانکی',fn:dom=>barsMoney(chE('bank',dom).map(b=>({l:(b.d.title||'—')+(b.d.bank?' │ '+b.d.bank:''),v:byE('tx').filter(t=>relIds(t,'bank').includes(b.id)).reduce((a,t)=>a+(t.d.kind==='دریافت'?1:-1)*(+t.d.amount||0),0),href:`go('rec','bank','${b.id}')`})),CH.aqua)},
+ {k:'budget',ic:'💹',n:'بودجه: هزینه‌شده از مصوب',fn:dom=>barsTraffic(chE('budget',dom).map(b=>{
+   const spent=byE('tx').filter(t=>relIds(t,'budget').includes(b.id)&&t.d.kind==='پرداخت').reduce((a,t)=>a+(+t.d.amount||0),0);
+   const amt=+b.d.amount||0;return {l:b.d.title||'—',v:amt?Math.min(100,spent/amt*100):0,sub:money(spent)+' از '+money(amt),href:`go('rec','budget','${b.id}')`};}))},
+ {k:'risks',ic:'🤨',n:'ریسک‌ها بر اساس امتیاز',fn:dom=>{
+   const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1},I={'زیاد':3,'متوسط':2,'کم':1};
+   const rows=chE('risk',dom).map(r=>({l:r.d.title||'—',s:(P[r.d.prob]||0)*(I[r.d.impact]||0),href:`go('rec','risk','${r.id}')`})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10);
+   if(!rows.length)return `<div class="empty">ریسک امتیازدهی‌شده‌ای نیست</div>`;
+   return rows.map(x=>`<div style="margin:9px 0;cursor:pointer" onclick="${x.href}">
+     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(x.l)}</span><b style="color:${x.s>=10?'var(--bad)':x.s>=6?'var(--warn)':'var(--ok)'}">${x.s.toLocaleString('fa-IR')} از ۱۵</b></div>
+     <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden"><div style="width:${Math.round(x.s/15*100)}%;height:100%;border-radius:99px;background:${x.s>=10?CH.red:x.s>=6?CH.yellow:CH.good}"></div></div></div>`).join('');}},
+ {k:'sales',ic:'🛒',n:'فروش و خرید کالا — ۶ ماه اخیر',fn:dom=>{
+   const mk=(rows,kind)=>rows.map(s=>({d:{date:s.d.date,kind,amount:(+s.d.qty||0)*(+s.d.price||0)+(+s.d.extra||0)}}));
+   return monthlySVG([...mk(chE('sale',dom),'دریافت'),...mk(chE('purchase',dom),'پرداخت')]);}},
+ {k:'fifo',ic:'💰',n:'سود محصولات (FIFO)',fn:dom=>barsMoney(chE('product',dom).map(p=>{try{return {l:p.d.title||'—',v:fifoCalc(p).profit,href:`go('rec','product','${p.id}')`};}catch(e){return null;}}),CH.good)},
+ {k:'stockVal',ic:'📦',n:'ارزش انبار (FIFO)',fn:dom=>barsMoney(chE('product',dom).map(p=>{try{return {l:p.d.title||'—',v:fifoCalc(p).value,href:`go('rec','product','${p.id}')`};}catch(e){return null;}}),CH.yellow)},
+ {k:'efqm',ic:'🏅',n:'امتیاز معیارهای EFQM',fn:dom=>hbarsHTML(byE('efqm').filter(x=>dom==='_h'?true:chInDom(x,dom)).map(x=>({l:x.d.crit||x.d.title||'—',v:+x.d.score||0,href:`go('rec','efqm','${x.id}')`})),CH.violet)},
+ {k:'kpiLog',ic:'📈',n:'آخرین ثبت‌های KPI',fn:dom=>{
+   const rows=chE('kpi',dom).sort((a,b)=>(ds(b.d.date)||'').localeCompare(ds(a.d.date)||'')).slice(0,10);
+   if(!rows.length)return `<div class="empty">ثبتی نیست</div>`;
+   return `<div class="tblwrap"><table><thead><tr><th>تاریخ</th><th>عنوان</th><th>مقدار</th><th>هدف مرتبط</th></tr></thead><tbody>${rows.map(k=>`<tr onclick="go('rec','kpi','${k.id}')"><td>${fmtD(k.d.date)}</td><td>${esc(k.d.title||'—')}</td><td><b>${fmtN(k.d.value)}</b></td><td>${relIds(k,'objective').map(id=>esc(nameOf(id))).join('، ')||'—'}</td></tr>`).join('')}</tbody></table></div>`;}},
+];
+function chSelGet(dom){
+  let all={};try{all=JSON.parse(localStorage.getItem('xr_chsel')||'{}');}catch(e){}
+  if(Array.isArray(all[dom]))return all[dom];
+  // پیش‌فرض بر اساس نوع دامنه
+  if(dom==='_h')return ['taskStatus','prjProg','objProg','cash'];
+  if(dom[0]==='b')return ['sales','fifo','stockVal','taskStatus'];
+  if(dom[0]==='p')return ['taskStatus','cash','risks','prjProg'];
+  return ['taskStatus','prjProg','objProg','cash'];
+}
+function chToggle(k){
+  const dom=view.chD||'_h';
+  let all={};try{all=JSON.parse(localStorage.getItem('xr_chsel')||'{}');}catch(e){}
+  const cur=chSelGet(dom).slice();
+  const i=cur.indexOf(k);if(i>=0)cur.splice(i,1);else cur.push(k);
+  all[dom]=cur;localStorage.setItem('xr_chsel',JSON.stringify(all));render();
+}
+window.chToggle=chToggle;
 function chartsHTML(){
-  const tasks=byE('task'),prjs=byE('project'),obs=byE('objective');
-  // دونات وضعیت تسک‌ها (شامل گزینه‌های سفارشی)
-  const stMap={};tasks.forEach(t=>{const s=t.d.status||'Not started';stMap[s]=(stMap[s]||0)+1;});
-  const stColor={'Done':CH.good,'In progress':CH.blue,'Not started':CH.muted};
-  const extra=[CH.yellow,CH.violet,CH.aqua,CH.red];let xi=0;
-  const donutItems=Object.entries(stMap).map(([s,v])=>({l:STATFA[s]||s,v,c:stColor[s]||extra[xi++%extra.length]}));
-  // پروژه‌ها
-  const prjItems=prjs.map(p=>({l:p.d.title,v:projectProg(p),href:`go('rec','project','${p.id}')`}))
-    .sort((a,b)=>b.v-a.v).slice(0,8);
-  const objItems=obs.map(o=>({l:o.d.title,v:objectiveProg(o),href:`go('rec','objective','${o.id}')`}))
-    .sort((a,b)=>b.v-a.v).slice(0,8);
-  const avgP=prjs.length?Math.round(avg(prjs.map(projectProg))):0;
-  const avgO=obs.length?Math.round(avg(obs.map(objectiveProg))):0;
-  const openRisks=byE('risk').filter(r=>{const s=riskScore(r);return s.bad;}).length;
-  let h=`<div class="cards">
-    ${card('میانگین پیشرفت پروژه‌ها',avgP+'٪')}
-    ${card('میانگین تحقق اهداف',avgO+'٪')}
-    ${card('تسک‌های انجام‌شده',tasks.filter(t=>t.d.status==='Done').length)}
-    ${card('ریسک‌های پرخطر',openRisks,openRisks?'var(--bad)':null,"go('list','risk')")}
+  if(!view.chD)view.chD='_h';
+  const dom=view.chD;
+  const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
+    ...byE('company').map(c=>({id:'c:'+c.id,t:'🏢 '+(c.d.title||'—')})),
+    ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+(b.d.title||'—')})),
+    ...byE('project').map(p=>({id:'p:'+p.id,t:'🏗️ '+(p.d.title||'—')}))];
+  const sel=chSelGet(dom);
+  let h=`<div class="tools">
+    <label style="margin:0">دامنه:</label>
+    <select onchange="view.chD=this.value;render()" style="max-width:260px">
+      ${targets.map(x=>`<option value="${x.id}" ${x.id===dom?'selected':''}>${esc(x.t)}</option>`).join('')}</select>
   </div>
-  <div class="chartgrid">
-    <div class="sec"><h3>📘 وضعیت تسک‌ها</h3>${donutSVG(donutItems)}</div>
-    <div class="sec"><h3>💳 دریافت و پرداخت — ۶ ماه اخیر</h3>${monthlySVG()}</div>
-    <div class="sec"><h3>🏗️ پیشرفت پروژه‌ها</h3>${hbarsHTML(prjItems,CH.blue)}</div>
-    <div class="sec"><h3>🎯 درصد تحقق اهداف</h3>${hbarsHTML(objItems,CH.violet)}</div>
+  <div class="sec" style="padding:12px 14px"><h3 style="margin-bottom:8px">🧮 شاخص‌های قابل نمایش <span class="c">${sel.length.toLocaleString('fa-IR')} فعال</span></h3>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+    ${INDICATORS.map(ind=>`<button class="btn ${sel.includes(ind.k)?'':'gh'} sm" style="font-size:11.5px" onclick="chToggle('${ind.k}')">${sel.includes(ind.k)?'✓ ':''}${ind.ic} ${ind.n}</button>`).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--tx2);margin-top:7px">هر شاخص را با یک کلیک روشن/خاموش کنید — انتخاب شما برای هر دامنه جداگانه ذخیره می‌شود.</div>
   </div>`;
+  if(!sel.length)return h+`<div class="empty">شاخصی انتخاب نشده — از بالا یکی را روشن کنید</div>`;
+  h+=`<div class="chartgrid">`;
+  sel.forEach(k=>{
+    const ind=INDICATORS.find(x=>x.k===k);if(!ind)return;
+    let body;
+    try{body=ind.fn(dom);}catch(e){body=`<div class="empty" dir="ltr" style="color:var(--bad)">⚠️ ${esc(e&&e.message||'خطا')}</div>`;}
+    h+=`<div class="sec"><h3>${ind.ic} ${ind.n}</h3>${body}</div>`;
+  });
+  h+=`</div>`;
   return h;
 }
 
@@ -1698,7 +1797,7 @@ function gdashHTML(){
   const t=today();
   const todayH=hs.find(h=>ds(h.d.date)===t);
   const last30=hs.filter(h=>ds(h.d.date)&&ds(h.d.date)>new Date(Date.now()-30*86400000).toISOString().slice(0,10));
-  const avg30=last30.length?Math.round(avg(last30.map(habitPct))):0;
+  const avg30=last30.length?Math.round(avg(last30.map(x=>habitPct(x)))):0;
   const wealth=as.reduce((a,x)=>a+(x.d.value||0),0);
   let h=`<div class="cards">
     ${card('✅ عادت‌های امروز',todayH?Math.round(habitPct(todayH))+'٪':'ثبت نشده',null,todayH?`go('rec','habit','${todayH.id}')`:`openRec('habit')`)}
