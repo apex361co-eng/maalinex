@@ -3111,6 +3111,10 @@ function salesdashHTML(){
   real.forEach(v=>{const c=invCalc(v);rev+=c.total;due+=c.due;tax+=c.tax;
     const cid=relIds(v,'customer')[0];const cn=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';byCust[cn]=(byCust[cn]||0)+c.total;
     invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const pn=pid&&recs[pid]?recs[pid].d.title:'—';byProd[pn]=(byProd[pn]||0)+invLineAmt(l);});});
+  // فروش‌های قدیمی/سریع (sale)
+  const legacy=bizSaleLegacy(gBiz());
+  legacy.forEach(s=>{const a=saleAmt(s);rev+=a;const cid=relIds(s,'customer')[0];const cn=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';byCust[cn]=(byCust[cn]||0)+a;
+    const pid=relIds(s,'product')[0];const pn=pid&&recs[pid]?recs[pid].d.title:'—';byProd[pn]=(byProd[pn]||0)+a;});
   const topC=Object.entries(byCust).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const topP=Object.entries(byProd).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const card=(t,v,bad)=>`<div class="sec" style="text-align:center"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:19px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div></div>`;
@@ -3490,7 +3494,9 @@ function chqdashHTML(){
 }
 /* 📊 داشبورد کسب‌وکارِ قابل‌تنظیم — انتخاب هر شاخصی برای هر کسب‌وکار */
 function bizInvReal(biz){return byE('invoice').filter(v=>v.d.kind!=='پیش‌فاکتور'&&v.d.status!=='باطل'&&(!biz||relIds(v,'biz').includes(biz)));}
-function bizSales(biz){return bizInvReal(biz).reduce((a,v)=>a+invCalc(v).total,0);}
+/* 🛒 فروش‌های قدیمی/سریع (رکورد sale) که با فاکتور ساخته نشده‌اند — تا در داشبورد هم دیده شوند */
+function bizSaleLegacy(biz){return byE('sale').filter(s=>!s.d._inv&&(!biz||relIds(s,'biz').includes(biz)));}
+function bizSales(biz){return bizInvReal(biz).reduce((a,v)=>a+invCalc(v).total,0)+bizSaleLegacy(biz).reduce((a,s)=>a+saleAmt(s),0);}
 function bizRecv(biz){return bizInvReal(biz).reduce((a,v)=>a+invCalc(v).due,0);}
 function bizPay(biz){return byE('purchinv').filter(v=>v.d.status!=='باطل'&&(!biz||relIds(v,'biz').includes(biz))).reduce((a,v)=>a+pinvCalc(v).due,0);}
 function bizInvVal(biz){return byE('product').filter(p=>!biz||relIds(p,'biz').includes(biz)).reduce((a,p)=>{try{return a+stockValue(p);}catch(e){return a;}},0);}
@@ -3520,6 +3526,10 @@ function bizMonthly(biz,n){
     const j=g2j(p[0],p[1],p[2]);const key=j[0]+'-'+j[1];if(!(key in idx))return;
     const c=invCalc(v);let cogs=0;invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const bp=pid&&recs[pid]?(recs[pid].d.buy||0):0;cogs+=(l.d.qty||0)*bp;});
     months[idx[key]].rev+=c.base;months[idx[key]].profit+=(c.base-cogs);});
+  bizSaleLegacy(biz).forEach(s=>{const iso=ds(s.d.date);if(!iso)return;const p=iso.split('-').map(Number);if(p.length<3)return;
+    const j=g2j(p[0],p[1],p[2]);const key=j[0]+'-'+j[1];if(!(key in idx))return;
+    const amt=saleAmt(s);const pid=relIds(s,'product')[0];const bp=pid&&recs[pid]?(recs[pid].d.buy||0):0;
+    months[idx[key]].rev+=amt;months[idx[key]].profit+=(amt-(s.d.qty||0)*bp);});
   return months;
 }
 const JM_AB=['فرو','ارد','خرد','تیر','مرد','شهر','مهر','آبا','آذر','دی','بهم','اسف'];
@@ -3551,8 +3561,12 @@ function bizWidSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizwid')||'
 function bizWidToggle(k){let s=bizWidSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizwid',JSON.stringify(s));}catch(e){}render();}
 window.bizkpiToggle=bizkpiToggle;window.bizWidToggle=bizWidToggle;
 /* داده‌های ویجت‌ها */
-function bizTopCust(b){const m={};bizInvReal(b).forEach(v=>{const cid=relIds(v,'customer')[0];const n=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';m[n]=(m[n]||0)+invCalc(v).total;});return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
-function bizTopProd(b){const m={};bizInvReal(b).forEach(v=>{invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const n=pid&&recs[pid]?recs[pid].d.title:'—';m[n]=(m[n]||0)+invLineAmt(l);});});return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
+function bizTopCust(b){const m={};bizInvReal(b).forEach(v=>{const cid=relIds(v,'customer')[0];const n=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';m[n]=(m[n]||0)+invCalc(v).total;});
+  bizSaleLegacy(b).forEach(s=>{const cid=relIds(s,'customer')[0];const n=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';m[n]=(m[n]||0)+saleAmt(s);});
+  return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
+function bizTopProd(b){const m={};bizInvReal(b).forEach(v=>{invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const n=pid&&recs[pid]?recs[pid].d.title:'—';m[n]=(m[n]||0)+invLineAmt(l);});});
+  bizSaleLegacy(b).forEach(s=>{const pid=relIds(s,'product')[0];const n=pid&&recs[pid]?recs[pid].d.title:'—';m[n]=(m[n]||0)+saleAmt(s);});
+  return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
 const _wrows=arr=>arr.length?arr.map(([n,v])=>`<div style="display:flex;padding:5px 0;border-bottom:1px solid var(--line)"><span style="flex:1">${esc(n)}</span><b>${money(v)}</b></div>`).join(''):'<div style="color:var(--tx2);font-size:12px">—</div>';
 const BIZ_WIDGETS=[
  {k:'trend',n:'📈 نمودار روند ۱۲ ماهه',fn:b=>{const mo=bizMonthly(b,12);const has=mo.some(m=>m.rev||m.profit);const mx=Math.max(0,...mo.map(m=>Math.max(m.rev,m.profit)));
@@ -3607,8 +3621,12 @@ function plCalc(biz,from,to){
     invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const p=pid&&recs[pid]?recs[pid]:null;
       const amt=invLineAmt(l);const cost=(l.d.qty||0)*((p&&p.d.buy)||0);cogs+=cost;
       const pn=p?p.d.title:'—';byProd[pn]=byProd[pn]||{rev:0,cogs:0,qty:0};byProd[pn].rev+=amt;byProd[pn].cogs+=cost;byProd[pn].qty+=(l.d.qty||0);});});
+  // فروش‌های قدیمی/سریع (sale) در همان بازه
+  const legacy=bizSaleLegacy(biz).filter(s=>{const d=dnorm(s.d.date);if(f&&(!d||d<f))return false;if(t&&(!d||d>t))return false;return true;});
+  legacy.forEach(s=>{const amt=saleAmt(s);const pid=relIds(s,'product')[0];const p=pid&&recs[pid]?recs[pid]:null;const cost=(s.d.qty||0)*((p&&p.d.buy)||0);
+    rev+=amt;cogs+=cost;const pn=p?p.d.title:'—';byProd[pn]=byProd[pn]||{rev:0,cogs:0,qty:0};byProd[pn].rev+=amt;byProd[pn].cogs+=cost;byProd[pn].qty+=(s.d.qty||0);});
   const gp=rev-cogs;
-  return {count:invs.length,rev,cogs,gp,margin:rev>0?gp/rev*100:0,disc,tax,ship,byProd};
+  return {count:invs.length+legacy.length,rev,cogs,gp,margin:rev>0?gp/rev*100:0,disc,tax,ship,byProd};
 }
 function plreportHTML(){
   const bizzes=byE('business');
@@ -4261,7 +4279,7 @@ function fieldRaw(r,f){ // مقدار خام برای مرتب‌سازی/گرو
   const v=r.d[f.k];
   if(f.t===REL)return relIds(r,f.k).map(id=>nameOf(id)).join('، ');
   if(f.t===MUL)return (v||[]).join('، ');
-  if(f.t===DAT)return ds(v)||'';
+  if(f.t===DAT)return iso2jstr(ds(v))||''; // نمایش/گروه‌بندی/مرتب‌سازی تاریخ به‌صورت شمسی
   if(f.t===CHK)return v?'بله':'خیر';
   if(f.t===NUM)return v==null||v===''?null:+v;
   if(f.t==='calc')return calcVal(r.e,f,r.d);
@@ -6259,6 +6277,8 @@ function openRec(e,id,preset){
   if(!can(id?'e':'c',e,id?recs[id]:null)){alert('سطح دسترسی شما ('+myRole()+') اجازه این کار را نمی‌دهد');return;}
   cur=id?JSON.parse(JSON.stringify(recs[id])):{id:uid(),e,d:{},u:0,_new:true};
   if(preset&&preset.k&&!id)cur.d[preset.k]=[preset.id];
+  // 🏢 پرکردن خودکار «کسب‌وکار» از کسب‌وکار فعالِ سراسری (برای رکورد جدید)
+  if(!id&&gBiz()&&recs[gBiz()]){const bf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='business');if(bf&&!(cur.d[bf.k]&&cur.d[bf.k].length))cur.d[bf.k]=[gBiz()];}
   // تسک جدید: تاریخ و ساعت ایجاد خودکار پر می‌شود (قابل ویرایش)
   if(e==='task'&&!id){
     const n=new Date(), p=x=>String(x).padStart(2,'0');
