@@ -3547,37 +3547,53 @@ function trendSVG(months){
 }
 function bizkpiSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizkpi')||'null');if(Array.isArray(s))return s;}catch(e){}return ['sales','gp','margin','recv','pay','cash'];}
 function bizkpiToggle(k){let s=bizkpiSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizkpi',JSON.stringify(s));}catch(e){}render();}
-window.bizkpiToggle=bizkpiToggle;
+function bizWidSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizwid')||'null');if(Array.isArray(s))return s;}catch(e){}return ['trend','topcust','topprod'];}
+function bizWidToggle(k){let s=bizWidSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizwid',JSON.stringify(s));}catch(e){}render();}
+window.bizkpiToggle=bizkpiToggle;window.bizWidToggle=bizWidToggle;
+/* داده‌های ویجت‌ها */
+function bizTopCust(b){const m={};bizInvReal(b).forEach(v=>{const cid=relIds(v,'customer')[0];const n=cid&&recs[cid]?recs[cid].d.title:'بدون مشتری';m[n]=(m[n]||0)+invCalc(v).total;});return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
+function bizTopProd(b){const m={};bizInvReal(b).forEach(v=>{invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const n=pid&&recs[pid]?recs[pid].d.title:'—';m[n]=(m[n]||0)+invLineAmt(l);});});return Object.entries(m).sort((a,c)=>c[1]-a[1]).slice(0,6);}
+const _wrows=arr=>arr.length?arr.map(([n,v])=>`<div style="display:flex;padding:5px 0;border-bottom:1px solid var(--line)"><span style="flex:1">${esc(n)}</span><b>${money(v)}</b></div>`).join(''):'<div style="color:var(--tx2);font-size:12px">—</div>';
+const BIZ_WIDGETS=[
+ {k:'trend',n:'📈 نمودار روند ۱۲ ماهه',fn:b=>{const mo=bizMonthly(b,12);const has=mo.some(m=>m.rev||m.profit);const mx=Math.max(0,...mo.map(m=>Math.max(m.rev,m.profit)));
+   return `<div class="sec"><h3>📈 روند ۱۲ ماه اخیر</h3>
+     <div style="display:flex;gap:16px;font-size:11px;margin-bottom:8px;flex-wrap:wrap">
+       <span><span style="display:inline-block;width:14px;height:3px;background:var(--ac);vertical-align:middle;border-radius:2px"></span> فروش</span>
+       <span><span style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--ok);vertical-align:middle"></span> سود ناخالص</span>
+       <span style="flex:1"></span><span style="color:var(--tx2)">بیشینه: ${money(mx)}</span></div>
+     ${has?trendSVG(mo):'<div class="empty">هنوز فروشی برای رسم نمودار نیست</div>'}</div>`;}},
+ {k:'topcust',n:'👤 مشتریان برتر',fn:b=>`<div class="sec"><h3>👤 مشتریان برتر</h3>${_wrows(bizTopCust(b))}</div>`},
+ {k:'topprod',n:'📦 پرفروش‌ترین کالاها',fn:b=>`<div class="sec"><h3>📦 پرفروش‌ترین کالاها</h3>${_wrows(bizTopProd(b))}</div>`},
+ {k:'targets',n:'🎯 خلاصه‌ی تارگت‌ها',fn:b=>{const ts=byE('saletarget').filter(t=>!b||relIds(t,'biz').includes(b)).slice(0,6);
+   if(!ts.length)return `<div class="sec"><h3>🎯 تارگت‌ها</h3><div style="color:var(--tx2);font-size:12px">تارگتی نیست</div></div>`;
+   return `<div class="sec"><h3>🎯 خلاصه‌ی تارگت‌ها</h3>${ts.map(t=>{const p=targetProgress(t);const pct=p.overall||0;const c=pctColor(pct);
+     return `<div style="margin:6px 0"><div style="display:flex;font-size:12px"><span style="flex:1">${esc(t.d.title||'—')}</span><b style="color:${c}">${pct.toLocaleString('fa-IR')}٪</b></div>
+       <div style="height:9px;border-radius:6px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${Math.min(100,pct)}%;background:${c}"></div></div></div>`;}).join('')}</div>`;}},
+ {k:'cheques',n:'💳 چک‌های باز',fn:b=>{const cs=byE('cheque').filter(c=>chqOpen(c)&&(!b||relIds(c,'biz').includes(b))).sort((a,c)=>(dnorm(a.d.due)||'').localeCompare(dnorm(c.d.due)||'')).slice(0,8);
+   if(!cs.length)return `<div class="sec"><h3>💳 چک‌های باز</h3><div style="color:var(--tx2);font-size:12px">چک بازی نیست</div></div>`;
+   return `<div class="sec"><h3>💳 چک‌های باز</h3>${cs.map(c=>{const over=chqOverdue(c);return `<div style="display:flex;padding:4px 0;border-bottom:1px solid var(--line);font-size:12px${over?';color:var(--bad)':''}"><span style="flex:1">${esc(c.d.title||'—')} ${c.d.kind==='دریافتنی'?'📥':'📤'}</span><span>${esc(iso2jstr(ds(c.d.due))||'—')}${over?' ⏰':''}</span><b style="margin-inline-start:8px">${fmtN(+c.d.amount||0)}</b></div>`;}).join('')}</div>`;}},
+ {k:'recent',n:'🧾 آخرین فاکتورها',fn:b=>{const iv=bizInvReal(b).slice().sort((a,c)=>c.u-a.u).slice(0,8);
+   if(!iv.length)return `<div class="sec"><h3>🧾 آخرین فاکتورها</h3><div style="color:var(--tx2);font-size:12px">فاکتوری نیست</div></div>`;
+   return `<div class="sec"><h3>🧾 آخرین فاکتورها</h3>${iv.map(v=>`<div style="display:flex;padding:4px 0;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer" onclick="go('rec','invoice','${v.id}')"><span style="flex:1">${esc(v.d.title||'—')}</span><span style="color:var(--tx2)">${esc(iso2jstr(ds(v.d.date))||'—')}</span><b style="margin-inline-start:8px">${money(invCalc(v).total)}</b></div>`).join('')}</div>`;}}
+];
 function bizkpiHTML(){
-  const bizzes=byE('business');
-  
   const b=gBiz();
-  const sel=bizkpiSel();
+  const sel=bizkpiSel(), wsel=bizWidSel();
   const cards=BIZ_METRICS.filter(m=>sel.includes(m.k)).map(m=>{const bad=m.bad?m.bad(b):false;
     return `<div class="sec" style="text-align:center"><div style="font-size:11px;color:var(--tx2)">${esc(m.n)}</div>
       <div style="font-size:19px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${m.fn(b)}</div></div>`;}).join('');
-  const picker=view.kpiPick?`<div class="sec"><h3>⚙️ انتخاب شاخص‌ها</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:6px">${BIZ_METRICS.map(m=>{const on=sel.includes(m.k);
-      return `<button class="btn sm ${on?'':'gh'}" onclick="bizkpiToggle('${m.k}')">${on?'✅':'⬜'} ${esc(m.n)}</button>`;}).join('')}</div></div>`:'';
-  return `<div class="tools"><label style="margin:0">کسب‌وکار:</label>
-    <select onchange="setGBiz(this.value)" style="max-width:220px"><option value="">همه‌ی کسب‌وکارها</option>${bizzes.map(x=>`<option value="${x.id}" ${x.id===b?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select>
-    <span style="flex:1"></span><button class="btn gh sm" onclick="view.kpiPick=!view.kpiPick;render()">⚙️ شاخص‌ها</button></div>
+  const picker=view.kpiPick?`<div class="sec"><h3>⚙️ سفارشی‌سازی داشبورد</h3>
+    <div style="font-size:11px;color:var(--ac);margin:4px 0">کارت‌های شاخص</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${BIZ_METRICS.map(m=>{const on=sel.includes(m.k);return `<button class="btn sm ${on?'':'gh'}" onclick="bizkpiToggle('${m.k}')">${on?'✅':'⬜'} ${esc(m.n)}</button>`;}).join('')}</div>
+    <div style="font-size:11px;color:var(--ac);margin:10px 0 4px">بخش‌ها / ویجت‌ها</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${BIZ_WIDGETS.map(w=>{const on=wsel.includes(w.k);return `<button class="btn sm ${on?'':'gh'}" onclick="bizWidToggle('${w.k}')">${on?'✅':'⬜'} ${esc(w.n)}</button>`;}).join('')}</div>
+  </div>`:'';
+  const widgets=BIZ_WIDGETS.filter(w=>wsel.includes(w.k)).map(w=>w.fn(b)).join('');
+  return `<div class="tools"><b style="font-size:13px">📊 داشبورد کسب‌وکار${b&&recs[b]?' — '+esc(recs[b].d.title):' (همه)'}</b>
+    <span style="flex:1"></span><button class="btn ${view.kpiPick?'':'gh'} sm" onclick="view.kpiPick=!view.kpiPick;render()">⚙️ سفارشی‌سازی</button></div>
   ${picker}
-  ${cards?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${cards}</div>`:'<div class="empty">هیچ شاخصی انتخاب نشده — از «⚙️ شاخص‌ها» انتخاب کن</div>'}
-  ${(()=>{const mo=bizMonthly(b,12);const has=mo.some(m=>m.rev||m.profit);const mx=Math.max(0,...mo.map(m=>Math.max(m.rev,m.profit)));
-    return `<div class="sec" style="margin-top:12px"><h3>📈 روند ۱۲ ماه اخیر</h3>
-      <div style="display:flex;gap:16px;font-size:11px;margin-bottom:8px;flex-wrap:wrap">
-        <span><span style="display:inline-block;width:14px;height:3px;background:var(--ac);vertical-align:middle;border-radius:2px"></span> فروش</span>
-        <span><span style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--ok);vertical-align:middle"></span> سود ناخالص</span>
-        <span style="flex:1"></span><span style="color:var(--tx2)">بیشینه: ${money(mx)}</span></div>
-      ${has?trendSVG(mo):'<div class="empty">هنوز فروشی برای رسم نمودار نیست</div>'}</div>`;})()}
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px">
-    ${canView('salesdash')?`<button class="btn gh" onclick="go('salesdash')">📈 داشبورد فروش</button>`:''}
-    ${canView('targetdash')?`<button class="btn gh" onclick="go('targetdash')">🎯 پایش تارگت</button>`:''}
-    ${canView('arapdash')?`<button class="btn gh" onclick="go('arapdash')">📊 مانده طلب و بدهی</button>`:''}
-    ${canView('cashdash')?`<button class="btn gh" onclick="go('cashdash')">💰 دفتر صندوق</button>`:''}
-    ${canView('plreport')?`<button class="btn gh" onclick="go('plreport')">💰 سود و زیان</button>`:''}
-  </div>`;
+  ${cards?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${cards}</div>`:'<div class="empty">هیچ شاخصی انتخاب نشده — از «⚙️ سفارشی‌سازی» انتخاب کن</div>'}
+  ${widgets?`<div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">${widgets}</div>`:''}`;
 }
 /* 📈 گزارش سود و زیان فروش */
 function plCalc(biz,from,to){
@@ -3996,6 +4012,13 @@ function drawArrange(){
       <span onclick="closeArrange()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
     <p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">ترتیب گروه‌های منوی کناری، آیتم‌های داخل هر گروه (زیرمنوها)، و دکمه‌های نوار بالا را با ▲▼ تغییر دهید. تنظیمات روی همین دستگاه ذخیره می‌شود.</p>
     <h3 style="font-size:13px;margin:6px 0">📚 گروه‌ها و زیرمنوهای منوی کناری</h3>${groups.map(rowG).join('')}
+    <h3 style="font-size:13px;margin:12px 0 6px">🏢 انتخاب‌گر کسب‌وکار فعال</h3>
+    <div class="arow"><span class="an">موقعیت انتخاب‌گر در منو</span>
+      <select onchange="setBizSelPos(this.value)" style="font-size:12px;padding:4px 8px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);font-family:inherit">
+        <option value="top" ${bizSelPos()==='top'?'selected':''}>بالای منو</option>
+        <option value="bottom" ${bizSelPos()==='bottom'?'selected':''}>پایین منو</option>
+        <option value="hidden" ${bizSelPos()==='hidden'?'selected':''}>مخفی</option>
+      </select></div>
     <h3 style="font-size:13px;margin:12px 0 6px">🔝 دکمه‌های نوار بالا</h3>${tops.map(rowT).join('')}
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bad sm" onclick="resetMenus()">↩︎ بازگردانی پیش‌فرض</button>
@@ -4005,7 +4028,17 @@ window.openArrange=openArrange;window.moveGroup=moveGroup;window.moveTop=moveTop
 /* 🏢 کسب‌وکار فعالِ سراسری — یک‌بار انتخاب، همه‌ی داشبوردها/گزارش‌ها/لیست‌ها روی همون فیلتر */
 function gBiz(){try{return localStorage.getItem('xr_bizsel')||'';}catch(e){return '';}}
 function setGBiz(id){try{if(id)localStorage.setItem('xr_bizsel',id);else localStorage.removeItem('xr_bizsel');}catch(e){}render();}
-window.setGBiz=setGBiz;
+function bizSelPos(){try{return localStorage.getItem('xr_bizselpos')||'top';}catch(e){return 'top';}}
+function setBizSelPos(v){try{localStorage.setItem('xr_bizselpos',v);}catch(e){}nav();try{drawArrange();}catch(e){}}
+function bizSelectorHTML(){
+  const bl=byE('business');
+  if(!bl.length||!(canSee('invoice')||canSee('product')||canSee('customer')||canSee('purchinv')||canSee('sale')))return '';
+  return `<div style="margin:9px 4px 6px;padding:7px 9px;background:var(--bg3);border:1px solid var(--ac);border-radius:10px">
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">🏢 کسب‌وکار فعال</div>
+    <select onchange="setGBiz(this.value)" style="width:100%;font-size:12px;padding:5px 6px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);font-family:inherit">
+      <option value="">همه‌ی کسب‌وکارها</option>${bl.map(b=>`<option value="${b.id}" ${b.id===gBiz()?'selected':''}>${esc(b.d.title)}</option>`).join('')}</select></div>`;
+}
+window.setGBiz=setGBiz;window.setBizSelPos=setBizSelPos;
 /* 🏢 منوی یکپارچه‌ی «مدیریت کسب و کار» — همه‌ی ابزارهای کسب‌وکار زیر یک منو با زیربخش‌ها */
 function bizMenuHTML(){
   const ent=k=>canSee(k)?`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${E[k].ic} ${E[k].n}<span class="c">${visE(k).length}</span></div>`:'';
@@ -4014,8 +4047,7 @@ function bizMenuHTML(){
   let h='';
   // 📊 داشبورد
   h+=sec('📊 داشبورد',
-    it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
-    +it('bizdash','🏪 داشبورد قدیمی',"go('bizdash')",canSee('sale')&&canView('bizdash')));
+    it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv'))));
   // 📦 کالا و خدمات
   h+=sec('📦 کالا و خدمات',ent('product')+ent('channel'));
   // 💼 فروش
@@ -4051,14 +4083,8 @@ function nav(){
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
   <div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`;
-  // 🏢 انتخاب‌گر کسب‌وکار فعالِ سراسری
-  {const bl=byE('business');
-   if(bl.length&&(canSee('invoice')||canSee('product')||canSee('customer')||canSee('purchinv')||canSee('sale'))){
-     h+=`<div style="margin:9px 4px 3px;padding:7px 9px;background:var(--bg3);border:1px solid var(--ac);border-radius:10px">
-       <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">🏢 کسب‌وکار فعال</div>
-       <select onchange="setGBiz(this.value)" style="width:100%;font-size:12px;padding:5px 6px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);font-family:inherit">
-         <option value="">همه‌ی کسب‌وکارها</option>${bl.map(b=>`<option value="${b.id}" ${b.id===gBiz()?'selected':''}>${esc(b.d.title)}</option>`).join('')}</select></div>`;
-   }}
+  // 🏢 انتخاب‌گر کسب‌وکار فعالِ سراسری (موقعیت قابل جابجایی: بالا / پایین / مخفی)
+  if(bizSelPos()==='top')h+=bizSelectorHTML();
   navGroupsOrdered().forEach(g=>{
     const ents=g==='مدیریت کسب و کار'?[]:Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&canSee(k)); // ردیف‌های داخلی (sub) در منو نمایش داده نمی‌شوند؛ گروه کسب‌وکار جدا رندر می‌شود
     let items='';
@@ -4083,6 +4109,7 @@ function nav(){
       ${col?`<span class="c" style="opacity:.6">${gcount.toLocaleString('fa-IR')}</span>`:''}</div>`;
     if(!col)h+=items;
   });
+  if(bizSelPos()==='bottom')h+=bizSelectorHTML();
   el.innerHTML=h;
 }
 let hist=[];
