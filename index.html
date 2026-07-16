@@ -1291,28 +1291,54 @@ async function initSupabase(){
         session=null;
         localStorage.removeItem('xr_data');recs={};
         localStorage.removeItem('xr_q');queue=[];
+        localStorage.removeItem('xr_synccur');syncCursor='';
       }
     }catch(e){/* شبکه قطع — با کش محلی ادامه (سرور همچنان نگهبان است) */}
   }
   return !!session;
 }
-async function pullAll(){
-  if(!sb||!session)return;
-  setSync('','در حال سینک…');
-  // 🔑 سرور منبع اصلی است: یک نقشه‌ی تازه می‌سازیم و کش محلی را کامل جایگزین می‌کنیم،
-  // تا رکوردهایی که دیگر برای این کاربر مجاز نیستند (حذف‌شده/خارج از محدوده) باقی نمانند.
-  const fresh={};
-  let from=0, page=1000;
-  while(true){
-    const {data,error}=await sb.from('records').select('*').range(from,from+page-1);
-    if(error){setSync('err','خطای سینک');return;} // خطا: کش فعلی دست‌نخورده می‌ماند (حالت آفلاین)
-    (data||[]).forEach(row=>{fresh[row.id]={id:row.id,e:row.entity,d:row.data||{},u:new Date(row.updated_at).getTime(),del:row.deleted};});
-    if(!data||data.length<page)break; from+=page;
+let syncCursor=localStorage.getItem('xr_synccur')||''; // بیشینه‌ی updated_at دیده‌شده (برای سینک تدریجی)
+function afterPull(){ // کاربرِ در انتظار تایید نباید داده‌ای در کش داشته باشد
+  if(session&&isPending()){
+    Object.keys(recs).forEach(id=>{if(id!==MU&&id!==MO&&id!==MA)delete recs[id];});
   }
-  // ویرایش‌های آفلاینِ ارسال‌نشده (در صف) را از دست ندهیم
-  queue.forEach(id=>{if(recs[id]&&!fresh[id])fresh[id]=recs[id];});
-  recs=fresh;
   saveLocal();setSync('ok','سینک شد');render();
+}
+async function pullAll(full){
+  if(!sb||!session)return;
+  // ⚡ سینک تدریجی: فقط رکوردهای تغییرکرده از آخرین سینک را بگیر (سریع، حتی با ده‌ها هزار رکورد).
+  // سینک کامل فقط بار اول یا هنگام ورود (full=true) — برای پاک‌سازی رکوردهای دیگر مجازنشده.
+  const incremental=!full&&syncCursor;
+  setSync('','در حال سینک…');
+  let maxU=incremental?syncCursor:'';
+  if(incremental){
+    let from=0, page=1000;
+    while(true){
+      const {data,error}=await sb.from('records').select('*').gt('updated_at',syncCursor).order('updated_at',{ascending:true}).range(from,from+page-1);
+      if(error){setSync('err','خطای سینک');return;}
+      (data||[]).forEach(row=>{
+        const loc=recs[row.id], remoteU=new Date(row.updated_at).getTime();
+        if(!loc||loc.u<=remoteU)recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};
+        if(row.updated_at>maxU)maxU=row.updated_at;
+      });
+      if(!data||data.length<page)break; from+=page;
+    }
+  } else {
+    // سینک کامل و مرجع: کش را با آنچه سرور مجاز می‌داند جایگزین کن
+    const fresh={};
+    let from=0, page=1000;
+    while(true){
+      const {data,error}=await sb.from('records').select('*').order('updated_at',{ascending:true}).range(from,from+page-1);
+      if(error){setSync('err','خطای سینک');return;}
+      (data||[]).forEach(row=>{fresh[row.id]={id:row.id,e:row.entity,d:row.data||{},u:new Date(row.updated_at).getTime(),del:row.deleted};
+        if(row.updated_at>maxU)maxU=row.updated_at;});
+      if(!data||data.length<page)break; from+=page;
+    }
+    queue.forEach(id=>{if(recs[id]&&!fresh[id])fresh[id]=recs[id];}); // ویرایش‌های آفلاینِ ارسال‌نشده حفظ شود
+    recs=fresh;
+  }
+  syncCursor=maxU||new Date().toISOString();localStorage.setItem('xr_synccur',syncCursor);
+  afterPull();
 }
 let _flushing=false;
 function rowOf(id){const r=recs[id];return r?{id:r.id,entity:r.e,data:r.d,updated_at:new Date(r.u).toISOString(),deleted:!!r.del}:null;}
@@ -1571,6 +1597,7 @@ async function authAction(){
     session=null;if(rt){try{sb.removeChannel(rt);}catch(e){}rt=null;}
     // 🧹 پاک‌سازی کش محلی هنگام خروج تا کاربر بعدی/حذف‌شده داده قبلی را نبیند
     recs={};queue=[];localStorage.removeItem('xr_data');localStorage.removeItem('xr_q');
+    syncCursor='';localStorage.removeItem('xr_synccur');
     setSync('off','خارج شدید');nav();whoami();
     fillLoginForm();document.getElementById('login').classList.add('show');
   } else openSettings();
@@ -2763,7 +2790,7 @@ function render(){
         دسترسی شما هنوز توسط <b style="color:#ecd98f">ادمین</b> تعیین نشده است.<br>
         لطفاً منتظر بمانید؛ به محض تایید، همه‌چیز به‌صورت خودکار برای شما باز می‌شود.</p>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:18px">
-          <button class="btn sm" onclick="pullAll()">🔄 بررسی مجدد</button>
+          <button class="btn sm" onclick="pullAll(true)">🔄 بررسی مجدد (کامل)</button>
           <button class="btn gh sm" onclick="authAction()">🚪 خروج</button>
         </div>
       </div></div>`;
@@ -5240,7 +5267,7 @@ async function doLogin(){
     }
   }
   document.getElementById('login').classList.remove('show');
-  await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();
+  await pullAll(true);bootstrapAdmin();subscribeRT();flush();whoami();render(); // ورود: سینک کامل و مرجع
 }
 function localOnly(){cfg.local=1;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
   document.getElementById('login').classList.remove('show');setSync('off','بدون سینک (محلی)');render();}
