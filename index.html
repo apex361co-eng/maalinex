@@ -870,15 +870,21 @@ vline:{ic:'➕',n:'آرتیکل‌های سند',grp:'حسابداری',f:[
  {k:'project',n:'پروژه (تفصیلی)',t:REL,r:'project',s:1},
  {k:'person',n:'طرف حساب (تفصیلی)',t:REL,r:'hr',s:1}],
  cols:['acct','debit','credit','voucher'],comp:'vlineBrief'},
-item:{ic:'📦',n:'کالاها (کاردکس انبار)',grp:'حسابداری',f:[
+item:{ic:'📦',n:'کالاها و محصولات',grp:'حسابداری',f:[
  {k:'title',n:'نام کالا',t:TXT},
  {k:'code',n:'کد کالا',t:TXT},
- {k:'unit',n:'واحد سنجش',t:SEL,o:['عدد','کیلوگرم','متر','لیتر','بسته','سرویس']},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'unit',n:'واحد سنجش',t:SEL,o:['عدد','کیلوگرم','متر','لیتر','بسته','سرویس','جفت','دستگاه','کارتن']},
+ {k:'cat',n:'گروه فروش',t:TXT},
+ {k:'catcode',n:'کد گروه فروش',t:TXT},
+ {k:'barcode',n:'بارکد',t:TXT},
+ {k:'sell',n:'قیمت فروش',t:NUM},
+ {k:'buy',n:'قیمت خرید (آخرین)',t:NUM},
  {k:'method',n:'روش ارزش‌گذاری',t:SEL,o:['میانگین موزون','FIFO (اولین صادره از اولین وارده)']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'minq',n:'نقطه سفارش (حداقل موجودی)',t:NUM},
  {k:'note',n:'توضیح',t:TXT}],
- cols:['code','title','unit','method'],comp:'itemBrief'},
+ cols:['code','title','cat','unit','sell'],comp:'itemBrief'},
 stockmv:{ic:'🔄',n:'حرکت‌های انبار',grp:'حسابداری',f:[
  {k:'title',n:'شرح (شماره حواله/رسید)',t:TXT},
  {k:'item',n:'کالا',t:REL,r:'item',s:1},
@@ -2252,7 +2258,8 @@ function kardex(itemId){
 }
 function itemBrief(r){const k=kardex(r.id);
   const low=+r.d.minq&&k.qty<=+r.d.minq;
-  return {label:'موجودی │ ارزش │ نرخ',v:fmtN(k.qty)+' '+(r.d.unit||'')+' │ '+abbrN(k.val)+' │ '+abbrN(k.avg)+(low?' │ ⚠️ نقطه سفارش':''),bad:k.qty<0||!!low};}
+  const sell=+r.d.sell||0;
+  return {label:(r.d.cat?esc(r.d.cat)+' │ ':'')+'موجودی │ قیمت فروش',v:fmtN(k.qty)+' '+(r.d.unit||'')+(sell?' │ '+abbrN(sell):'')+(low?' │ ⚠️ نقطه سفارش':''),bad:k.qty<0||!!low};}
 function mvBrief(r){const it=relIds(r,'item')[0];
   return {label:'کالا │ مقدار',v:(it?esc(nameOf(it)):'—')+' │ '+fmtN(+r.d.qty||0)+(String(r.d.kind||'').startsWith('ورود')&&+r.d.unitprice?' × '+fmtN(+r.d.unitprice):'')};}
 function chqBrief(r){
