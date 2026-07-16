@@ -438,6 +438,16 @@ milestone:{ic:'🚩',n:'مایلستون‌ها / فازها',grp:'زنجیره 
  {k:'deliv',n:'اقلام قابل تحویل',t:LNG},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1}],
  cols:['title','project','status','weight','date'],prog:'msProg'},
+evt:{ic:'🗒️',n:'وقایع و پیگیری‌ها',grp:'زنجیره آبشاری',f:[
+ {k:'title',n:'شرح واقعه',t:LNG},
+ {k:'etype',n:'نوع',t:SEL,o:['یادداشت','تماس','جلسه','پیشرفت','مشکل / مانع','تصمیم','تغییر وضعیت','پیگیری','ارجاع','دریافت / پرداخت']},
+ {k:'when',n:'تاریخ و ساعت واقعه',t:DAT},
+ {k:'follow',n:'یادآوری پیگیری بعدی',t:DAT},
+ {k:'person',n:'افراد مرتبط',t:REL,r:'hr'},
+ {k:'subjE',n:'نوع موضوع',t:TXT},
+ {k:'subjId',n:'شناسه موضوع',t:TXT},
+ {k:'subjT',n:'موضوع',t:TXT}],
+ cols:['etype','title','subjT','when'],comp:'evtBrief'},
 crm:{ic:'🧑‍🤝‍🧑',n:'CRM | ذینفعان',grp:'روابط',f:[
  {k:'title',n:'نام',t:TXT},
  {k:'kind',n:'شخصیت',t:SEL,o:['حقیقی','حقوقی']},
@@ -2244,6 +2254,74 @@ function payCalc(d){
 function payBrief(r){const p=payCalc(r.d);
   return {label:'ناخالص │ بیمه ۷٪ │ خالص پرداختنی',v:abbrN(p.gross)+' │ '+abbrN(p.ins)+' │ '+abbrN(p.net),bad:p.net<0};}
 window.itemBrief=itemBrief;window.mvBrief=mvBrief;window.chqBrief=chqBrief;window.payBrief=payBrief;
+/* ===== 🗒️ ثبت وقایع و پیگیری‌ها (فراگیر روی همه رکوردها) ===== */
+const EVT_IC={'یادداشت':'📝','تماس':'📞','جلسه':'🤝','پیشرفت':'✅','مشکل / مانع':'⛔','تصمیم':'⚖️','تغییر وضعیت':'🔀','پیگیری':'🔔','ارجاع':'↗️','دریافت / پرداخت':'💸'};
+const EVT_COL={'یادداشت':'#8ec6ea','تماس':'#48cdb0','جلسه':'#9a9dee','پیشرفت':'#57b36a','مشکل / مانع':'#e06a5f','تصمیم':'#f2cf45','تغییر وضعیت':'#c58bd6','پیگیری':'#e0a13f','ارجاع':'#8ea0b5','دریافت / پرداخت':'#57b36a'};
+function eventsFor(e,id){
+  return byE('evt').filter(v=>v.d.subjE===e&&v.d.subjId===id)
+    .sort((a,b)=>{const da=(dVal(a.d.when)||{}).s||'',db=(dVal(b.d.when)||{}).s||'';return db.localeCompare(da)||b.u-a.u;});
+}
+function evtBrief(r){const ic=EVT_IC[r.d.etype]||'🗒️';
+  return {label:'موضوع │ نوع',v:(r.d.subjT?esc(r.d.subjT)+' · ':'')+ic+' '+esc(r.d.etype||'یادداشت'),bad:r.d.etype==='مشکل / مانع'};}
+window.evtBrief=evtBrief;
+function addEvent(e,id){
+  if(!can('c','evt')){alert('اجازه ثبت واقعه ندارید');return;}
+  const ty=document.getElementById('evtType'),tx=document.getElementById('evtText'),fo=document.getElementById('evtFollow');
+  const text=(tx.value||'').trim();
+  if(!text){tx.focus();return;}
+  const subj=recs[id];
+  const now=new Date().toISOString();
+  let follow=null;const days=+fo.value||0;
+  if(days){follow={s:new Date(Date.now()+days*86400000).toISOString().slice(0,10)+'T09:00',e:null};}
+  put({id:uid(),e:'evt',d:{title:text,etype:ty.value,when:{s:now,e:null},follow,
+    subjE:e,subjId:id,subjT:subj?(subj.d.title||''):'',_by:myEmail()},u:Date.now()});
+}
+function delEvent(id){
+  const r=recs[id];if(!r)return;
+  if(!(isAdmin()||(r.d._by||'').toLowerCase()===myEmail().toLowerCase())){alert('فقط ثبت‌کننده یا ادمین');return;}
+  if(!confirm('این واقعه حذف شود؟'))return;
+  r.del=true;r.u=Date.now();put(r);
+}
+window.addEvent=addEvent;window.delEvent=delEvent;
+function activityHTML(e,id){
+  if(e==='evt')return ''; // خودِ واقعه، تایم‌لاین ندارد
+  const evs=eventsFor(e,id);
+  const canAdd=can('c','evt');
+  if(!canAdd&&!evs.length)return '';
+  let h=`<div class="sec"><h3>🗒️ وقایع و پیگیری‌ها <span class="c">${evs.length.toLocaleString('fa-IR')}</span></h3>`;
+  if(canAdd){
+    h+=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px">
+      <select id="evtType" style="max-width:140px">${Object.keys(EVT_IC).map(t=>`<option value="${t}">${EVT_IC[t]} ${t}</option>`).join('')}</select>
+      <textarea id="evtText" rows="1" placeholder="چه اتفاقی افتاد؟ (ثبت واقعه، پیشرفت، تماس، تصمیم…)" style="flex:1;min-width:200px;resize:vertical"></textarea>
+      <select id="evtFollow" title="یادآوری پیگیری بعدی" style="max-width:150px">
+        <option value="0">بدون پیگیری</option><option value="1">🔔 پیگیری فردا</option><option value="3">🔔 ۳ روز دیگر</option><option value="7">🔔 هفته بعد</option><option value="14">🔔 دو هفته دیگر</option></select>
+      <button class="btn sm" onclick="addEvent('${e}','${id}')">➕ ثبت واقعه</button>
+    </div>`;
+  }
+  if(!evs.length){h+=`<div class="empty" style="padding:10px;font-size:12px">هنوز واقعه‌ای ثبت نشده — اولین رویداد را بالا بنویسید</div></div>`;return h;}
+  h+=`<div style="position:relative">`;
+  evs.forEach(v=>{
+    const ic=EVT_IC[v.d.etype]||'🗒️',cc=EVT_COL[v.d.etype]||'#8ea0b5';
+    const wv=(dVal(v.d.when)||{}).s||'';const wd=wv?iso2jstr(wv.slice(0,10)):'';const wt=wv.includes('T')?wv.slice(11,16):'';
+    const fv=ds(v.d.follow);const mine=(v.d._by||'').toLowerCase()===myEmail().toLowerCase();
+    const ppl=relIds(v,'person').map(pid=>esc(nameOf(pid))).filter(Boolean);
+    h+=`<div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.06)">
+      <div style="width:28px;height:28px;border-radius:8px;background:${cc}22;border:1px solid ${cc}66;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">${ic}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;white-space:pre-wrap;word-break:break-word">${esc(v.d.title||'')}</div>
+        <div style="font-size:10.5px;color:var(--tx2);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="color:${cc}">${esc(v.d.etype||'')}</span>
+          <span>${esc(v.d._by||'—')}</span>
+          ${wd?`<span>🗓️ ${wd}${wt?' '+wt:''}</span>`:''}
+          ${ppl.length?`<span>👤 ${ppl.join('، ')}</span>`:''}
+          ${fv?`<span style="color:#e0a13f">🔔 پیگیری: ${iso2jstr(fv)}</span>`:''}
+          ${(isAdmin()||mine)?`<a onclick="delEvent('${v.id}')" style="color:var(--bad);cursor:pointer">حذف</a>`:''}
+        </div>
+      </div></div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
 /* --- 🔒 بستن حساب‌های موقت پایان دوره --- */
 function glCloseBooks(){
   if(!isAdmin()){alert('فقط ادمین');return;}
@@ -2757,6 +2835,8 @@ function recHTML(e,id){
       h+=`</div>`;
     });
   });
+  // 🗒️ وقایع و پیگیری‌ها — فراگیر روی همه رکوردها
+  h+=activityHTML(e,id);
   // 🧾 تاریخچه تغییرات (Audit Trail) — بخش‌های حسابداری
   if(Array.isArray(r.d._log)&&r.d._log.length){
     h+=`<div class="sec"><h3>🕓 تاریخچه تغییرات (Audit Trail) <span class="c">${r.d._log.length.toLocaleString('fa-IR')}</span></h3>
@@ -4916,6 +4996,8 @@ function drawMyCal(){
   mine('measure','owner').forEach(m=>{const d=measureDue(m);if(d)items.push({d,time:'',ic:'🎚️',label:'به‌روزرسانی سنجه: '+(m.d.title||''),click:`openRec('measure','${m.id}')`});});
   // یادآوری‌های من
   byMe('reminder').filter(r=>!r.d.done&&ds(r.d.date)).forEach(r=>push(r.d.date,'⏰',r.d.title,'',''));
+  // پیگیری‌های وقایع ثبت‌شده توسط من
+  byMe('evt').filter(v=>ds(v.d.follow)).forEach(v=>push(v.d.follow,'🔔','پیگیری: '+(v.d.subjT?v.d.subjT+' — ':'')+(v.d.title||''),'',`go('rec','evt','${v.id}')`));
   // مرخصی‌های من
   [...new Set([...mine('leave','person'),...byMe('leave')])].filter(l=>ds(l.d.range)).forEach(l=>push(l.d.range,'⛳',l.d.title,'',''));
   // مکاتبات با مهلت اقدام
@@ -5002,6 +5084,7 @@ function calEvents(){
   visE('plan').filter(p=>p.d.status!=='Done').forEach(p=>push(p.d.due,'برنامه: '+p.d.title,'🗓️','plan',p.id,'#b48a1e'));
   visE('leave').forEach(l=>push(l.d.range,'مرخصی: '+l.d.title,'⛳','leave',l.id,'#98a096'));
   visE('reminder').filter(r=>!r.d.done).forEach(r=>push(r.d.at,'⏰ '+r.d.title,'⏰','reminder',r.id,'#e06a5f'));
+  if(canSee('evt'))byE('evt').filter(v=>ds(v.d.follow)).forEach(v=>push(v.d.follow,'🔔 پیگیری: '+(v.d.subjT?v.d.subjT+' — ':'')+(v.d.title||'').slice(0,40),'🔔','evt',v.id,'#e0a13f'));
   return ev;
 }
 function calState(){
