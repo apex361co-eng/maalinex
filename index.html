@@ -1334,10 +1334,15 @@ function saveQ(){localStorage.setItem('xr_q',JSON.stringify(queue));}
 function uid(){return crypto.randomUUID();}
 function setSync(cls,txt){document.getElementById('syncdot').className=cls;document.getElementById('synctxt').textContent=txt;}
 
-function put(rec,push=true){recs[rec.id]=rec;saveLocal();if(push){queue.push(rec.id);saveQ();flush();}render();}
+function put(rec,push=true){recs[rec.id]=rec;invalidateByE();saveLocal();if(push){queue.push(rec.id);saveQ();flush();}render();}
 let _scoping=false;
+/* 🐎 ایندکس رکوردها بر اساس نوع — یک‌بار ساخته می‌شود و در هر رندر تازه می‌شود (سرعت روی داده‌ی حجیم) */
+let _byRaw=null;
+function invalidateByE(){_byRaw=null;_invLineIdx=null;_pinvLineIdx=null;}
+function _rebuildByRaw(){_byRaw={};for(const id in recs){const r=recs[id];if(!r||r.del||!r.e)continue;if(!r.d||typeof r.d!=='object')r.d={};(_byRaw[r.e]||(_byRaw[r.e]=[])).push(r);}}
 function byE(e){
-  const rows=Object.values(recs).filter(r=>r.e===e&&!r.del&&(r.d&&typeof r.d==='object'||(r.d={},true)));
+  if(!_byRaw)_rebuildByRaw();
+  const rows=_byRaw[e]||[];
   if(_scoping)return rows; // جلوگیری از بازگشت بی‌نهایت هنگام محاسبه محدوده
   const s=myScope();if(!s)return rows;
   _scoping=true;
@@ -1383,7 +1388,7 @@ function afterPull(){ // کاربرِ در انتظار تایید نباید د
   if(session&&isPending()){
     Object.keys(recs).forEach(id=>{if(id!==MU&&id!==MO&&id!==MA)delete recs[id];});
   }
-  saveLocal();setSync('ok','سینک شد');render();
+  invalidateByE();saveLocal();setSync('ok','سینک شد');render();
 }
 async function pullMeta(){ // 🔑 رکوردهای متا (کاربران/گزینه‌ها/دسترسی) همیشه تازه گرفته شوند تا نقش‌ها و کاربران جدید فوراً دیده شوند
   try{
@@ -1434,8 +1439,9 @@ async function pullAll(full){
       setSync('err','⚠️ سرور داده‌ای برنگرداند — کش محلی حفظ شد. اگر ادامه داشت، «🔄 بررسی مجدد (کامل)» را بزنید یا دسترسی سرور را بررسی کنید.');
       render();return;
     }
-    recs=fresh;
+    recs=fresh;invalidateByE();
   }
+  invalidateByE();
   await pullMeta(); // همیشه کاربران/نقش‌ها به‌روز
   syncCursor=maxU||new Date().toISOString();localStorage.setItem('xr_synccur',syncCursor);
   // اگر کاربر تازه از «در انتظار تایید» به نقش واقعی ارتقا یافت، یک سینک کامل بزن تا داده‌های تازه‌مجاز بیایند
@@ -1490,7 +1496,7 @@ function subscribeRT(){
     const remoteU=new Date(row.updated_at||Date.now()).getTime();
     const loc=recs[row.id];
     if(!loc||loc.u<remoteU){
-      recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};
+      recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};invalidateByE();
       // 🐎 دسته‌بندی: هنگام دریافت انبوه (مثلاً بعد از ورود اکسل روی دستگاه دیگر) هر تغییر جدا رندر نشود
       clearTimeout(_rtTimer);
       _rtTimer=setTimeout(()=>{saveLocal();render();},400);
@@ -2341,7 +2347,11 @@ function productStat(p){
 }
 window.saleTotal=saleTotal;window.purchTotal=purchTotal;window.productStat=productStat;
 /* ===== 🧾 موتور فاکتور فروش (M07) ===== */
-function invLinesOf(invId){return byE('invline').filter(l=>relIds(l,'invoice').includes(invId));}
+let _invLineIdx=null;
+function invLinesOf(invId){
+  if(!_invLineIdx){_invLineIdx={};byE('invline').forEach(l=>{const p=relIds(l,'invoice')[0];if(p)(_invLineIdx[p]||(_invLineIdx[p]=[])).push(l);});}
+  return _invLineIdx[invId]||[];
+}
 function invLineAmt(l){return Math.max(0,(l.d.qty||0)*(l.d.price||0)-(l.d.ldisc||0));}
 function invCalc(inv){
   const lines=invLinesOf(inv.id);
@@ -2471,7 +2481,11 @@ function postInvoice(id,silent){
 }
 window.postInvoice=postInvoice;window.saveAutopost=saveAutopost;
 /* ===== 🧾 موتور فاکتور خرید (قرینه‌ی فروش) ===== */
-function pinvLinesOf(pid){return byE('purchline').filter(l=>relIds(l,'purchinv').includes(pid));}
+let _pinvLineIdx=null;
+function pinvLinesOf(pid){
+  if(!_pinvLineIdx){_pinvLineIdx={};byE('purchline').forEach(l=>{const p=relIds(l,'purchinv')[0];if(p)(_pinvLineIdx[p]||(_pinvLineIdx[p]=[])).push(l);});}
+  return _pinvLineIdx[pid]||[];
+}
 function pinvLineAmt(l){return Math.max(0,(l.d.qty||0)*(l.d.price||0)-(l.d.ldisc||0));}
 function pinvCalc(p){
   const lines=pinvLinesOf(p.id);
@@ -4140,6 +4154,7 @@ function go(type,e,id,flt){
 function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
 function render(){
   _domCache={}; // کش محدوده داده در هر رندر تازه می‌شود
+  invalidateByE(); // ایندکس رکوردها در هر رندر تازه ساخته می‌شود
   try{applyBrand();}catch(e){} // نام/لوگو/رنگ سفارشی نسخه
   try{rebuildSchema();}catch(e){} // فیلدها و بخش‌های سفارشی ادمین
   try{rebuildHabitFields();}catch(e){} // لیست عادت‌های شخصی کاربر جاری
