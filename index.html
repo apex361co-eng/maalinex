@@ -2751,13 +2751,46 @@ const FILTERS={
   overdueTask:{n:'تسک‌های عقب‌افتاده',f:r=>r.d.status!=='Done'&&ds(r.d.due)&&ds(r.d.due)<today()},
   activeObj:{n:'اهداف فعال',f:r=>r.d.status!=='Done'},
 };
+/* ===== 🔢 ابزار داده‌ها: مرتب‌سازی، فیلتر، گروه‌بندی، صفحه‌بندی ===== */
+const PAGE_SIZE=50;
+function fieldRaw(r,f){ // مقدار خام برای مرتب‌سازی/گروه‌بندی/فیلتر
+  const v=r.d[f.k];
+  if(f.t===REL)return relIds(r,f.k).map(id=>nameOf(id)).join('، ');
+  if(f.t===MUL)return (v||[]).join('، ');
+  if(f.t===DAT)return ds(v)||'';
+  if(f.t===CHK)return v?'بله':'خیر';
+  if(f.t===NUM)return v==null||v===''?null:+v;
+  if(f.t==='calc')return calcVal(r.e,f,r.d);
+  return v==null?'':String(v);
+}
+function distinctVals(rows,f){
+  const set=new Set();
+  rows.forEach(r=>{const v=fieldRaw(r,f);if(v!==null&&v!==''&&v!==undefined)set.add(String(v));});
+  return [...set].sort((a,b)=>a.localeCompare(b,'fa',{numeric:true})).slice(0,300);
+}
+function sortableFields(def){return def.f.filter(f=>fldMode(def._k,f.k)!=='hide'&&f.t!==FIL);}
 function listHTML(e){
-  const def=E[e];
+  const def=E[e]; def._k=e;
   if(!canSee(e))return `<div class="empty">دسترسی شما به این بخش توسط ادمین محدود شده است</div>`;
   const q=(view.q||'').trim();
-  let rows=visE(e).sort((a,b)=>b.u-a.u);
+  let rows=visE(e);
   if(view.flt&&FILTERS[view.flt])rows=rows.filter(FILTERS[view.flt].f);
-  if(q)rows=rows.filter(r=>JSON.stringify(r.d).includes(q));
+  if(q){const ql=q.toLowerCase();rows=rows.filter(r=>JSON.stringify(r.d).toLowerCase().includes(ql));}
+  // 🔎 فیلترهای ستونی (چند فیلد هم‌زمان)
+  const colFlt=view.cf||{};
+  Object.entries(colFlt).forEach(([k,val])=>{
+    if(val==null||val==='')return;
+    const f=def.f.find(x=>x.k===k);if(!f)return;
+    if(val==='__empty__')rows=rows.filter(r=>{const v=fieldRaw(r,f);return v===null||v===''||v===undefined;});
+    else rows=rows.filter(r=>String(fieldRaw(r,f)??'').toLowerCase().includes(String(val).toLowerCase()));
+  });
+  // ↕ مرتب‌سازی
+  const sf=view.sort&&def.f.find(x=>x.k===view.sort);
+  if(sf){const dir=view.sortDir===-1?-1:1;
+    rows=rows.slice().sort((a,b)=>{let x=fieldRaw(a,sf),y=fieldRaw(b,sf);
+      if(typeof x==='number'||typeof y==='number'){x=+x||0;y=+y||0;return (x-y)*dir;}
+      return String(x??'').localeCompare(String(y??''),'fa',{numeric:true})*dir;});
+  } else rows=rows.slice().sort((a,b)=>b.u-a.u);
   const cols=def.cols.map(k=>def.f.find(f=>f.k===k)).filter(f=>fldMode(e,f.k)!=='hide');
   // 🪜 فیلتر سطح آبشاری برای اهداف و سنجه‌های BSC
   const LVLS=['هلدینگ','کسب‌وکار','شرکت','واحد','فرد'];
@@ -2777,12 +2810,46 @@ function listHTML(e){
       <button class="btn ${lv==='_none'?'':'gh'} sm" onclick="view.lvl='_none';render()">⚠️ بدون سطح</button>
     </div>`;
   }
+  // 🧰 نوار ابزار داده
+  const sortFs=sortableFields(def);
+  const gb=view.grp&&def.f.find(x=>x.k===view.grp);
   let h=`<div class="tools">
     ${can('c',e)?`<button class="btn" onclick="openRec('${e}')">＋ افزودن</button>`:''}
     ${can('c',e)?`<button class="btn gh sm" onclick="impOpen('${e}')" title="ورود گروهی داده از فایل اکسل یا CSV">📥 ورود از اکسل</button>`:''}
-    <input placeholder="جستجو…" value="${esc(q)}" oninput="view.q=this.value;render()">
-    ${view.flt&&FILTERS[view.flt]?`<span class="tag y" style="cursor:pointer" onclick="view.flt=null;render()">فیلتر: ${FILTERS[view.flt].n} ✕</span>`:''}
-    <span style="color:var(--tx2);font-size:12px">${rows.length.toLocaleString('fa-IR')} مورد</span></div>${lvlBar}`;
+    <input placeholder="🔍 جستجو در همه فیلدها…" value="${esc(q)}" oninput="view.q=this.value;view.page=0;render()">
+    <span style="color:var(--tx2);font-size:12px">${rows.length.toLocaleString('fa-IR')} مورد</span></div>
+  <div class="tools" style="margin-top:-4px">
+    <label style="font-size:11px;color:var(--tx2);margin:0">↕ مرتب‌سازی:</label>
+    <select onchange="view.sort=this.value||null;view.page=0;render()" style="max-width:150px">
+      <option value="">پیش‌فرض (جدیدترین)</option>
+      ${sortFs.map(f=>`<option value="${f.k}" ${view.sort===f.k?'selected':''}>${esc(f.n)}</option>`).join('')}</select>
+    ${view.sort?`<button class="btn gh sm" onclick="view.sortDir=(view.sortDir===-1?1:-1);render()">${view.sortDir===-1?'نزولی ↓':'صعودی ↑'}</button>`:''}
+    <label style="font-size:11px;color:var(--tx2);margin:0 4px 0 0">▦ گروه‌بندی:</label>
+    <select onchange="view.grp=this.value||null;view.page=0;render()" style="max-width:150px">
+      <option value="">بدون گروه‌بندی</option>
+      ${sortFs.filter(f=>[SEL,STA,REL,CHK,MUL,TXT].includes(f.t)).map(f=>`<option value="${f.k}" ${view.grp===f.k?'selected':''}>${esc(f.n)}</option>`).join('')}</select>
+    <button class="btn gh sm" onclick="view.filterOpen=!view.filterOpen;render()">🔎 فیلتر ستونی${Object.values(colFlt).filter(Boolean).length?' ('+Object.values(colFlt).filter(Boolean).length.toLocaleString('fa-IR')+')':''}</button>
+    ${(view.sort||view.grp||Object.values(colFlt).some(Boolean)||view.flt)?`<button class="btn bad sm" onclick="view.sort=null;view.grp=null;view.cf={};view.flt=null;view.page=0;render()">پاک‌سازی ابزارها ✕</button>`:''}
+  </div>${lvlBar}`;
+  // پنل فیلتر ستونی
+  if(view.filterOpen){
+    h+=`<div class="sec" style="margin-bottom:10px"><h3 style="font-size:13px">🔎 فیلتر بر اساس فیلد</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">`;
+    sortFs.forEach(f=>{
+      const cur=colFlt[f.k]||'';
+      if([SEL,STA,MUL,CHK].includes(f.t)){
+        const opts=f.t===CHK?['بله','خیر']:distinctVals(rows.length?visE(e):[],f);
+        h+=`<div><label style="font-size:11px;color:var(--tx2)">${esc(f.n)}</label>
+          <select onchange="view.cf=Object.assign({},view.cf,{'${f.k}':this.value});view.page=0;render()">
+            <option value="">همه</option><option value="__empty__" ${cur==='__empty__'?'selected':''}>(خالی)</option>
+            ${opts.map(o=>`<option ${cur===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+      } else {
+        h+=`<div><label style="font-size:11px;color:var(--tx2)">${esc(f.n)}</label>
+          <input value="${esc(cur)}" placeholder="شامل…" oninput="view.cf=Object.assign({},view.cf,{'${f.k}':this.value});view.page=0;clearTimeout(window._cfT);window._cfT=setTimeout(render,250)"></div>`;
+      }
+    });
+    h+=`</div></div>`;
+  }
   // نمای «به تفکیک سطح» برای اهداف BSC (وقتی همه سطوح انتخاب است)
   if(e==='bsc'&&!lv&&!q){
     LVLS.concat(['']).forEach(l=>{
@@ -2811,17 +2878,47 @@ function listHTML(e){
     if(!rows.length)h+=`<div class="empty">هنوز هدفی ثبت نشده — با «＋ افزودن» شروع کنید</div>`;
     return h;
   }
-  h+=`<div class="tblwrap"><table><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${e==='measure'?'<th>سطح</th>':''}${def.prog?'<th>پیشرفت</th>':''}${def.comp?'<th>محاسبه</th>':''}</tr></thead><tbody>`;
-  if(!rows.length)h+=`<tr><td colspan="9"><div class="empty">هنوز موردی ثبت نشده — با «＋ افزودن» شروع کنید</div></td></tr>`;
-  rows.forEach(r=>{
-    h+=`<tr onclick="go('rec','${e}','${r.id}')">${cols.map(f=>`<td>${cellHTML(r,f)}</td>`).join('')}`;
+  if(!rows.length)return h+`<div class="empty">${q||Object.values(colFlt).some(Boolean)?'موردی با این فیلتر پیدا نشد':'هنوز موردی ثبت نشده — با «＋ افزودن» شروع کنید'}</div>`;
+  // سربرگ ستون‌ها با امکان کلیک برای مرتب‌سازی
+  const thSort=f=>`<th onclick="view.sort='${f.k}';view.sortDir=(view.sort==='${f.k}'&&view.sortDir!==-1?-1:1);render()" style="cursor:pointer;user-select:none" title="کلیک برای مرتب‌سازی">${esc(f.n)}${view.sort===f.k?(view.sortDir===-1?' ↓':' ↑'):''}</th>`;
+  const headRow=`<tr>${cols.map(thSort).join('')}${e==='measure'?'<th>سطح</th>':''}${def.prog?'<th>پیشرفت</th>':''}${def.comp?'<th>محاسبه</th>':''}</tr>`;
+  const rowHTML=r=>{
+    let s=`<tr onclick="go('rec','${e}','${r.id}')">${cols.map(f=>`<td>${cellHTML(r,f)}</td>`).join('')}`;
     if(e==='measure'){const b=relIds(r,'bsc')[0],sc=(b&&recs[b]&&recs[b].d&&recs[b].d.scope)||'';
-      h+=`<td>${sc?`${LVIC[sc]||''} ${sc}`:'<span style="color:var(--warn)">—</span>'}</td>`;}
-    if(def.prog)h+=`<td>${pbarHTML(progOf(def.prog,r))}</td>`;
-    if(def.comp){const c=window[def.comp](r);h+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;}
-    h+=`</tr>`;
-  });
-  return h+'</tbody></table></div>';
+      s+=`<td>${sc?`${LVIC[sc]||''} ${sc}`:'<span style="color:var(--warn)">—</span>'}</td>`;}
+    if(def.prog)s+=`<td>${pbarHTML(progOf(def.prog,r))}</td>`;
+    if(def.comp){const c=window[def.comp](r);s+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;}
+    return s+`</tr>`;
+  };
+  // ▦ نمای گروه‌بندی‌شده
+  if(gb){
+    const groups={};
+    rows.forEach(r=>{const key=String(fieldRaw(r,gb)||'')||'(خالی)';(groups[key]=groups[key]||[]).push(r);});
+    const keys=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+    view.gopen=view.gopen||{};
+    keys.forEach(k=>{
+      const g=groups[k];const open=view.gopen[k]!==false;
+      h+=`<div class="sec" style="margin-bottom:8px"><h3 style="font-size:13px;cursor:pointer;user-select:none" onclick="view.gopen=Object.assign({},view.gopen,{'${esc(k).replace(/'/g,'')}':${open?'false':'true'}});render()">
+        <span style="transition:transform .15s;display:inline-block;transform:rotate(${open?'0':'-90'}deg)">▾</span> ${esc(k)} <span class="c">${g.length.toLocaleString('fa-IR')}</span></h3>`;
+      if(open)h+=`<div class="tblwrap"><table><thead>${headRow}</thead><tbody>${g.slice(0,PAGE_SIZE*4).map(rowHTML).join('')}</tbody></table></div>${g.length>PAGE_SIZE*4?`<div style="font-size:11px;color:var(--tx2);padding:4px">… و ${(g.length-PAGE_SIZE*4).toLocaleString('fa-IR')} مورد دیگر (برای دیدن همه، گروه‌بندی را بردارید و فیلتر کنید)</div>`:''}`;
+      h+=`</div>`;
+    });
+    return h;
+  }
+  // 📄 صفحه‌بندی
+  const page=view.page||0, total=rows.length, pages=Math.ceil(total/PAGE_SIZE);
+  const slice=rows.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
+  h+=`<div class="tblwrap"><table><thead>${headRow}</thead><tbody>`;
+  h+=slice.map(rowHTML).join('');
+  h+='</tbody></table></div>';
+  if(pages>1){
+    const btn=(p,lbl,dis)=>`<button class="btn gh sm" ${dis?'disabled style=opacity:.4':`onclick="view.page=${p};document.getElementById('content').scrollTop=0;render()"`}>${lbl}</button>`;
+    h+=`<div style="display:flex;gap:6px;align-items:center;justify-content:center;margin:12px 0;flex-wrap:wrap">
+      ${btn(0,'« اول',page===0)}${btn(page-1,'‹ قبلی',page===0)}
+      <span style="font-size:12px;color:var(--tx2)">صفحه ${(page+1).toLocaleString('fa-IR')} از ${pages.toLocaleString('fa-IR')} — ${total.toLocaleString('fa-IR')} مورد</span>
+      ${btn(page+1,'بعدی ›',page>=pages-1)}${btn(pages-1,'آخر »',page>=pages-1)}</div>`;
+  }
+  return h;
 }
 window.bankBalance=bankBalance;window.budgetState=budgetState;window.riskScore=riskScore;
 
