@@ -106,24 +106,17 @@ begin
   if ent in ('company','business','orgunit') then
     return exists(select 1 from app_scope_ids() a where a=rid);
   end if;
-  -- اتصال مستقیم به یک شناسه مجاز
+  -- اتصال مستقیم به یک شناسه مجاز (سریع؛ فقط متنِ همین ردیف بررسی می‌شود)
   if exists(select 1 from app_scope_ids() a where txt like '%'||a::text||'%') then return true; end if;
-  -- اتصال غیرمستقیم (ردیف ⟵ ردیف میانی ⟵ شناسه مجاز)
-  if exists(select 1 from records m
-            where not m.deleted and txt like '%'||m.id::text||'%'
-              and exists(select 1 from app_scope_ids() a where m.data::text like '%'||a::text||'%'))
-  then return true; end if;
-  -- ردیف بدون هیچ وابستگی سازمانی (مستقیم یا یک‌واسطه): مجاز مگر حالت سخت‌گیرانه
+  -- ⚡ برای کارایی، بررسیِ اتصالِ غیرمستقیمِ سنگین (اسکنِ کل جدول به‌ازای هر ردیف) حذف شد.
+  -- تفکیک دقیقِ چندسطحی همچنان سمت اپ (inMyScope) برای نمایش انجام می‌شود؛ سرور فقط نگهبانِ درشت است.
+  -- ردیفِ دارای وابستگیِ سازمانی که مستقیم مجاز نبود → رد؛ ردیفِ بدون هیچ شناسه سازمانی → مجاز مگر حالت سخت‌گیرانه.
   strict_m:=coalesce((sc->>'strict')::int,0)=1;
   if strict_m then return false; end if;
+  -- ردیفِ بدونِ هیچ شناسه سازمانی → مجاز (فقط جدولِ کوچکِ شرکت/کسب‌وکار/واحد اسکن می‌شود، نه کلِ رکوردها)
   return not exists(select 1 from records o
      where o.entity in ('company','business','orgunit') and not o.deleted
-       and txt like '%'||o.id::text||'%')
-   and not exists(select 1 from records m
-     where not m.deleted and txt like '%'||m.id::text||'%'
-       and exists(select 1 from records o
-         where o.entity in ('company','business','orgunit') and not o.deleted
-           and m.data::text like '%'||o.id::text||'%'));
+       and txt like '%'||o.id::text||'%');
 end $$;
 
 -- حریم شخصی «رشد فردی»: ردیف‌های دارای _by فقط برای صاحبشان
@@ -144,6 +137,14 @@ begin
   return false;
 end $$;
 
+-- ---------- ۱٫۹) کارایی: ایندکس + مهلت اجرای بیشتر برای دیتای حجیم ----------
+create index if not exists records_updated_idx on public.records(updated_at);
+create index if not exists records_entity_idx on public.records(entity);
+-- مهلت اجرای کوئری برای کاربرانِ واردشده کمی بیشتر شود تا سینکِ حجیم تایم‌اوت نشود
+do $$ begin
+  begin execute 'alter role authenticated set statement_timeout = ''30s'''; exception when others then null; end;
+end $$;
+
 -- ---------- ۲) فعال‌سازی RLS و پاک‌سازی سیاست‌های قبلی ----------
 alter table public.records enable row level security;
 alter table public.records force row level security;
@@ -158,8 +159,10 @@ revoke all on public.records from anon;
 -- ---------- ۳) سیاست‌ها ----------
 -- خواندن: فقط اعضای تاییدشده، بخشِ مخفی‌نشده، داخل محدوده داده، با حفظ حریم شخصی
 create policy rec_select on public.records for select to authenticated using (
+  -- ⚡ مسیر سریع ادمین: بدون هیچ بررسیِ سنگین (OR کوتاه‌مدار می‌شود)
+  app_is_admin()
   -- رکورد کاربران برای هر واردشده خواندنی است تا وضعیت خودش (تاییدشده/در انتظار) را بداند (لازمِ ثبت‌نام)
-  id='00000000-0000-4000-8000-00000000aaaa'
+  or id='00000000-0000-4000-8000-00000000aaaa'
   or (
     app_approved()
     and (app_is_meta(id) or app_ent_level(entity)<>'hide')

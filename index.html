@@ -1551,19 +1551,155 @@ const VIEWS_ACL=[
  ['pomo','🍅 پومودورو'],['quicknote','⚡ ثبت سریع نکته'],
  ['layout','🧲 جابجایی چیدمان فیلدها (پیش‌فرض: فقط ادمین)'],
  ['seclayout','🧲 جابجایی المان‌های صفحات و داشبوردها (پیش‌فرض: فقط ادمین)']];
+/* 🧰 سوئیچ ماژول‌ها (ویژه مالک محصول) — بالای سطح دسترسی کاربران عمل می‌کند.
+   ماژول خاموش برای همه‌ی کاربرانِ این نسخه (حتی ادمینِ مشتری) پنهان می‌شود.
+   تنظیم روی همین دیتابیس (رکورد متا MO) ذخیره می‌شود و بین دستگاه‌ها سینک می‌شود. */
+const OWNER_PIN='6813'; // فقط مالک محصول می‌داند؛ در هر بیلد مشتری قابل تغییر است
+const MODULES=[
+ {id:'M02',n:'سازمان و منابع انسانی',ents:['hr','company','share','business','orgunit']},
+ {id:'M04',n:'روابط و مشتریان (CRM)',ents:['customer','crm','contact','meeting','letter']},
+ {id:'M08',n:'مالی و حقوقی',ents:['hrcontract','bizcontract','bank','tx','budget','leave']},
+ {id:'M09',n:'حسابداری کامل و انبار',ents:['acct','voucher','vline','item','stockmv','cheque','payroll','costctr'],views:['gldash','glnew']},
+ {id:'M11',n:'صورت‌های مالی و تلفیق (IFRS)',ents:['finis','finbs','fincf'],views:['findash']},
+ {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
+ {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
+ {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
+ {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel'],views:['bizdash']},
+ {id:'M16',n:'رشد شخصی',ents:['growth','habit','win','plan','asset','area','book','course','booknote','note','reminder'],views:['gdash']}
+];
+const ENT_MOD={},VIEW_MOD={};MODULES.forEach(m=>{(m.ents||[]).forEach(e=>ENT_MOD[e]=m.id);(m.views||[]).forEach(v=>VIEW_MOD[v]=m.id);});
+/* ✨ ماژول‌های «تازه» — وقتی در یک مادرِ جدید ماژولی می‌سازیم، کدش را اینجا اضافه می‌کنیم
+   تا برای مشتری‌های قبلی یک بنر «ماژول جدید در دسترس است» نشان داده شود. */
+const NEW_MODULES={}; // مثال: {M15:true}
+/* 🚀 قالب‌های آماده‌ی راه‌اندازی مشتری (وقتی مشتری از صفر می‌آد) */
+const PRESETS=[
+ {k:'retail',n:'🛍️ خرده‌فروشی / فروشگاه',on:['M04','M09','M15']},
+ {k:'holding',n:'🏢 هلدینگ کامل',on:['M02','M04','M08','M09','M11','M12','M13','M14','M15','M16']},
+ {k:'finance',n:'💼 فقط مالی و حسابداری',on:['M08','M09','M11','M12']},
+ {k:'strategy',n:'🗺️ مدیریت و استراتژی',on:['M02','M13','M14','M16']},
+ {k:'personal',n:'🌱 شخصی / سبک',on:['M16']},
+ {k:'all',n:'✅ همه‌ی ماژول‌ها',on:MODULES.map(m=>m.id)}
+];
+function modCfg(){const m=recs[MO];return (m&&!m.del&&m.d._modules)||{};}
+function custMeta(){const m=recs[MO];return (m&&!m.del&&m.d._meta)||{};}
+function ownerPin(){const m=recs[MO];return (m&&!m.del&&m.d._ownerpin)||'';}
+function saveMeta(o){const m=recs[MO]||{id:MO,e:'_opts',d:{}};m.d={...m.d,_meta:{...custMeta(),...o}};m.u=Date.now();m.del=false;put(m);}
+function applyPreset(k){
+  const p=PRESETS.find(x=>x.k===k);if(!p)return;
+  const cfg={};MODULES.forEach(m=>{cfg[m.id]=p.on.includes(m.id);});
+  saveModules(cfg);drawModcfg();nav();
+}
+function saveWizard(){
+  const cust=(document.getElementById('wzCust')||{}).value||'';
+  const ver=(document.getElementById('wzVer')||{}).value||'';
+  const pin=(document.getElementById('wzPin')||{}).value||'';
+  const meta={cust:cust.trim(),ver:ver.trim()};
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};
+  const d={...m.d,_meta:{...custMeta(),...meta}};
+  if(pin.trim())d._ownerpin=pin.trim();
+  m.d=d;m.u=Date.now();m.del=false;put(m);
+  alert('✅ مشخصات نسخه ذخیره شد'+(pin.trim()?'\nرمز مالک این نسخه به‌روزرسانی شد.':''));
+  drawModcfg();
+}
+/* ✨ بنر پیشنهاد ماژول تازه */
+function newModPending(){
+  const seen=(function(){const m=recs[MO];return (m&&!m.del&&m.d._seenmods)||{};})();
+  return MODULES.filter(m=>NEW_MODULES[m.id]&&modCfg()[m.id]===false&&!seen[m.id]);
+}
+function dismissNewMod(id){const m=recs[MO]||{id:MO,e:'_opts',d:{}};const s={...((m.d&&m.d._seenmods)||{})};s[id]=true;m.d={...m.d,_seenmods:s};m.u=Date.now();m.del=false;put(m);render();}
+function enableNewMod(id){const c={...modCfg()};c[id]=true;saveModules(c);dismissNewMod(id);}
+function modBannerHTML(){
+  if(!session&&false)return'';
+  if(isPending()||!isAdmin())return'';
+  const pend=newModPending();if(!pend.length)return'';
+  return pend.map(m=>`<div class="sec" style="border:1px solid var(--ac);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <span style="font-size:18px">✨</span>
+    <span style="flex:1;min-width:180px"><b>ماژول جدید در دسترس است:</b> ${esc(m.n)} <span style="color:var(--tx2);font-size:11px">(${m.id})</span></span>
+    <button class="btn sm" onclick="enableNewMod('${m.id}')">روشن کن</button>
+    <button class="btn gh sm" onclick="dismissNewMod('${m.id}')">بعداً</button></div>`).join('');
+}
+window.applyPreset=applyPreset;window.saveWizard=saveWizard;window.enableNewMod=enableNewMod;window.dismissNewMod=dismissNewMod;
+function modOn(mid){if(!mid)return true;return modCfg()[mid]!==false;} // پیش‌فرض: روشن
+function entEnabled(e){return modOn(ENT_MOD[e]);} // موجودیت‌های خارج از فهرست همیشه روشن (هسته)
+function viewEnabled(v){return modOn(VIEW_MOD[v]);}
+function saveModules(cfg){const m=recs[MO]||{id:MO,e:'_opts',d:{}};m.d={...m.d,_modules:cfg};m.u=Date.now();m.del=false;put(m);}
+function toggleModule(mid){const c={...modCfg()};c[mid]=(c[mid]===false)?true:false;saveModules(c);drawModcfg();nav();}
+/* 🎨 برندینگ ساده (نام، حرف لوگو، رنگ اصلی) */
+function brand(){const m=recs[MO];return (m&&!m.del&&m.d._brand)||{};}
+function saveBrand(b){const m=recs[MO]||{id:MO,e:'_opts',d:{}};m.d={...m.d,_brand:{...brand(),...b}};m.u=Date.now();m.del=false;put(m);applyBrand();}
+function applyBrand(){
+  const b=brand();const nm=(b.name||'Maalinex').trim()||'Maalinex';
+  const lg=((b.logo||nm||'M').trim().charAt(0))||'M';
+  document.querySelectorAll('.lgo').forEach(el=>{el.textContent=lg;});
+  const sl=document.querySelector('#side .logo');
+  if(sl&&sl.lastChild&&sl.lastChild.nodeType===3)sl.lastChild.nodeValue=' '+nm;
+  if(b.color&&/^#[0-9a-fA-F]{3,8}$/.test(b.color))document.documentElement.style.setProperty('--ac',b.color);
+  else document.documentElement.style.removeProperty('--ac');
+}
+let ownerUnlocked=false;
+function openModcfg(){
+  if(!ownerUnlocked){
+    const p=prompt('رمز مالک محصول را وارد کنید:');
+    if(p===null)return;
+    if(p!==OWNER_PIN&&p!==ownerPin()){alert('رمز نادرست است.');return;}
+    ownerUnlocked=true;
+  }
+  go('modcfg');
+}
+function modcfgHTML(){
+  const b=brand();const mt=custMeta();
+  const inp0='style="width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);margin-top:5px"';
+  const lbl0='style="font-size:12px;color:var(--tx2)"';
+  const presetBtns=PRESETS.map(p=>`<button class="btn gh sm" onclick="applyPreset('${p.k}')" style="margin:3px">${esc(p.n)}</button>`).join('');
+  const wizard=`<div class="sec">
+    <h3>🚀 راه‌اندازی سریع مشتری</h3>
+    <p style="font-size:12px;color:var(--tx2);line-height:2">مشخصات این نسخه را وارد کن، بعد با یک قالب آماده همه‌ی ماژول‌ها را یکجا ست کن (بعدش می‌تونی تک‌تک اصلاح کنی).</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:150px"><label ${lbl0}>نام مشتری</label><input id="wzCust" ${inp0} value="${esc(mt.cust||'')}" placeholder="مثلاً فروشگاه شیائومی"></div>
+      <div style="flex:1;min-width:150px"><label ${lbl0}>نام نسخه</label><input id="wzVer" ${inp0} value="${esc(mt.ver||'')}" placeholder="مثلاً شیائومی-۱"></div>
+      <div style="flex:1;min-width:150px"><label ${lbl0}>رمز مالک این نسخه (اختیاری)</label><input id="wzPin" ${inp0} dir="ltr" placeholder="خالی = بدون تغییر"></div>
+    </div>
+    <div style="margin:12px 0 6px;font-size:12px;color:var(--tx2)">قالب آماده:</div>
+    <div>${presetBtns}</div>
+    <button class="btn" style="margin-top:12px" onclick="saveWizard()">💾 ذخیره مشخصات نسخه</button>
+  </div>`;
+  const rows=MODULES.map(m=>{const on=modOn(m.id);
+    return `<div class="arow" style="gap:10px">
+      <span class="an">${esc(m.n)} <span style="color:var(--tx2);font-size:11px">(${m.id})</span></span>
+      <button class="btn sm ${on?'':'gh'}" onclick="toggleModule('${m.id}')" style="min-width:96px">${on?'✅ روشن':'⬜ خاموش'}</button>
+    </div>`;}).join('');
+  const inp='style="width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);margin-top:5px"';
+  const lbl='style="font-size:12px;color:var(--tx2)"';
+  return wizard+`<div class="sec">
+    <h3>🧰 مدیریت محصول — ماژول‌ها</h3>
+    <p style="font-size:12px;color:var(--tx2);line-height:2">ماژول‌های خاموش برای همه‌ی کاربرانِ این نسخه (حتی ادمین) پنهان می‌شوند. این تنظیم «بالای» سطوح دسترسی عمل می‌کند و روی همین دیتابیس ذخیره و سینک می‌شود. داده‌ها پاک نمی‌شوند؛ فقط نمایش داده نمی‌شوند و با روشن‌کردن دوباره برمی‌گردند.</p>
+    ${rows}
+  </div>
+  <div class="sec">
+    <h3>🎨 برندینگ</h3>
+    <div style="margin-bottom:10px"><label ${lbl}>نام محصول</label><input id="brName" ${inp} value="${esc(b.name||'')}" placeholder="Maalinex"></div>
+    <div style="margin-bottom:10px"><label ${lbl}>حرف لوگو (یک حرف)</label><input id="brLogo" ${inp} maxlength="2" value="${esc(b.logo||'')}" placeholder="M"></div>
+    <div style="margin-bottom:12px"><label ${lbl}>رنگ اصلی (کد HEX)</label><input id="brColor" ${inp} dir="ltr" value="${esc(b.color||'')}" placeholder="#d4af37"></div>
+    <button class="btn" onclick="saveBrand({name:document.getElementById('brName').value.trim(),logo:document.getElementById('brLogo').value.trim(),color:document.getElementById('brColor').value.trim()});render();">💾 ذخیره برندینگ</button>
+  </div>`;
+}
+function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('content').innerHTML=modcfgHTML();}
+window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
 function canView(v){
   if(isPending())return false;
+  if(VIEW_MOD[v]&&!viewEnabled(v))return false; // ماژول خاموش
   if(isAdmin())return true;
   return (aclFor().views||{})[v]!=='hide';
 }
 function entLevel(e){if(isAdmin())return null;return aclFor().ent[e]||null;} // hide|read|edit|full|null
 function fldMode(e,k){if(isAdmin())return null;return aclFor().fld[e+'.'+k]||null;} // hide|read|null
-function canSee(e){if(isPending())return false;return entLevel(e)!=='hide';}
+function canSee(e){if(isPending())return false;if(!entEnabled(e))return false;return entLevel(e)!=='hide';}
 function visFields(e){return E[e].f.filter(f=>fldMode(e,f.k)!=='hide');}
 
 function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
   const r=myRole();
   if(r===PENDING)return false;
+  if(!entEnabled(e))return false; // ماژول خاموش: نه ساخت، نه ویرایش، نه حذف
   if(r==='ادمین')return true;
   // هرکس پروفایل خودش را می‌تواند ویرایش کند
   if(a==='e'&&e==='hr'&&rec&&(rec.d.email||'').toLowerCase()===myEmail().toLowerCase())return true;
@@ -2770,7 +2906,8 @@ function nav(){
   ${canView('charts')?`<div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`:''}`;
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
-  <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>`;
+  <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
+  <div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`;
   navGroupsOrdered().forEach(g=>{
     const ents=Object.entries(E).filter(([k,v])=>v.grp===g&&canSee(k));
     let items='';
@@ -2805,6 +2942,7 @@ function go(type,e,id,flt){
 function goBack(){if(hist.length){view=hist.pop();render();}else go('dash');}
 function render(){
   _domCache={}; // کش محدوده داده در هر رندر تازه می‌شود
+  try{applyBrand();}catch(e){} // نام/لوگو/رنگ سفارشی نسخه
   try{rebuildSchema();}catch(e){} // فیلدها و بخش‌های سفارشی ادمین
   try{rebuildHabitFields();}catch(e){} // لیست عادت‌های شخصی کاربر جاری
   nav();
@@ -2832,6 +2970,7 @@ function render(){
     view.type==='users'?'👤 کاربران و دسترسی':
     view.type==='acl'?'🛡️ سطوح دسترسی':
     view.type==='schema'?'🧩 فیلدها و بخش‌ها':
+    view.type==='modcfg'?'🧰 مدیریت محصول':
     view.type==='me'?'🗂️ میز کار من':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
     view.type==='cal'?'📅 تقویم':
@@ -2852,7 +2991,8 @@ function render(){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
   try{
-    if(view.type==='users')c.innerHTML=usersHTML();
+    if(view.type==='modcfg'){if(!isAdmin()){c.innerHTML='<div class="empty">دسترسی ندارید</div>';}else c.innerHTML=modcfgHTML();}
+    else if(view.type==='users')c.innerHTML=usersHTML();
     else if(view.type==='acl')c.innerHTML=aclHTML();
     else if(view.type==='schema')c.innerHTML=schemaHTML();
     else if(view.type==='me')c.innerHTML=meHTML();
@@ -2876,6 +3016,7 @@ function render(){
       <button class="btn sm" onclick="view={type:'me'};render()">بازگشت به میز کار من</button>
       <button class="btn gh sm" onclick="location.reload()">بارگذاری مجدد اپ</button></div>`;
   }
+  try{if(view.type!=='modcfg'){const bn=modBannerHTML();if(bn)c.insertAdjacentHTML('afterbegin',bn);}}catch(e){} // بنر ماژول تازه
   try{applySecLayout();}catch(e){} // چیدمان سفارشی المان‌های صفحه
   whoami();
 }
