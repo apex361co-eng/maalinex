@@ -448,6 +448,21 @@ evt:{ic:'🗒️',n:'وقایع و پیگیری‌ها',grp:'زنجیره آبش
  {k:'subjId',n:'شناسه موضوع',t:TXT},
  {k:'subjT',n:'موضوع',t:TXT}],
  cols:['etype','title','subjT','when'],comp:'evtBrief'},
+customer:{ic:'🛍️',n:'مشتریان کسب‌وکار',grp:'روابط',f:[
+ {k:'title',n:'نام مشتری',t:TXT},
+ {k:'code',n:'کد مشتری',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['حقیقی','حقوقی']},
+ {k:'mobile',n:'موبایل',t:TXT},
+ {k:'phone',n:'تلفن ثابت',t:TXT},
+ {k:'address',n:'آدرس',t:LNG},
+ {k:'city',n:'شهر',t:TXT},
+ {k:'segment',n:'دسته‌بندی مشتری',t:SEL,o:['وفادار','معمولی','عمده (کلی)','تازه‌وارد','VIP','غیرفعال']},
+ {k:'balance',n:'مانده حساب (+ طلب / − بدهی)',t:NUM},
+ {k:'lastbuy',n:'آخرین خرید',t:DAT},
+ {k:'company',n:'شرکت مجری',t:REL,r:'company',s:1},
+ {k:'note',n:'یادداشت',t:LNG}],
+ cols:['title','code','mobile','city','segment'],comp:'custBrief'},
 crm:{ic:'🧑‍🤝‍🧑',n:'CRM | ذینفعان',grp:'روابط',f:[
  {k:'title',n:'نام',t:TXT},
  {k:'kind',n:'شخصیت',t:SEL,o:['حقیقی','حقوقی']},
@@ -2264,6 +2279,9 @@ function eventsFor(e,id){
 function evtBrief(r){const ic=EVT_IC[r.d.etype]||'🗒️';
   return {label:'موضوع │ نوع',v:(r.d.subjT?esc(r.d.subjT)+' · ':'')+ic+' '+esc(r.d.etype||'یادداشت'),bad:r.d.etype==='مشکل / مانع'};}
 window.evtBrief=evtBrief;
+function custBrief(r){const b=+r.d.balance||0;const bz=relIds(r,'biz')[0];
+  return {label:'کسب‌وکار │ موبایل │ مانده',v:(bz?esc(nameOf(bz)):'—')+' │ '+(esc(r.d.mobile||r.d.phone||'—'))+' │ '+(b?abbrN(b)+(b>0?' طلب':' بدهی'):'۰'),bad:b<0};}
+window.custBrief=custBrief;
 function addEvent(e,id){
   if(!can('c','evt')){alert('اجازه ثبت واقعه ندارید');return;}
   const ty=document.getElementById('evtType'),tx=document.getElementById('evtText'),fo=document.getElementById('evtFollow');
