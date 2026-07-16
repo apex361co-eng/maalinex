@@ -1225,7 +1225,12 @@ let sb=null, session=null, rt=null;
 const cfg=JSON.parse(localStorage.getItem('xr_cfg')||'{}');
 if(PRESET.url&&PRESET.key){cfg.url=PRESET.url;cfg.key=PRESET.key;}
 const MU='00000000-0000-4000-8000-00000000aaaa', MO='00000000-0000-4000-8000-00000000bbbb', MA='00000000-0000-4000-8000-00000000cccc';
-function saveLocal(){localStorage.setItem('xr_data',JSON.stringify(recs));}
+function saveLocal(){
+  try{localStorage.setItem('xr_data',JSON.stringify(recs));}
+  catch(e){ // حافظه محلی پر شد (داده‌های انبوه) — سرور همچنان منبع اصلی است
+    try{setSync('err','⚠️ حافظه محلی مرورگر پر شد — داده‌ها فقط روی سرور ذخیره می‌شوند');}catch(_){}
+  }
+}
 function loadLocal(){try{recs=JSON.parse(localStorage.getItem('xr_data')||'{}');}catch(e){recs={};}
   // مهاجرت شناسه‌های متا به UUID (رفع مشکل سینک نقش‌ها و گزینه‌ها)
   [['meta-users',MU],['meta-opts',MO]].forEach(([old,nid])=>{
@@ -1284,33 +1289,59 @@ async function pullAll(){
   }
   saveLocal();setSync('ok','سینک شد');render();
 }
+let _flushing=false;
+function rowOf(id){const r=recs[id];return r?{id:r.id,entity:r.e,data:r.d,updated_at:new Date(r.u).toISOString(),deleted:!!r.del}:null;}
+function isRLS(error){const msg=(error&&error.message||'')+(error&&error.code||'');return (error&&error.code==='42501')||/row-level security|violates|مجاز نیست/i.test(msg);}
 async function flush(){
   if(!sb||!session){if(cfg.url)setSync('off','آفلاین — ذخیره محلی');return;}
-  while(queue.length){
-    const id=queue[0], r=recs[id]; if(!r){queue.shift();saveQ();continue;}
-    const {error}=await sb.from('records').upsert({id:r.id,entity:r.e,data:r.d,updated_at:new Date(r.u).toISOString(),deleted:!!r.del});
-    if(error){
-      const msg=(error.message||'')+(error.code||'');
-      if(error.code==='42501'||/row-level security|violates|مجاز نیست/i.test(msg)){
-        // 🛡️ سرور این تغییر را رد کرد (سیاست امنیتی) — از صف حذف و نسخه سرور بازیابی می‌شود
-        queue.shift();saveQ();
-        setSync('err','⛔ تغییر توسط سرور رد شد (مجوز امنیتی)');
-        try{await pullAll();}catch(e){}
+  if(_flushing)return; // جلوگیری از اجرای موازی هنگام ورود انبوه
+  _flushing=true;
+  try{
+    let rlsDropped=0, retries=0;
+    while(queue.length){
+      // یکتا‌سازی و برداشتن یک دسته (ارسال گروهی به‌جای تک‌تک — برای ورودهای انبوه اکسل)
+      queue=[...new Set(queue)];saveQ();
+      const ids=queue.slice(0,300);
+      const rows=ids.map(rowOf).filter(Boolean);
+      if(!rows.length){queue=queue.slice(ids.length);saveQ();continue;}
+      if(queue.length>ids.length)setSync('','در حال همگام‌سازی… '+queue.length.toLocaleString('fa-IR')+' مورد مانده');
+      const {error}=await sb.from('records').upsert(rows);
+      if(!error){queue=queue.slice(ids.length);saveQ();retries=0;continue;}
+      if(isRLS(error)){
+        // یکی از ردیف‌های دسته توسط سیاست امنیتی رد شده — تک‌تک بفرست تا فقط همان حذف شود
+        for(const id of ids){
+          const row=rowOf(id);
+          if(!row){queue=queue.filter(x=>x!==id);continue;}
+          const one=await sb.from('records').upsert(row);
+          if(one.error&&isRLS(one.error)){rlsDropped++;queue=queue.filter(x=>x!==id);saveQ();}
+          else if(one.error){setSync('err','خطا در ارسال: '+String(one.error.message||'').slice(0,70)+' — بعداً تلاش می‌شود');return;}
+          else{queue=queue.filter(x=>x!==id);saveQ();}
+        }
         continue;
       }
-      setSync('err','خطا در ارسال — بعداً تلاش می‌شود');return;
+      // خطای گذرا (شبکه/محدودیت نرخ): کمی صبر و تلاش دوباره — حداکثر ۳ بار در این نوبت
+      if(retries<3){retries++;setSync('','اختلال موقت — تلاش دوباره ('+retries+')…');await new Promise(r=>setTimeout(r,1500*retries));continue;}
+      setSync('err','خطا در ارسال: '+String(error.message||'').slice(0,70)+' — بعداً تلاش می‌شود');return;
     }
-    queue.shift();saveQ();
-  }
-  setSync('ok','سینک شد');
+    if(rlsDropped){
+      setSync('err','⛔ '+rlsDropped.toLocaleString('fa-IR')+' تغییر توسط سرور رد شد (مجوز امنیتی)');
+      try{await pullAll();}catch(e){}
+    }else setSync('ok','سینک شد');
+  } finally{_flushing=false;}
 }
+let _rtTimer=null;
 function subscribeRT(){
   if(!sb||!session)return;
   rt=sb.channel('recs').on('postgres_changes',{event:'*',schema:'public',table:'records'},p=>{
     const row=p.new&&p.new.id?p.new:p.old; if(!row||!row.id)return;
     const remoteU=new Date(row.updated_at||Date.now()).getTime();
     const loc=recs[row.id];
-    if(!loc||loc.u<remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};saveLocal();render();}
+    if(!loc||loc.u<remoteU){
+      recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};
+      // 🐎 دسته‌بندی: هنگام دریافت انبوه (مثلاً بعد از ورود اکسل روی دستگاه دیگر) هر تغییر جدا رندر نشود
+      clearTimeout(_rtTimer);
+      _rtTimer=setTimeout(()=>{saveLocal();render();},400);
+    }
   }).subscribe();
 }
 
