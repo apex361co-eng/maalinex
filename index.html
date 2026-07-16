@@ -34,13 +34,14 @@ body{font-family:Vazirmatn,Tahoma,sans-serif;color:var(--tx);font-size:14px;
 #side .logo{padding:16px 14px;font-weight:800;font-size:16px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
 #nav{overflow-y:auto;flex:1;padding:8px}
 .nav-h{font-size:11px;color:var(--tx2);margin:12px 8px 4px}
-.nav-h.navg{cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;border-radius:8px;padding:5px 6px;margin:10px 2px 2px}
+.nav-h.navg{cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;border-radius:8px;padding:6px 7px;margin:12px 2px 3px;font-size:13.5px;font-weight:700;color:var(--tx)}
 .nav-h.navg:hover{background:rgba(255,255,255,.05);color:var(--tx)}
-.nav-h.navg .c{margin-inline-start:auto;font-size:10px}
-.nav-i{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--tx2);white-space:nowrap}
+.nav-h.navg .c{margin-inline-start:auto;font-size:10px;font-weight:400}
+.nav-h.navg .pm{font-size:15px;font-weight:700;width:14px;text-align:center;color:var(--ac);line-height:1}
+.nav-i{display:flex;gap:7px;align-items:center;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--tx2);white-space:nowrap;font-size:12px;margin-inline-start:6px}
 .nav-i:hover{background:var(--bg3);color:var(--tx)}
 .nav-i.on{background:rgba(212,175,55,.13);color:#ecd98f;font-weight:600;box-shadow:inset 2px 0 0 var(--ac)}
-.nav-i .c{margin-inline-start:auto;font-size:11px;background:var(--bg);border-radius:99px;padding:1px 7px;color:var(--tx2)}
+.nav-i .c{margin-inline-start:auto;font-size:10.5px;background:var(--bg);border-radius:99px;padding:1px 7px;color:var(--tx2)}
 /* main */
 #main{flex:1;display:flex;flex-direction:column;min-width:0}
 #top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg2);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass)}
@@ -3506,6 +3507,42 @@ const BIZ_METRICS=[
  {k:'chq',n:'💳 چک باز',fn:b=>money(bizChqOpen(b))},
  {k:'target',n:'🎯 میانگین تحقق تارگت',fn:b=>{const t=bizTargetAvg(b);return t==null?'—':t.toLocaleString('fa-IR')+'٪';},bad:b=>{const t=bizTargetAvg(b);return t!=null&&t<60;}}
 ];
+/* روند ماهانه (شمسی) فروش و سود برای نمودار */
+function bizMonthly(biz,n){
+  n=n||12;
+  const now=new Date();const cj=g2j(now.getFullYear(),now.getMonth()+1,now.getDate());
+  let y=cj[0],m=cj[1];const months=[];
+  for(let i=0;i<n;i++){months.unshift({y,m,rev:0,profit:0});m--;if(m<1){m=12;y--;}}
+  const idx={};months.forEach((s,i)=>idx[s.y+'-'+s.m]=i);
+  bizInvReal(biz).forEach(v=>{const iso=ds(v.d.date);if(!iso)return;const p=iso.split('-').map(Number);if(p.length<3)return;
+    const j=g2j(p[0],p[1],p[2]);const key=j[0]+'-'+j[1];if(!(key in idx))return;
+    const c=invCalc(v);let cogs=0;invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];const bp=pid&&recs[pid]?(recs[pid].d.buy||0):0;cogs+=(l.d.qty||0)*bp;});
+    months[idx[key]].rev+=c.base;months[idx[key]].profit+=(c.base-cogs);});
+  return months;
+}
+const JM_AB=['فرو','ارد','خرد','تیر','مرد','شهر','مهر','آبا','آذر','دی','بهم','اسف'];
+function trendSVG(months){
+  const W=620,H=210,pl=10,pr=12,pt=16,pb=26,iw=W-pl-pr,ih=H-pt-pb;
+  const revs=months.map(m=>m.rev),profs=months.map(m=>m.profit);
+  const max=Math.max(1,...revs,...profs),n=months.length;
+  const x=i=>pl+(n<=1?iw/2:iw*i/(n-1));
+  const y=v=>pt+ih-(v/max)*ih;
+  const line=arr=>arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  const area=arr=>line(arr)+' L'+x(n-1).toFixed(1)+' '+(pt+ih)+' L'+x(0).toFixed(1)+' '+(pt+ih)+' Z';
+  const grid=[0,.5,1].map(f=>{const yy=pt+ih-f*ih;return `<line x1="${pl}" y1="${yy.toFixed(1)}" x2="${W-pr}" y2="${yy.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;}).join('');
+  const dots=revs.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="var(--ac)"/>`).join('');
+  const labels=months.map((m,i)=>`<text x="${x(i).toFixed(1)}" y="${H-8}" font-size="9" fill="var(--tx2)" text-anchor="middle">${JM_AB[m.m-1]}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" preserveAspectRatio="none">
+    <defs><linearGradient id="haloGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--ac)" stop-opacity="0.38"/>
+      <stop offset="60%" stop-color="var(--ac)" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="var(--ac)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}
+    <path d="${area(revs)}" fill="url(#haloGrad)"/>
+    <path d="${line(profs)}" fill="none" stroke="var(--ok)" stroke-width="1.8" stroke-dasharray="4 3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line(revs)}" fill="none" stroke="var(--ac)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${labels}</svg>`;
+}
 function bizkpiSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizkpi')||'null');if(Array.isArray(s))return s;}catch(e){}return ['sales','gp','margin','recv','pay','cash'];}
 function bizkpiToggle(k){let s=bizkpiSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizkpi',JSON.stringify(s));}catch(e){}render();}
 window.bizkpiToggle=bizkpiToggle;
@@ -3525,6 +3562,13 @@ function bizkpiHTML(){
     <span style="flex:1"></span><button class="btn gh sm" onclick="view.kpiPick=!view.kpiPick;render()">⚙️ شاخص‌ها</button></div>
   ${picker}
   ${cards?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${cards}</div>`:'<div class="empty">هیچ شاخصی انتخاب نشده — از «⚙️ شاخص‌ها» انتخاب کن</div>'}
+  ${(()=>{const mo=bizMonthly(b,12);const has=mo.some(m=>m.rev||m.profit);const mx=Math.max(0,...mo.map(m=>Math.max(m.rev,m.profit)));
+    return `<div class="sec" style="margin-top:12px"><h3>📈 روند ۱۲ ماه اخیر</h3>
+      <div style="display:flex;gap:16px;font-size:11px;margin-bottom:8px;flex-wrap:wrap">
+        <span><span style="display:inline-block;width:14px;height:3px;background:var(--ac);vertical-align:middle;border-radius:2px"></span> فروش</span>
+        <span><span style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--ok);vertical-align:middle"></span> سود ناخالص</span>
+        <span style="flex:1"></span><span style="color:var(--tx2)">بیشینه: ${money(mx)}</span></div>
+      ${has?trendSVG(mo):'<div class="empty">هنوز فروشی برای رسم نمودار نیست</div>'}</div>`;})()}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px">
     ${canView('salesdash')?`<button class="btn gh" onclick="go('salesdash')">📈 داشبورد فروش</button>`:''}
     ${canView('targetdash')?`<button class="btn gh" onclick="go('targetdash')">🎯 پایش تارگت</button>`:''}
@@ -3884,6 +3928,23 @@ function moveGroup(g,dir){
   try{localStorage.setItem('xr_navord',JSON.stringify(cur));}catch(e){}
   nav();drawArrange();
 }
+/* 🔀 ترتیب دلخواه آیتم‌های داخل هر گروه (زیرمنوها) */
+function navSubOrder(g){try{const m=JSON.parse(localStorage.getItem('xr_navsub')||'{}');return (m&&m[g])||[];}catch(e){return [];}}
+function navSubSort(g,ents){ // ents: آرایه‌ی [k,v]
+  const ord=navSubOrder(g);const keys=ents.map(e=>e[0]);
+  const kept=ord.filter(k=>keys.includes(k));const rest=keys.filter(k=>!kept.includes(k));
+  return kept.concat(rest).map(k=>ents.find(e=>e[0]===k));
+}
+function groupEnts(g){return Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&canSee(k));}
+function moveSubItem(g,k,dir){
+  const order=navSubSort(g,groupEnts(g)).map(e=>e[0]);
+  const i=order.indexOf(k),j=i+dir;if(i<0||j<0||j>=order.length)return;
+  const t=order[i];order[i]=order[j];order[j]=t;
+  let m={};try{m=JSON.parse(localStorage.getItem('xr_navsub')||'{}');}catch(e){}m[g]=order;
+  try{localStorage.setItem('xr_navsub',JSON.stringify(m));}catch(e){}
+  nav();drawArrange();
+}
+window.moveSubItem=moveSubItem;
 /* 🔀 ترتیب دلخواه دکمه‌های نوار بالا */
 const TOP_LABELS={rembtn:'⏰ یادآوری‌ها',mycalbtn:'📅 تقویم من',laybtn:'🧲 جابجایی المان صفحه',fxbtn:'💱 نرخ دلار',quickbtn:'⚡ ثبت نکته',pomobtn:'🍅 پومودورو'};
 function topOrder(){
@@ -3905,7 +3966,7 @@ function moveTop(id,dir){
 }
 function resetMenus(){
   if(!confirm('چیدمان منوی کناری و نوار بالا به حالت پیش‌فرض برگردد؟'))return;
-  localStorage.removeItem('xr_navord');localStorage.removeItem('xr_topord');
+  localStorage.removeItem('xr_navord');localStorage.removeItem('xr_topord');localStorage.removeItem('xr_navsub');
   nav();applyTopOrder();drawArrange();
 }
 function openArrange(){document.getElementById('arrange').classList.add('show');drawArrange();}
@@ -3913,10 +3974,16 @@ function closeArrange(){document.getElementById('arrange').classList.remove('sho
 function drawArrange(){
   const el=document.getElementById('arrange');if(!el)return;
   const groups=navGroupsOrdered();
-  const rowG=(g,i)=>`<div class="arow">
-    <span style="color:var(--tx2)">☰</span><span class="an">${esc(g)}</span>
-    <button class="btn gh" onclick="moveGroup('${g.replace(/'/g,"\\'")}',-1)" ${i===0?'disabled style=opacity:.3':''}>▲</button>
-    <button class="btn gh" onclick="moveGroup('${g.replace(/'/g,"\\'")}',1)" ${i===groups.length-1?'disabled style=opacity:.3':''}>▼</button></div>`;
+  const rowG=(g,i)=>{const ge=g.replace(/'/g,"\\'");
+    const subs=navSubSort(g,groupEnts(g));
+    const subRows=subs.map(([k,v],si)=>`<div class="arow" style="margin-inline-start:20px;padding:3px 6px">
+      <span style="color:var(--tx2);font-size:11px">↳</span><span class="an" style="font-size:12px">${v.ic} ${esc(v.n)}</span>
+      <button class="btn gh sm" onclick="moveSubItem('${ge}','${k}',-1)" ${si===0?'disabled style=opacity:.3':''}>▲</button>
+      <button class="btn gh sm" onclick="moveSubItem('${ge}','${k}',1)" ${si===subs.length-1?'disabled style=opacity:.3':''}>▼</button></div>`).join('');
+    return `<div class="arow">
+    <span style="color:var(--tx2)">☰</span><span class="an" style="font-weight:700">${esc(g)}</span>
+    <button class="btn gh" onclick="moveGroup('${ge}',-1)" ${i===0?'disabled style=opacity:.3':''}>▲</button>
+    <button class="btn gh" onclick="moveGroup('${ge}',1)" ${i===groups.length-1?'disabled style=opacity:.3':''}>▼</button></div>${subRows}`;};
   const tops=topOrder();
   const rowT=(id,i)=>`<div class="arow">
     <span style="color:var(--tx2)">☰</span><span class="an">${TOP_LABELS[id]||id}</span>
@@ -3925,8 +3992,8 @@ function drawArrange(){
   el.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:10px">
       <b style="font-size:15px">🔀 چیدمان منوها</b><span style="flex:1"></span>
       <span onclick="closeArrange()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
-    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">ترتیب گروه‌های منوی کناری و دکمه‌های نوار بالا را با ▲▼ تغییر دهید. تنظیمات روی همین دستگاه ذخیره می‌شود.</p>
-    <h3 style="font-size:13px;margin:6px 0">📚 گروه‌های منوی کناری</h3>${groups.map(rowG).join('')}
+    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">ترتیب گروه‌های منوی کناری، آیتم‌های داخل هر گروه (زیرمنوها)، و دکمه‌های نوار بالا را با ▲▼ تغییر دهید. تنظیمات روی همین دستگاه ذخیره می‌شود.</p>
+    <h3 style="font-size:13px;margin:6px 0">📚 گروه‌ها و زیرمنوهای منوی کناری</h3>${groups.map(rowG).join('')}
     <h3 style="font-size:13px;margin:12px 0 6px">🔝 دکمه‌های نوار بالا</h3>${tops.map(rowT).join('')}
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn bad sm" onclick="resetMenus()">↩︎ بازگردانی پیش‌فرض</button>
@@ -3971,13 +4038,13 @@ function nav(){
     if(g==='فرآیندها (ISO)'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bscmap'))items+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bsccanvas'))items+=`<div class="nav-i ${view.type==='bsccanvas'?'on':''}" onclick="go('bsccanvas')">🧭 بوم استراتژی</div>`;
-    ents.forEach(([k,v])=>{
+    navSubSort(g,ents).forEach(([k,v])=>{
       items+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${visE(k).length}</span></div>`;
     });
     if(!items)return; // گروه خالی (بدون دسترسی) اصلاً نمایش داده نشود
     const col=navIsCol(g);
     h+=`<div class="nav-h navg" data-g="${g}" onclick="toggleGrp(this.dataset.g)" title="${col?'باز کردن':'بستن'}">
-      <span class="arw" style="display:inline-block;transition:transform .15s;transform:rotate(${col?'-90deg':'0deg'})">▾</span> ${g}
+      <span class="pm">${col?'+':'−'}</span> ${g}
       ${col?`<span class="c" style="opacity:.6">${ents.length.toLocaleString('fa-IR')}</span>`:''}</div>`;
     if(!col)h+=items;
   });
