@@ -771,6 +771,28 @@ saletarget:{ic:'🎯',n:'تارگت فروش',grp:'کسب‌وکار ویژه',f
  {k:'tqty',n:'🎯 تارگت تعدادی',t:NUM},
  {k:'note',n:'توضیح',t:LNG}],
  cols:['title','scope','ptype','to'],comp:'targetBrief'},
+purchinv:{ic:'🧾',n:'فاکتور خرید',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'شماره / شرح فاکتور خرید',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'supplier',n:'تامین‌کننده',t:REL,r:'crm',s:1},
+ {k:'status',n:'وضعیت',t:SEL,o:['پیش‌نویس','ثبت شده','تسویه شده','باطل']},
+ {k:'date',n:'تاریخ',t:DAT},
+ {k:'due',n:'تاریخ سررسید',t:DAT},
+ {k:'disc',n:'تخفیف کل (تومان)',t:NUM},
+ {k:'taxpct',n:'مالیات بر ارزش افزوده ٪',t:NUM},
+ {k:'ship',n:'هزینه حمل/گمرک (تومان)',t:NUM},
+ {k:'paid',n:'مبلغ پرداخت‌شده (تومان)',t:NUM},
+ {k:'note',n:'توضیحات',t:LNG}],
+ cols:['title','supplier','status','date'],comp:'pinvBrief'},
+purchline:{ic:'➕',n:'ردیف خرید',grp:'کسب‌وکار ویژه',f:[
+ {k:'title',n:'شرح ردیف',t:TXT},
+ {k:'purchinv',n:'فاکتور خرید',t:REL,r:'purchinv',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'product',n:'کالا/خدمت',t:REL,r:'product',s:1},
+ {k:'qty',n:'تعداد',t:NUM},
+ {k:'price',n:'قیمت واحد (تومان)',t:NUM},
+ {k:'ldisc',n:'تخفیف این ردیف (تومان)',t:NUM}],
+ cols:['title','purchinv','qty','price'],comp:'pinvLineBrief'},
 /* ---------- مالی تخصصی (IFRS) ---------- */
 finis:{ic:'📈',n:'صورت سود و زیان (IFRS)',grp:'مالی تخصصی (IFRS)',f:[
  {k:'title',n:'عنوان (مثل: سود و زیان ۱۴۰۴)',t:TXT},
@@ -1582,6 +1604,7 @@ const VIEWS_ACL=[
  ['salesdash','🧾 داشبورد فروش'],
  ['invnew','🧾 صدور فاکتور'],
  ['targetdash','🎯 پایش تارگت فروش'],
+ ['pinvnew','🧾 ثبت فاکتور خرید'],
  ['procmap','🔁 نقشه فرآیندها (ISO)'],
  ['bscmap','🗺️ نقشه استراتژی و BSC'],
  ['bsccanvas','🧭 بوم استراتژی (چهار ربع)'],
@@ -1607,7 +1630,7 @@ const MODULES=[
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget'],views:['salesdash','invnew','targetdash']},
- {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel'],views:['bizdash']},
+ {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M16',n:'رشد شخصی',ents:['growth','habit','win','plan','asset','area','book','course','booknote','note','reminder'],views:['gdash']}
 ];
 const ENT_MOD={},VIEW_MOD={};MODULES.forEach(m=>{(m.ents||[]).forEach(e=>ENT_MOD[e]=m.id);(m.views||[]).forEach(v=>VIEW_MOD[v]=m.id);});
@@ -2423,6 +2446,131 @@ function postInvoice(id,silent){
   if(!silent)go('rec','invoice',id);
 }
 window.postInvoice=postInvoice;window.saveAutopost=saveAutopost;
+/* ===== 🧾 موتور فاکتور خرید (قرینه‌ی فروش) ===== */
+function pinvLinesOf(pid){return byE('purchline').filter(l=>relIds(l,'purchinv').includes(pid));}
+function pinvLineAmt(l){return Math.max(0,(l.d.qty||0)*(l.d.price||0)-(l.d.ldisc||0));}
+function pinvCalc(p){
+  const lines=pinvLinesOf(p.id);
+  const sub=lines.reduce((a,l)=>a+pinvLineAmt(l),0);
+  const disc=p.d.disc||0;const base=Math.max(0,sub-disc);
+  const tax=Math.round(base*((p.d.taxpct||0)/100));const ship=p.d.ship||0;
+  const total=base+tax+ship;const paid=p.d.paid||0;
+  return {count:lines.length,sub,disc,base,tax,ship,total,paid,due:Math.max(0,total-paid)};
+}
+function pinvBrief(p){const c=pinvCalc(p);const voided=p.d.status==='باطل';const open=c.due>0&&!voided;
+  return {label:'مبلغ کل'+(open?' │ مانده':'')+(voided?' │ باطل':''),v:money(c.total)+(open?' │ '+money(c.due):''),bad:open||voided};}
+function pinvLineBrief(l){return {label:'مبلغ ردیف',v:money(pinvLineAmt(l))};}
+window.pinvBrief=pinvBrief;window.pinvLineBrief=pinvLineBrief;
+let pinvDraft=null;
+function pinvNewDraft(){pinvDraft={desc:'',biz:'',supplier:'',vdate:today(),due:'',disc:'',taxpct:'',ship:'',note:'',lines:[{product:'',qty:'1',price:'',ldisc:''}]};}
+function pinvAddLine(){pinvDraft.lines.push({product:'',qty:'1',price:'',ldisc:''});render();}
+function pinvDelLine(i){pinvDraft.lines.splice(i,1);if(!pinvDraft.lines.length)pinvAddLine();render();}
+function pinvSetLine(i,k,v){pinvDraft.lines[i][k]=v;
+  if(k==='product'&&v){const p=recs[v];if(p&&p.d&&!(+pinvDraft.lines[i].price))pinvDraft.lines[i].price=String(p.d.buy||'');}
+  render();}
+function pinvSetHead(k,v){pinvDraft[k]=v;if(k==='biz')render();}
+function pinvTotalsDraft(){
+  const sub=pinvDraft.lines.reduce((a,l)=>a+Math.max(0,(+l.qty||0)*(+l.price||0)-(+l.ldisc||0)),0);
+  const disc=+pinvDraft.disc||0;const base=Math.max(0,sub-disc);
+  const tax=Math.round(base*((+pinvDraft.taxpct||0)/100));const ship=+pinvDraft.ship||0;
+  return {sub,disc,base,tax,ship,total:base+tax+ship};
+}
+function pinvSave(status){
+  const valid=pinvDraft.lines.filter(l=>l.product&&(+l.qty||0)>0);
+  if(!valid.length){alert('حداقل یک ردیف با کالا و تعداد لازم است');return;}
+  const pid=uid();
+  const num=(Math.max(0,...byE('purchinv').map(v=>+String(v.d.title).replace(/\D/g,'')||0))+1);
+  put({id:pid,e:'purchinv',d:{title:pinvDraft.desc||('خرید '+num),biz:pinvDraft.biz?[pinvDraft.biz]:[],
+    supplier:pinvDraft.supplier?[pinvDraft.supplier]:[],status:status||'ثبت شده',
+    date:{s:pinvDraft.vdate},due:pinvDraft.due?{s:pinvDraft.due}:null,
+    disc:+pinvDraft.disc||0,taxpct:+pinvDraft.taxpct||0,ship:+pinvDraft.ship||0,paid:0,note:pinvDraft.note},u:Date.now()});
+  valid.forEach(l=>{const p=recs[l.product];
+    put({id:uid(),e:'purchline',d:{title:(p&&p.d&&p.d.title)||'',purchinv:[pid],product:[l.product],
+      biz:pinvDraft.biz?[pinvDraft.biz]:[],qty:+l.qty||0,price:+l.price||0,ldisc:+l.ldisc||0},u:Date.now()});});
+  if((status||'ثبت شده')==='ثبت شده')try{postPurch(pid,true);}catch(e){}
+  pinvDraft=null;go('rec','purchinv',pid);
+}
+window.pinvAddLine=pinvAddLine;window.pinvDelLine=pinvDelLine;window.pinvSetLine=pinvSetLine;window.pinvSetHead=pinvSetHead;window.pinvSave=pinvSave;
+function postPurch(id,silent){
+  const p=recs[id];if(!p||p.d.status==='باطل')return;
+  if(p.d._posted){if(!silent)alert('این فاکتور خرید قبلاً ثبت شده است.');return;}
+  const cfg=autopostCfg();
+  if(!cfg.stock&&!cfg.gl){if(!silent)alert('اتصال خودکار خاموش است — از «🧰 مدیریت محصول ← اتصال فروش» روشنش کنید.');return;}
+  const lines=pinvLinesOf(id);const c=pinvCalc(p);const bz=relIds(p,'biz');const dt=p.d.date||{s:today()};
+  const purchIds=[];let vid='';
+  // 📦 انبار: یک رکورد «خرید» برای هر ردیف → موجودی محصول افزایش و لایه‌ی FIFO اضافه می‌شود
+  if(cfg.stock){
+    lines.forEach(l=>{const prod=relIds(l,'product')[0];if(!prod)return;
+      const sid=uid();purchIds.push(sid);
+      put({id:sid,e:'purchase',d:{title:(p.d.title||'خرید')+' — '+((recs[prod]&&recs[prod].d.title)||''),biz:bz,product:[prod],
+        qty:l.d.qty||0,price:l.d.price||0,supplier:relIds(p,'supplier'),kind:c.due>0?'اعتباری':'نقدی',settled:c.due<=0,date:dt,_pinv:id},u:Date.now()});
+    });
+  }
+  // 🧮 حسابداری: سند خرید دوطرفه
+  if(cfg.gl){
+    const cash=acctByCode('101'),pay=acctByCode('201'),invA=acctByCode('103'),vatPre=acctByCode('104');
+    if(invA&&(cash||pay)&&c.total>0){
+      vid=uid();
+      const num=(Math.max(0,...byE('voucher').map(v=>+String(v.d.num).replace(/\D/g,'')||0))+1);
+      put({id:vid,e:'voucher',d:{title:'خرید — '+(p.d.title||''),num:String(num),vdate:dt,vtype:'عادی',scope:'کسب‌وکار',status:'ثبت‌شده (دائم)',_pinv:id},u:Date.now()});
+      const L=(acct,d,cr,desc)=>{if(!acct||(!d&&!cr))return;put({id:uid(),e:'vline',d:{title:desc||'',voucher:[vid],acct:[acct],debit:d||0,credit:cr||0},u:Date.now()});};
+      L(invA,c.base+c.ship,0,'افزایش موجودی کالا');
+      if(c.tax>0)L(vatPre||invA,c.tax,0,'مالیات خرید (قابل استرداد)');
+      if(c.paid>0&&cash)L(cash,0,c.paid,'پرداخت نقد');
+      if(c.due>0&&pay)L(pay,0,c.due,'بدهی به تامین‌کننده');
+    }
+  }
+  if(purchIds.length||vid){p.d._posted=true;p.d._purchIds=purchIds;if(vid)p.d._vid=vid;p.u=Date.now();put(p);}
+  if(!silent)go('rec','purchinv',id);
+}
+window.postPurch=postPurch;
+function pinvnewHTML(){
+  if(!pinvDraft)pinvNewDraft();
+  const prods=byE('product').filter(p=>!pinvDraft.biz||relIds(p,'biz').includes(pinvDraft.biz));
+  const t=pinvTotalsDraft();
+  const prodOpt=sel=>`<option value="">— کالا/خدمت —</option>`+prods.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.d.title||'—')}${p.d.buy?' · '+fmtN(p.d.buy):''}</option>`).join('');
+  const lbl='style="font-size:11px;color:var(--tx2)"';
+  const supp=byE('crm').filter(x=>['تامین‌کننده','پیمانکار','شریک تجاری'].includes(x.d.rel)||!x.d.rel);
+  let h=`<div class="sec"><h3>🧾 ثبت فاکتور خرید</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:8px">
+    <div><label ${lbl}>کسب‌وکار</label><select onchange="pinvSetHead('biz',this.value)"><option value="">—</option>${byE('business').map(x=>`<option value="${x.id}" ${x.id===pinvDraft.biz?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
+    <div><label ${lbl}>تامین‌کننده</label><select onchange="pinvSetHead('supplier',this.value)"><option value="">—</option>${supp.map(x=>`<option value="${x.id}" ${x.id===pinvDraft.supplier?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
+    <div><label ${lbl}>شماره/شرح</label><input value="${esc(pinvDraft.desc)}" oninput="pinvDraft.desc=this.value" placeholder="خودکار"></div>
+    <div><label ${lbl}>تاریخ</label><input value="${esc(pinvDraft.vdate||'')}" oninput="pinvDraft.vdate=this.value" placeholder="۱۴۰۴/۰۴/۲۵"></div>
+    <div><label ${lbl}>سررسید</label><input value="${esc(pinvDraft.due||'')}" oninput="pinvDraft.due=this.value" placeholder="اختیاری"></div>
+  </div>
+  <div class="tblwrap"><table><thead><tr><th>#</th><th>کالا/خدمت</th><th>تعداد</th><th>قیمت واحد</th><th>تخفیف ردیف</th><th>مبلغ</th><th></th></tr></thead><tbody>`;
+  pinvDraft.lines.forEach((l,i)=>{const amt=Math.max(0,(+l.qty||0)*(+l.price||0)-(+l.ldisc||0));
+    h+=`<tr><td>${(i+1).toLocaleString('fa-IR')}</td>
+      <td><select onchange="pinvSetLine(${i},'product',this.value)" style="min-width:170px">${prodOpt(l.product)}</select></td>
+      <td><input inputmode="numeric" value="${l.qty||''}" oninput="pinvSetLine(${i},'qty',this.value)" style="max-width:70px;text-align:center" placeholder="۱"></td>
+      <td><input inputmode="numeric" value="${l.price||''}" oninput="pinvSetLine(${i},'price',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
+      <td><input inputmode="numeric" value="${l.ldisc||''}" oninput="pinvSetLine(${i},'ldisc',this.value)" style="max-width:100px;text-align:left" placeholder="۰"></td>
+      <td style="white-space:nowrap;color:var(--ok)">${fmtN(amt)}</td>
+      <td><button class="btn bad sm" onclick="pinvDelLine(${i})">✕</button></td></tr>`;});
+  h+=`</tbody></table></div>
+  <button class="btn gh sm" style="margin-top:8px" onclick="pinvAddLine()">➕ ردیف</button>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px">
+    <div><label ${lbl}>تخفیف کل</label><input inputmode="numeric" value="${pinvDraft.disc||''}" oninput="pinvDraft.disc=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>مالیات ٪</label><input inputmode="numeric" value="${pinvDraft.taxpct||''}" oninput="pinvDraft.taxpct=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>هزینه حمل/گمرک</label><input inputmode="numeric" value="${pinvDraft.ship||''}" oninput="pinvDraft.ship=this.value;render()" placeholder="۰"></div>
+  </div>
+  <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--bg3);line-height:2.1">
+    <div style="display:flex"><span style="flex:1;color:var(--tx2)">جمع ردیف‌ها</span><b>${money(t.sub)}</b></div>
+    <div style="display:flex"><span style="flex:1;color:var(--tx2)">− تخفیف</span><b>${money(t.disc)}</b></div>
+    <div style="display:flex"><span style="flex:1;color:var(--tx2)">+ مالیات</span><b>${money(t.tax)}</b></div>
+    <div style="display:flex"><span style="flex:1;color:var(--tx2)">+ حمل/گمرک</span><b>${money(t.ship)}</b></div>
+    <div style="display:flex;border-top:1px solid var(--line);margin-top:6px;padding-top:6px;font-size:15px"><span style="flex:1">💰 مبلغ نهایی</span><b style="color:var(--ok)">${money(t.total)}</b></div>
+  </div>
+  <div style="margin-top:10px"><label ${lbl}>توضیحات</label><input value="${esc(pinvDraft.note||'')}" oninput="pinvDraft.note=this.value" placeholder="اختیاری"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <button class="btn gh sm" onclick="pinvSave('پیش‌نویس')">💾 پیش‌نویس</button>
+    <span style="flex:1"></span>
+    <button class="btn sm" onclick="pinvSave('ثبت شده')">✔️ ثبت نهایی</button>
+  </div>
+  <p style="font-size:10.5px;color:var(--tx2);margin-top:8px">💡 با انتخاب کالا، «قیمت خرید» به‌صورت خودکار پر می‌شود. اگر «اتصال خودکار» روشن باشد، با ثبت نهایی موجودی افزایش و سند خرید ثبت می‌شود.</p></div>`;
+  return h;
+}
 /* ===== 🎯 موتور تارگت فروش ===== */
 function dnorm(v){ // تاریخ (شمسی یا میلادی) → کلید عددی قابل مقایسه؛ ارقام فارسی هم پشتیبانی می‌شود
   let s=ds(v)||dVal(v)&&dVal(v).s||(typeof v==='string'?v:'');if(!s)return '';
@@ -3367,6 +3515,7 @@ function nav(){
     let items='';
     if(g==='رشد شخصی'&&canView('gdash'))items+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
     if(g==='کسب‌وکار ویژه'&&canSee('sale')&&canView('bizdash'))items+=`<div class="nav-i ${view.type==='bizdash'?'on':''}" onclick="go('bizdash')">🏪 داشبورد کسب‌وکار</div>`;
+    if(g==='کسب‌وکار ویژه'&&canSee('purchinv')&&can('c','purchinv')&&canView('pinvnew'))items+=`<div class="nav-i ${view.type==='pinvnew'?'on':''}" onclick="pinvDraft=null;go('pinvnew')">🧾 ثبت فاکتور خرید</div>`;
     if(g==='کسب‌وکار ویژه'&&canSee('invoice')&&canView('salesdash'))items+=`<div class="nav-i ${view.type==='salesdash'?'on':''}" onclick="go('salesdash')">🧾 داشبورد فروش</div>`;
     if(g==='کسب‌وکار ویژه'&&canSee('invoice')&&can('c','invoice')&&canView('invnew'))items+=`<div class="nav-i ${view.type==='invnew'?'on':''}" onclick="invDraft=null;go('invnew')">🧾 صدور فاکتور</div>`;
     if(g==='کسب‌وکار ویژه'&&canSee('saletarget')&&canView('targetdash'))items+=`<div class="nav-i ${view.type==='targetdash'?'on':''}" onclick="go('targetdash')">🎯 پایش تارگت فروش</div>`;
@@ -3434,6 +3583,7 @@ function render(){
     view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
     view.type==='salesdash'?'🧾 داشبورد فروش':
     view.type==='invnew'?'🧾 صدور فاکتور':
+    view.type==='pinvnew'?'🧾 ثبت فاکتور خرید':
     view.type==='targetdash'?'🎯 پایش تارگت فروش':
     view.type==='findash'?'💼 داشبورد مالی تخصصی':
     view.type==='invdash'?'💎 داشبورد سرمایه‌گذاری':
@@ -3446,7 +3596,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -3469,6 +3619,7 @@ function render(){
     else if(view.type==='glnew')c.innerHTML=glnewHTML();
     else if(view.type==='salesdash')c.innerHTML=salesdashHTML();
     else if(view.type==='invnew')c.innerHTML=invnewHTML();
+    else if(view.type==='pinvnew')c.innerHTML=pinvnewHTML();
     else if(view.type==='targetdash')c.innerHTML=targetdashHTML();
     else if(view.type==='rec')c.innerHTML=recHTML(view.e,view.id);
     else c.innerHTML=listHTML(view.e);
@@ -3703,6 +3854,8 @@ function recHTML(e,id){
     ${e==='invoice'?`<button class="btn gh sm" onclick="invPrint('${id}')">🖨️ چاپ / PDF</button>`:''}
     ${e==='invoice'&&r.d.kind!=='پیش‌فاکتور'&&!r.d._posted&&(autopostCfg().stock||autopostCfg().gl)?`<button class="btn gh sm" onclick="postInvoice('${id}')">📤 ثبت در انبار/حسابداری</button>`:''}
     ${e==='invoice'&&r.d._posted?`<span class="tag g" style="align-self:center">✅ در انبار/حسابداری ثبت شد</span>`:''}
+    ${e==='purchinv'&&r.d.status!=='باطل'&&!r.d._posted&&(autopostCfg().stock||autopostCfg().gl)?`<button class="btn gh sm" onclick="postPurch('${id}')">📥 ثبت در انبار/حسابداری</button>`:''}
+    ${e==='purchinv'&&r.d._posted?`<span class="tag g" style="align-self:center">✅ در انبار/حسابداری ثبت شد</span>`:''}
     ${can('e',e,r)?`<button class="btn sm" onclick="openRec('${e}','${id}')">✏️ ویرایش</button>`:''}</div>`;
   // computed chips
   const chips=[];
