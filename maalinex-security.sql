@@ -240,6 +240,49 @@ begin
 end $$;
 grant execute on function public.enroll_me() to authenticated;
 
+-- ---------- ۴٫۶) همگام‌سازی امن هویت (sync_me) — تشخیص ثبت‌نام مجدد با همان ایمیل ----------
+-- شناسه‌ی حساب Supabase (uid) را کنار ایمیل ذخیره می‌کند. اگر کسی حساب قبلی‌اش حذف شده و
+-- با «همان ایمیل» دوباره ثبت‌نام کند، uid جدید با uid ذخیره‌شده فرق دارد → نقشش به‌طور خودکار
+-- به «در انتظار تایید» بازمی‌گردد تا دوباره نیاز به تایید ادمین داشته باشد.
+create or replace function public.app_uid() returns text
+language sql stable security definer set search_path=public as
+$$ select coalesce(auth.jwt()->>'sub','') $$;
+
+create or replace function public.sync_me() returns text
+language plpgsql security definer set search_path=public as $$
+declare em text; uid text; d jsonb; lst jsonb; newlst jsonb:='[]'::jsonb; el jsonb;
+  found boolean:=false; changed boolean:=false; res text:='ok'; MU uuid:='00000000-0000-4000-8000-00000000aaaa';
+begin
+  em:=app_email(); uid:=app_uid();
+  if em='' then return 'no-auth'; end if;
+  select data into d from records where id=MU and not deleted;
+  if d is null then
+    insert into records(id,entity,data,updated_at,deleted)
+      values(MU,'_users', jsonb_build_object('list', jsonb_build_array(jsonb_build_object('email',em,'role','ادمین','uid',uid))), now(), false)
+      on conflict (id) do update set data=excluded.data, updated_at=now(), deleted=false;
+    return 'admin-bootstrap';
+  end if;
+  lst:=coalesce(d->'list','[]'::jsonb);
+  for el in select * from jsonb_array_elements(lst) loop
+    if lower(coalesce(el->>'email',''))=em then
+      found:=true;
+      if coalesce(el->>'uid','')='' then
+        el:=el || jsonb_build_object('uid',uid); changed:=true; res:='linked'; -- اولین اتصال uid، نقش حفظ می‌شود
+      elsif el->>'uid' <> uid then
+        el:=jsonb_build_object('email',em,'role','در انتظار تایید','uid',uid); changed:=true; res:='reset-pending'; -- حساب دوباره ساخته شده
+      end if;
+    end if;
+    newlst:=newlst || el;
+  end loop;
+  if not found then
+    newlst:=newlst || jsonb_build_object('email',em,'role','در انتظار تایید','uid',uid);
+    changed:=true; res:='pending-added';
+  end if;
+  if changed then update records set data=jsonb_set(d,'{list}',newlst,true), updated_at=now() where id=MU; end if;
+  return res;
+end $$;
+grant execute on function public.sync_me() to authenticated;
+
 -- ---------- ۵) فایل‌ها (Storage) — فقط اعضای تاییدشده ----------
 do $$ declare p record; begin
   for p in select policyname from pg_policies where schemaname='storage' and tablename='objects'

@@ -1389,18 +1389,19 @@ function myRole(){
 function isPending(){return !!session&&myRole()===PENDING;}
 async function bootstrapAdmin(){
   if(!session)return;
-  const list=usersList();
-  const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
-  if(list.length&&inList)return; // قبلاً ثبت شده
-  // 🛡️ زیر RLS، تازه‌واردان نمی‌توانند مستقیم رکورد کاربران را بنویسند —
-  // از تابع امن سرور (enroll_me) استفاده می‌کنیم تا خودشان را «در انتظار تایید» ثبت کنند.
+  // 🛡️ در هر ورود، sync_me را صدا می‌زنیم (نه فقط بار اول): خودِ کاربر را با شناسه حسابش (uid)
+  // همگام می‌کند. اگر با «همان ایمیل» حساب را دوباره ساخته باشد (uid عوض شده)، نقشش به
+  // «در انتظار تایید» بازمی‌گردد و دوباره نیاز به تایید ادمین دارد. برای کاربر عادی بی‌اثر است.
   if(sb){
     try{
-      const {error}=await sb.rpc('enroll_me');
-      if(!error){await pullAll();return;}
+      let r=await sb.rpc('sync_me');
+      if(r.error)r=await sb.rpc('enroll_me'); // سازگاری با نسخه قدیم SQL
+      if(!r.error){await pullAll();return;}
     }catch(e){}
   }
   // حالت محلی یا نبود تابع سرور: مثل قبل
+  const list=usersList();
+  const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
   if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
   if(!inList)saveUsers([...list,{email:myEmail(),role:PENDING}]);
 }
