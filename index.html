@@ -1304,8 +1304,15 @@ function afterPull(){ // کاربرِ در انتظار تایید نباید د
   }
   saveLocal();setSync('ok','سینک شد');render();
 }
+async function pullMeta(){ // 🔑 رکوردهای متا (کاربران/گزینه‌ها/دسترسی) همیشه تازه گرفته شوند تا نقش‌ها و کاربران جدید فوراً دیده شوند
+  try{
+    const {data,error}=await sb.from('records').select('*').in('id',[MU,MO,MA]);
+    if(!error&&data)data.forEach(row=>{recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:new Date(row.updated_at).getTime(),del:!!row.deleted};});
+  }catch(e){}
+}
 async function pullAll(full){
   if(!sb||!session)return;
+  const wasPending=isPending();
   // ⚡ سینک تدریجی: فقط رکوردهای تغییرکرده از آخرین سینک را بگیر (سریع، حتی با ده‌ها هزار رکورد).
   // سینک کامل فقط بار اول یا هنگام ورود (full=true) — برای پاک‌سازی رکوردهای دیگر مجازنشده.
   const incremental=!full&&syncCursor;
@@ -1315,7 +1322,7 @@ async function pullAll(full){
     let from=0, page=1000;
     while(true){
       const {data,error}=await sb.from('records').select('*').gt('updated_at',syncCursor).order('updated_at',{ascending:true}).range(from,from+page-1);
-      if(error){setSync('err','خطای سینک');return;}
+      if(error){setSync('err','خطای سینک: '+String(error.message||'').slice(0,80));return;}
       (data||[]).forEach(row=>{
         const loc=recs[row.id], remoteU=new Date(row.updated_at).getTime();
         if(!loc||loc.u<=remoteU)recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};
@@ -1329,7 +1336,7 @@ async function pullAll(full){
     let from=0, page=1000;
     while(true){
       const {data,error}=await sb.from('records').select('*').order('updated_at',{ascending:true}).range(from,from+page-1);
-      if(error){setSync('err','خطای سینک');return;}
+      if(error){setSync('err','خطای سینک: '+String(error.message||'').slice(0,80));return;}
       (data||[]).forEach(row=>{fresh[row.id]={id:row.id,e:row.entity,d:row.data||{},u:new Date(row.updated_at).getTime(),del:row.deleted};
         if(row.updated_at>maxU)maxU=row.updated_at;});
       if(!data||data.length<page)break; from+=page;
@@ -1337,7 +1344,10 @@ async function pullAll(full){
     queue.forEach(id=>{if(recs[id]&&!fresh[id])fresh[id]=recs[id];}); // ویرایش‌های آفلاینِ ارسال‌نشده حفظ شود
     recs=fresh;
   }
+  await pullMeta(); // همیشه کاربران/نقش‌ها به‌روز
   syncCursor=maxU||new Date().toISOString();localStorage.setItem('xr_synccur',syncCursor);
+  // اگر کاربر تازه از «در انتظار تایید» به نقش واقعی ارتقا یافت، یک سینک کامل بزن تا داده‌های تازه‌مجاز بیایند
+  if(!full&&wasPending&&!isPending()){return pullAll(true);}
   afterPull();
 }
 let _flushing=false;
@@ -1423,9 +1433,16 @@ async function bootstrapAdmin(){
       let r=await sb.rpc('sync_me');
       if(r.error)r=await sb.rpc('enroll_me'); // سازگاری با نسخه قدیم SQL
       if(!r.error){await pullAll();return;}
+      // هیچ‌کدام از توابع سرور موجود نیست (فایل امنیتی به‌روز اجرا نشده):
+      // نوشتنِ مستقیمِ لیست کاربران توسط غیرادمین را امتحان نمی‌کنیم چون سرور ردش می‌کند و «خطای سینک» می‌دهد.
+      const list=usersList();
+      const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
+      if(!list.length&&isAdmin())saveUsers([{email:myEmail(),role:'ادمین'}]); // فقط راه‌اندازی اولین ادمین
+      else if(!inList)setSync('err','⚠️ ثبت‌نام ناقص — ادمین باید فایل امنیتی (sync_me) را در Supabase اجرا کند یا ایمیل شما را دستی اضافه کند');
+      return;
     }catch(e){}
   }
-  // حالت محلی یا نبود تابع سرور: مثل قبل
+  // حالت کاملاً محلی (بدون سرور)
   const list=usersList();
   const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
   if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
