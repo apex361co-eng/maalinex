@@ -1281,19 +1281,20 @@ async function initSupabase(){
   if(!window.supabase)return false;
   sb=window.supabase.createClient(cfg.url,cfg.key);
   const {data}=await sb.auth.getSession(); session=data.session;
-  // 🔒 اعتبارسنجی حساب با سرور: اگر حساب در Supabase حذف/غیرفعال شده باشد،
-  // نشست کش‌شده نامعتبر است — خروج و پاک‌سازی کش محلی تا داده قبلی دیده نشود.
+  // 🔒 اعتبارسنجی حساب — فقط اگر «قطعاً» حساب حذف/نامعتبر شده باشد، خروج می‌کنیم.
+  // مهم: هرگز روی خطای گذرا (شبکه/سرور) کش محلی را پاک نمی‌کنیم تا داده‌ی کاربر معتبر گم نشود.
   if(session){
     try{
       const u=await sb.auth.getUser();
-      if(u.error||!u.data||!u.data.user){
+      const err=u&&u.error;
+      const invalid=err&&( err.status===401 || err.status===403 ||
+        /user.*not.*(exist|found)|not.*found|invalid|jwt|sub claim|expired/i.test(String(err.message||'')) );
+      if(invalid){ // حساب واقعاً باطل است — فقط خروج (بدون پاک‌کردن کش؛ صفحه ورود می‌آید)
         try{await sb.auth.signOut();}catch(e){}
         session=null;
-        localStorage.removeItem('xr_data');recs={};
-        localStorage.removeItem('xr_q');queue=[];
-        localStorage.removeItem('xr_synccur');syncCursor='';
       }
-    }catch(e){/* شبکه قطع — با کش محلی ادامه (سرور همچنان نگهبان است) */}
+      // خطای مبهم یا موفق → نشست را نگه می‌داریم؛ امنیت واقعی سمت سرور (RLS) است.
+    }catch(e){/* شبکه قطع — با کش محلی ادامه */}
   }
   return !!session;
 }
@@ -1315,7 +1316,9 @@ async function pullAll(full){
   const wasPending=isPending();
   // ⚡ سینک تدریجی: فقط رکوردهای تغییرکرده از آخرین سینک را بگیر (سریع، حتی با ده‌ها هزار رکورد).
   // سینک کامل فقط بار اول یا هنگام ورود (full=true) — برای پاک‌سازی رکوردهای دیگر مجازنشده.
-  const incremental=!full&&syncCursor;
+  // 🛟 اگر کش محلی خالی است (مثلاً پاک شده)، حتماً سینک کامل بزن تا داده از سرور بازیابی شود.
+  const localCount=Object.keys(recs).filter(id=>id!==MU&&id!==MO&&id!==MA).length;
+  const incremental=!full&&syncCursor&&localCount>0;
   setSync('','در حال سینک…');
   let maxU=incremental?syncCursor:'';
   if(incremental){
@@ -1342,6 +1345,15 @@ async function pullAll(full){
       if(!data||data.length<page)break; from+=page;
     }
     queue.forEach(id=>{if(recs[id]&&!fresh[id])fresh[id]=recs[id];}); // ویرایش‌های آفلاینِ ارسال‌نشده حفظ شود
+    // 🛟 محافظ ضدفاجعه: اگر سرور «هیچ داده‌ای» برنگرداند ولی کش محلی پر بود و کاربر تاییدشده است،
+    // به‌جای پاک‌کردن همه‌چیز، کش را نگه می‌داریم و هشدار می‌دهیم (احتمالاً اختلال موقت/دسترسی سرور).
+    const freshData=Object.keys(fresh).filter(id=>id!==MU&&id!==MO&&id!==MA).length;
+    const localData=Object.keys(recs).filter(id=>id!==MU&&id!==MO&&id!==MA).length;
+    if(freshData===0 && localData>20 && !isPending()){
+      await pullMeta();
+      setSync('err','⚠️ سرور داده‌ای برنگرداند — کش محلی حفظ شد. اگر ادامه داشت، «🔄 بررسی مجدد (کامل)» را بزنید یا دسترسی سرور را بررسی کنید.');
+      render();return;
+    }
     recs=fresh;
   }
   await pullMeta(); // همیشه کاربران/نقش‌ها به‌روز
