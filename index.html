@@ -1920,6 +1920,26 @@ function impHint(e,f){
   if(f.t===REL)return 'نام دقیق رکورد در «'+E[f.r].n+'»'+(f.s?'':' — چند مورد با «،»');
   return 'متن';
 }
+/* 📥 مرکز ورود اکسل — همه‌ی قالب‌ها یکجا، هماهنگ با فیلدهای فعلی هر بخش */
+function impcenterHTML(){
+  const b=gBiz();
+  let h=`<div class="sec"><h3>📥 مرکز ورود اکسل</h3>
+    <p style="font-size:12px;color:var(--tx2);line-height:2">برای هر بخش «⬇️ قالب» را بگیر، در اکسل پر کن و «📂 بارگذاری» کن. ستون‌های قالب همیشه با **فیلدهای فعلیِ همان بخش** (شامل فیلدهای سفارشی) هماهنگ‌اند — هر فیلدی کم/زیاد کنی، قالب هم عوض می‌شود. تیک «به‌روزرسانی رکورد هم‌نام» برای رفرش روزانه بدون تکرار است. چند فایل را پشت‌سرهم بالا بریز.</p>
+    <div style="padding:8px 10px;border-radius:8px;background:var(--bg3);font-size:12px">${b&&recs[b]?`🏢 کسب‌وکار فعال: <b>${esc(recs[b].d.title)}</b> — رکوردهای واردشده که فیلد «کسب‌وکار» دارند، خودکار به همین وصل می‌شوند (لازم نیست در اکسل بیاد).`:'⚠️ کسب‌وکار فعالی انتخاب نشده؛ برای وصل خودکار، از بالای منو یک «کسب‌وکار فعال» انتخاب کن.'}</div></div>`;
+  allGroups().forEach(g=>{
+    const ents=Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&can('c',k)&&impFields(k).length);
+    if(!ents.length)return;
+    h+=`<div class="sec"><h3>${esc(g)}</h3><div class="tblwrap"><table><tbody>`;
+    ents.forEach(([k,v])=>{
+      h+=`<tr><td style="text-align:right">${v.ic} ${esc(v.n)} <span style="color:var(--tx2);font-size:11px">(${byE(k).length.toLocaleString('fa-IR')})</span></td>
+        <td style="white-space:nowrap;text-align:left">
+          <button class="btn gh sm" onclick="impTemplate('${k}')">⬇️ قالب</button>
+          <button class="btn sm" onclick="impOpen('${k}')">📂 بارگذاری</button></td></tr>`;
+    });
+    h+=`</tbody></table></div></div>`;
+  });
+  return h;
+}
 function impOpen(e){
   if(!can('c',e)){alert('اجازه ایجاد در این بخش را ندارید');return;}
   impState={e,valid:[],upsert:true};
@@ -1949,8 +1969,9 @@ function impOpen(e){
 window.impOpen=impOpen;
 function impClose(){document.getElementById('imp').classList.remove('show');impState=null;}
 window.impClose=impClose;
-function impTemplate(){
-  const e=impState.e, fs=impFields(e);
+function impTemplate(e){
+  e=e||(impState&&impState.e); if(!e)return;
+  const fs=impFields(e);
   const rows=[fs.map(f=>f.n),fs.map((f,i)=>(i===0?'راهنما: ':'')+impHint(e,f))];
   const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
   const a=document.createElement('a');
@@ -2070,17 +2091,22 @@ function impCommit(){
   if(!impState||!impState.valid.length)return;
   const e=impState.e, up=document.getElementById('imp_upsert').checked;
   let created=0,updated=0;
+  // 🏢 وصل خودکار رکوردهای واردشده به کسب‌وکار فعال (اگر فیلد کسب‌وکار دارند و در فایل پر نشده)
+  const _bf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='business');
+  const _autoBiz=(_bf&&gBiz()&&recs[gBiz()])?_bf.k:null;
   impState.valid.forEach(r=>{
     if(up&&r.existing){
       const ex=recs[r.existing.id];
-      ex.d={...ex.d,...r.d};ex.u=Date.now();ex.del=false;
+      ex.d={...ex.d,...r.d};if(_autoBiz&&!(ex.d[_autoBiz]&&ex.d[_autoBiz].length))ex.d[_autoBiz]=[gBiz()];ex.u=Date.now();ex.del=false;
       recs[ex.id]=ex;queue.push(ex.id);updated++;
     } else {
-      const id=uid();
-      recs[id]={id,e,d:{...r.d,_by:myEmail()},u:Date.now()};
+      const id=uid();const d={...r.d,_by:myEmail()};
+      if(_autoBiz&&!(d[_autoBiz]&&d[_autoBiz].length))d[_autoBiz]=[gBiz()];
+      recs[id]={id,e,d,u:Date.now()};
       queue.push(id);created++;
     }
   });
+  invalidateByE();
   saveQ();saveLocal();flush();
   impClose();render();
   alert('📥 ورود انجام شد: '+created.toLocaleString('fa-IR')+' رکورد جدید'+(updated?' و '+updated.toLocaleString('fa-IR')+' به‌روزرسانی':''));
@@ -4115,6 +4141,7 @@ function nav(){
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
   <div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`;
+  if(!isPending())h+=`<div class="nav-i ${view.type==='impcenter'?'on':''}" onclick="go('impcenter')">📥 مرکز ورود اکسل</div>`;
   // 🏢 انتخاب‌گر کسب‌وکار فعالِ سراسری (موقعیت قابل جابجایی: بالا / پایین / مخفی)
   if(bizSelPos()==='top')h+=bizSelectorHTML();
   navGroupsOrdered().forEach(g=>{
@@ -4183,6 +4210,7 @@ function render(){
     view.type==='users'?'👤 کاربران و دسترسی':
     view.type==='acl'?'🛡️ سطوح دسترسی':
     view.type==='schema'?'🧩 فیلدها و بخش‌ها':
+    view.type==='impcenter'?'📥 مرکز ورود اکسل':
     view.type==='modcfg'?'🧰 مدیریت محصول':
     view.type==='me'?'🗂️ میز کار من':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
@@ -4219,6 +4247,7 @@ function render(){
     else if(view.type==='users')c.innerHTML=usersHTML();
     else if(view.type==='acl')c.innerHTML=aclHTML();
     else if(view.type==='schema')c.innerHTML=schemaHTML();
+    else if(view.type==='impcenter')c.innerHTML=impcenterHTML();
     else if(view.type==='me')c.innerHTML=meHTML();
     else if(view.type==='gdash')c.innerHTML=gdashHTML();
     else if(view.type==='cal')c.innerHTML=calHTML();
