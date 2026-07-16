@@ -241,7 +241,6 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     </details>
     <div class="err" id="l_err"></div>
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
-    <button class="btn gh" style="width:100%;margin-top:8px" onclick="localOnly()">استفاده بدون حساب (فقط این دستگاه)</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
   <div class="credit">معماری و ساخت: علی خلج</div>
@@ -1282,22 +1281,37 @@ async function initSupabase(){
   if(!window.supabase)return false;
   sb=window.supabase.createClient(cfg.url,cfg.key);
   const {data}=await sb.auth.getSession(); session=data.session;
+  // 🔒 اعتبارسنجی حساب با سرور: اگر حساب در Supabase حذف/غیرفعال شده باشد،
+  // نشست کش‌شده نامعتبر است — خروج و پاک‌سازی کش محلی تا داده قبلی دیده نشود.
+  if(session){
+    try{
+      const u=await sb.auth.getUser();
+      if(u.error||!u.data||!u.data.user){
+        try{await sb.auth.signOut();}catch(e){}
+        session=null;
+        localStorage.removeItem('xr_data');recs={};
+        localStorage.removeItem('xr_q');queue=[];
+      }
+    }catch(e){/* شبکه قطع — با کش محلی ادامه (سرور همچنان نگهبان است) */}
+  }
   return !!session;
 }
 async function pullAll(){
   if(!sb||!session)return;
   setSync('','در حال سینک…');
+  // 🔑 سرور منبع اصلی است: یک نقشه‌ی تازه می‌سازیم و کش محلی را کامل جایگزین می‌کنیم،
+  // تا رکوردهایی که دیگر برای این کاربر مجاز نیستند (حذف‌شده/خارج از محدوده) باقی نمانند.
+  const fresh={};
   let from=0, page=1000;
   while(true){
     const {data,error}=await sb.from('records').select('*').range(from,from+page-1);
-    if(error){setSync('err','خطای سینک');return;}
-    (data||[]).forEach(row=>{
-      const loc=recs[row.id];
-      const remoteU=new Date(row.updated_at).getTime();
-      if(!loc||loc.u<=remoteU){recs[row.id]={id:row.id,e:row.entity,d:row.data||{},u:remoteU,del:row.deleted};}
-    });
+    if(error){setSync('err','خطای سینک');return;} // خطا: کش فعلی دست‌نخورده می‌ماند (حالت آفلاین)
+    (data||[]).forEach(row=>{fresh[row.id]={id:row.id,e:row.entity,d:row.data||{},u:new Date(row.updated_at).getTime(),del:row.deleted};});
     if(!data||data.length<page)break; from+=page;
   }
+  // ویرایش‌های آفلاینِ ارسال‌نشده (در صف) را از دست ندهیم
+  queue.forEach(id=>{if(recs[id]&&!fresh[id])fresh[id]=recs[id];});
+  recs=fresh;
   saveLocal();setSync('ok','سینک شد');render();
 }
 let _flushing=false;
@@ -1554,7 +1568,9 @@ async function authAction(){
     if(!confirm('از حساب خارج می‌شوید؟'))return;
     try{await sb.auth.signOut();}catch(e){}
     session=null;if(rt){try{sb.removeChannel(rt);}catch(e){}rt=null;}
-    setSync('off','خارج شدید');whoami();
+    // 🧹 پاک‌سازی کش محلی هنگام خروج تا کاربر بعدی/حذف‌شده داده قبلی را نبیند
+    recs={};queue=[];localStorage.removeItem('xr_data');localStorage.removeItem('xr_q');
+    setSync('off','خارج شدید');nav();whoami();
     fillLoginForm();document.getElementById('login').classList.add('show');
   } else openSettings();
 }
@@ -5205,7 +5221,15 @@ async function doLogin(){
     if(authMode==='up'){
       if(pw.length<6){errEl.textContent='رمز عبور حداقل ۶ کاراکتر باشد';return;}
       const su=await sb.auth.signUp({email:em,password:pw});
-      if(su.error){errEl.textContent='ثبت‌نام ناموفق: '+su.error.message;return;}
+      if(su.error){
+        const m=su.error.message||'';
+        if(/rate limit|too many|over_email_send/i.test(m))
+          errEl.innerHTML='⏳ به دلیل محدودیت ارسال ایمیلِ سرور، فعلاً ثبت‌نام ممکن نیست. چند دقیقه دیگر دوباره امتحان کنید،<br>یا ادمین در Supabase تاییدِ ایمیل را خاموش کند (راهنمای نصب).';
+        else if(/already registered|already exists/i.test(m))
+          errEl.textContent='این ایمیل قبلاً ثبت شده — از دکمه «ورود» استفاده کنید.';
+        else errEl.textContent='ثبت‌نام ناموفق: '+m;
+        return;
+      }
       session=su.data.session;
       if(!session){errEl.textContent='حساب ساخته شد ✅ اگر تایید ایمیل فعال است، ایمیل‌تان را تایید و سپس وارد شوید.';setAuthMode('in');return;}
     }else{
@@ -5457,7 +5481,7 @@ loadLocal();render();fillLoginForm();checkDraft();
   if(cfg.url&&cfg.key){
     const ok=await initSupabase().catch(()=>false);
     if(ok){await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();}
-    else if(cfg.local!==1)document.getElementById('login').classList.add('show');
+    else if(cfg.local!==1){render();whoami();document.getElementById('login').classList.add('show');} // نشست نامعتبر — کش پاک شد، ورود لازم است
     else setSync('off','بدون سینک (محلی)');
   } else if(cfg.local===1){setSync('off','بدون سینک (محلی)');}
   else document.getElementById('login').classList.add('show');
