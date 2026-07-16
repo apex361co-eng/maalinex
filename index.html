@@ -159,6 +159,13 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   border:1px solid rgba(212,175,55,.3);box-shadow:0 18px 60px rgba(0,0,0,.6)}
 #imp.show{display:block}
 #imp table{font-size:11px}
+#arrange{position:fixed;top:5%;left:50%;transform:translateX(-50%);z-index:80;width:min(560px,95vw);max-height:88vh;overflow:auto;padding:16px;border-radius:16px;display:none;
+  background:rgba(18,22,19,.98);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  border:1px solid rgba(212,175,55,.3);box-shadow:0 18px 60px rgba(0,0,0,.6)}
+#arrange.show{display:block}
+.arow{display:flex;align-items:center;gap:8px;padding:7px 9px;margin:4px 0;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03)}
+.arow .an{flex:1;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow button{padding:2px 8px;font-size:13px}
 .imp-ok{color:var(--ok)}.imp-bad{color:var(--bad)}
 .remitem{display:flex;gap:7px;align-items:center;padding:7px 8px;border-radius:8px;background:var(--bg);margin-bottom:5px;font-size:12.5px}
 .remitem.due{border:1px solid var(--bad);animation:pulse 1.2s infinite}
@@ -248,12 +255,15 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
       <span id="ttl">اتاق کنترل</span><span class="sp"></span>
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
-      <button class="btn gh sm" id="rembtn" onclick="toggleRemind()" title="یادآوری‌ها">⏰</button>
-      <button class="btn gh sm" id="mycalbtn" onclick="toggleMyCal()" title="تقویم من — برنامه روزهای پیش رو">📅</button>
-      <button class="btn gh sm" id="laybtn" onclick="toggleLayMode()" title="جابجایی المان‌های این صفحه (درگ‌اند‌دراپ)" style="display:none">🧲</button>
-      <button class="btn gh sm" id="fxbtn" onclick="setFx()" title="نرخ تسعیر دلار" style="display:none">💱</button>
-      <button class="btn gh sm" id="quickbtn" onclick="quickNote()" title="ثبت سریع نکته در بانک دانش">⚡ نکته</button>
-      <button class="btn gh sm" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
+      <span id="topmv_wrap" style="display:contents">
+      <button class="btn gh sm topmv" id="rembtn" onclick="toggleRemind()" title="یادآوری‌ها">⏰</button>
+      <button class="btn gh sm topmv" id="mycalbtn" onclick="toggleMyCal()" title="تقویم من — برنامه روزهای پیش رو">📅</button>
+      <button class="btn gh sm topmv" id="laybtn" onclick="toggleLayMode()" title="جابجایی المان‌های این صفحه (درگ‌اند‌دراپ)" style="display:none">🧲</button>
+      <button class="btn gh sm topmv" id="fxbtn" onclick="setFx()" title="نرخ تسعیر دلار" style="display:none">💱</button>
+      <button class="btn gh sm topmv" id="quickbtn" onclick="quickNote()" title="ثبت سریع نکته در بانک دانش">⚡ نکته</button>
+      <button class="btn gh sm topmv" id="pomobtn" onclick="togglePomo()">🍅 پومودورو</button>
+      </span>
+      <button class="btn gh sm" id="arrbtn" onclick="openArrange()" title="چیدمان منوها">🔀</button>
       <button class="btn gh sm" id="authbtn" onclick="authAction()">ورود</button>
       <button class="btn gh sm" onclick="openSettings()">⚙️</button>
     </div>
@@ -269,6 +279,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   <div id="mycal_list" style="max-height:380px;overflow:auto;margin-top:10px;text-align:right"></div>
 </div>
 <div id="imp"></div>
+<div id="arrange"></div>
 <div id="remind">
   <div style="display:flex;align-items:center"><b style="font-size:14px">⏰ یادآوری‌ها</b><span style="flex:1"></span>
     <span onclick="toggleRemind()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
@@ -1535,6 +1546,8 @@ function whoami(){
   ['quickbtn','pomobtn','rembtn','mycalbtn'].forEach(i=>{const b=document.getElementById(i);if(b)b.style.display=(pend||(bmap[i]&&!canView(bmap[i])))?'none':'';});
   const fb=document.getElementById('fxbtn');if(fb)fb.style.display=(!pend&&isAdmin())?'':'none';
   const lb=document.getElementById('laybtn');if(lb){lb.style.display=(!pend&&canSecLayout())?'':'none';lb.style.background=layMode?'rgba(212,175,55,.3)':'';}
+  const ar=document.getElementById('arrbtn');if(ar)ar.style.display=pend?'none':'';
+  try{applyTopOrder();}catch(e){} // اعمال ترتیب دلخواه دکمه‌های نوار بالا
 }
 async function authAction(){
   if(session){
@@ -2610,6 +2623,71 @@ function toggleGrp(g){
   try{localStorage.setItem('xr_navcol',JSON.stringify(navCol));}catch(e){}
   nav();
 }
+/* 🔀 ترتیب دلخواه گروه‌های منوی کناری */
+function allGroups(){return GROUPS.concat(Object.values(E).some(v=>v.grp==='بخش‌های سفارشی')?['بخش‌های سفارشی']:[]);}
+function navGroupsOrdered(){
+  const all=allGroups();
+  let ord=[];try{ord=JSON.parse(localStorage.getItem('xr_navord')||'[]');}catch(e){ord=[];}
+  const kept=ord.filter(g=>all.includes(g));
+  return kept.concat(all.filter(g=>!kept.includes(g))); // گروه‌های جدید ته لیست
+}
+function moveGroup(g,dir){
+  const cur=navGroupsOrdered();
+  const i=cur.indexOf(g), j=i+dir;
+  if(i<0||j<0||j>=cur.length)return;
+  const t=cur[i];cur[i]=cur[j];cur[j]=t;
+  try{localStorage.setItem('xr_navord',JSON.stringify(cur));}catch(e){}
+  nav();drawArrange();
+}
+/* 🔀 ترتیب دلخواه دکمه‌های نوار بالا */
+const TOP_LABELS={rembtn:'⏰ یادآوری‌ها',mycalbtn:'📅 تقویم من',laybtn:'🧲 جابجایی المان صفحه',fxbtn:'💱 نرخ دلار',quickbtn:'⚡ ثبت نکته',pomobtn:'🍅 پومودورو'};
+function topOrder(){
+  const all=['rembtn','mycalbtn','laybtn','fxbtn','quickbtn','pomobtn'];
+  let ord=[];try{ord=JSON.parse(localStorage.getItem('xr_topord')||'[]');}catch(e){ord=[];}
+  const kept=ord.filter(x=>all.includes(x));
+  return kept.concat(all.filter(x=>!kept.includes(x)));
+}
+function applyTopOrder(){
+  const wrap=document.getElementById('topmv_wrap');if(!wrap)return;
+  topOrder().forEach(id=>{const b=document.getElementById(id);if(b)wrap.appendChild(b);});
+}
+function moveTop(id,dir){
+  const cur=topOrder();const i=cur.indexOf(id),j=i+dir;
+  if(i<0||j<0||j>=cur.length)return;
+  const t=cur[i];cur[i]=cur[j];cur[j]=t;
+  try{localStorage.setItem('xr_topord',JSON.stringify(cur));}catch(e){}
+  applyTopOrder();drawArrange();
+}
+function resetMenus(){
+  if(!confirm('چیدمان منوی کناری و نوار بالا به حالت پیش‌فرض برگردد؟'))return;
+  localStorage.removeItem('xr_navord');localStorage.removeItem('xr_topord');
+  nav();applyTopOrder();drawArrange();
+}
+function openArrange(){document.getElementById('arrange').classList.add('show');drawArrange();}
+function closeArrange(){document.getElementById('arrange').classList.remove('show');}
+function drawArrange(){
+  const el=document.getElementById('arrange');if(!el)return;
+  const groups=navGroupsOrdered();
+  const rowG=(g,i)=>`<div class="arow">
+    <span style="color:var(--tx2)">☰</span><span class="an">${esc(g)}</span>
+    <button class="btn gh" onclick="moveGroup('${g.replace(/'/g,"\\'")}',-1)" ${i===0?'disabled style=opacity:.3':''}>▲</button>
+    <button class="btn gh" onclick="moveGroup('${g.replace(/'/g,"\\'")}',1)" ${i===groups.length-1?'disabled style=opacity:.3':''}>▼</button></div>`;
+  const tops=topOrder();
+  const rowT=(id,i)=>`<div class="arow">
+    <span style="color:var(--tx2)">☰</span><span class="an">${TOP_LABELS[id]||id}</span>
+    <button class="btn gh" onclick="moveTop('${id}',-1)" ${i===0?'disabled style=opacity:.3':''}>▲</button>
+    <button class="btn gh" onclick="moveTop('${id}',1)" ${i===tops.length-1?'disabled style=opacity:.3':''}>▼</button></div>`;
+  el.innerHTML=`<div style="display:flex;align-items:center;margin-bottom:10px">
+      <b style="font-size:15px">🔀 چیدمان منوها</b><span style="flex:1"></span>
+      <span onclick="closeArrange()" style="cursor:pointer;color:var(--tx2)">✕</span></div>
+    <p style="font-size:11.5px;color:var(--tx2);margin-bottom:10px">ترتیب گروه‌های منوی کناری و دکمه‌های نوار بالا را با ▲▼ تغییر دهید. تنظیمات روی همین دستگاه ذخیره می‌شود.</p>
+    <h3 style="font-size:13px;margin:6px 0">📚 گروه‌های منوی کناری</h3>${groups.map(rowG).join('')}
+    <h3 style="font-size:13px;margin:12px 0 6px">🔝 دکمه‌های نوار بالا</h3>${tops.map(rowT).join('')}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn bad sm" onclick="resetMenus()">↩︎ بازگردانی پیش‌فرض</button>
+      <span style="flex:1"></span><button class="btn sm" onclick="closeArrange()">پایان</button></div>`;
+}
+window.openArrange=openArrange;window.moveGroup=moveGroup;window.moveTop=moveTop;window.resetMenus=resetMenus;window.closeArrange=closeArrange;
 function nav(){
   const el=document.getElementById('nav');
   if(isPending()){el.innerHTML='';return;}
@@ -2620,7 +2698,7 @@ function nav(){
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>`;
-  GROUPS.concat(Object.values(E).some(v=>v.grp==='بخش‌های سفارشی')?['بخش‌های سفارشی']:[]).forEach(g=>{
+  navGroupsOrdered().forEach(g=>{
     const ents=Object.entries(E).filter(([k,v])=>v.grp===g&&canSee(k));
     let items='';
     if(g==='رشد شخصی'&&canView('gdash'))items+=`<div class="nav-i ${view.type==='gdash'?'on':''}" onclick="go('gdash')">✨ داشبورد رشد</div>`;
