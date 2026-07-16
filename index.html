@@ -1525,6 +1525,10 @@ const LOWSET=['task','idea','leave'];
 function myEmail(){return session&&session.user?session.user.email:'local';}
 function usersList(){const m=recs[MU];return (m&&!m.del&&m.d.list)||[];}
 function saveUsers(list){const m=recs[MU]||{id:MU,e:'_users',d:{}};m.d={...m.d,list};m.u=Date.now();m.del=false;put(m);}
+/* 👑 مالک نسخه = اولین کاربری که ثبت‌نام کرده. فقط او «مدیریت محصول» را می‌بیند. */
+function ownerEmail(){const m=recs[MU];if(m&&!m.del&&m.d.owner)return m.d.owner;const l=usersList();return l.length?(l[0].email||''):'';}
+function markOwner(email){const m=recs[MU]||{id:MU,e:'_users',d:{}};if(m.d.owner)return;m.d={...m.d,owner:email};m.u=Date.now();m.del=false;put(m);}
+function isOwnerUser(){if(!session)return true;const o=(ownerEmail()||'').toLowerCase();return !o||o===myEmail().toLowerCase();}
 const PENDING='در انتظار تایید';
 function myRole(){
   if(!session)return 'ادمین'; // حالت محلی
@@ -1548,7 +1552,7 @@ async function bootstrapAdmin(){
       // نوشتنِ مستقیمِ لیست کاربران توسط غیرادمین را امتحان نمی‌کنیم چون سرور ردش می‌کند و «خطای سینک» می‌دهد.
       const list=usersList();
       const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
-      if(!list.length&&isAdmin())saveUsers([{email:myEmail(),role:'ادمین'}]); // فقط راه‌اندازی اولین ادمین
+      if(!list.length&&isAdmin()){saveUsers([{email:myEmail(),role:'ادمین'}]);markOwner(myEmail());} // فقط راه‌اندازی اولین ادمین (= مالک نسخه)
       else if(!inList)setSync('err','⚠️ ثبت‌نام ناقص — ادمین باید فایل امنیتی (sync_me) را در Supabase اجرا کند یا ایمیل شما را دستی اضافه کند');
       return;
     }catch(e){}
@@ -1556,7 +1560,7 @@ async function bootstrapAdmin(){
   // حالت کاملاً محلی (بدون سرور)
   const list=usersList();
   const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
-  if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
+  if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);markOwner(myEmail());return;}
   if(!inList)saveUsers([...list,{email:myEmail(),role:PENDING}]);
 }
 /* --- ماتریس دسترسی سفارشی (قابل تنظیم توسط ادمین) --- */
@@ -1747,6 +1751,7 @@ function applyBrand(){
 }
 let ownerUnlocked=false;
 function openModcfg(){
+  if(!isOwnerUser()){alert('این بخش فقط برای مالک نسخه (اولین کاربر ثبت‌نام‌شده) در دسترس است.');return;}
   if(!ownerUnlocked){
     const p=prompt('رمز مالک محصول را وارد کنید:');
     if(p===null)return;
@@ -1756,6 +1761,7 @@ function openModcfg(){
   go('modcfg');
 }
 function modcfgHTML(){
+  if(!isOwnerUser()||!ownerUnlocked)return `<div class="empty">این بخش فقط برای مالک نسخه در دسترس است.</div>`;
   const b=brand();const mt=custMeta();
   const inp0='style="width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);margin-top:5px"';
   const lbl0='style="font-size:12px;color:var(--tx2)"';
@@ -4138,7 +4144,7 @@ function nav(){
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
-  <div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`;
+  ${isOwnerUser()?`<div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`:''}`;
   if(!isPending())h+=`<div class="nav-i ${view.type==='impcenter'?'on':''}" onclick="go('impcenter')">📥 مرکز ورود اکسل</div>`;
   // 🏢 انتخاب‌گر کسب‌وکار فعالِ سراسری (موقعیت قابل جابجایی: بالا / پایین / مخفی)
   if(bizSelPos()==='top')h+=bizSelectorHTML();
