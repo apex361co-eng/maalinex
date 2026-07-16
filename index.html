@@ -241,6 +241,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     </details>
     <div class="err" id="l_err"></div>
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
+    <button class="btn gh" style="width:100%;margin-top:8px" onclick="localOnly()">استفاده بدون حساب (فقط این دستگاه)</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
   <div class="credit">معماری و ساخت: علی خلج</div>
@@ -5204,15 +5205,7 @@ async function doLogin(){
     if(authMode==='up'){
       if(pw.length<6){errEl.textContent='رمز عبور حداقل ۶ کاراکتر باشد';return;}
       const su=await sb.auth.signUp({email:em,password:pw});
-      if(su.error){
-        const m=su.error.message||'';
-        if(/rate limit|too many|over_email_send/i.test(m))
-          errEl.innerHTML='⏳ به دلیل محدودیت ارسال ایمیلِ سرور، فعلاً ثبت‌نام ممکن نیست. چند دقیقه دیگر دوباره امتحان کنید،<br>یا ادمین در Supabase تاییدِ ایمیل را خاموش کند (راهنمای نصب).';
-        else if(/already registered|already exists/i.test(m))
-          errEl.textContent='این ایمیل قبلاً ثبت شده — از دکمه «ورود» استفاده کنید.';
-        else errEl.textContent='ثبت‌نام ناموفق: '+m;
-        return;
-      }
+      if(su.error){errEl.textContent='ثبت‌نام ناموفق: '+su.error.message;return;}
       session=su.data.session;
       if(!session){errEl.textContent='حساب ساخته شد ✅ اگر تایید ایمیل فعال است، ایمیل‌تان را تایید و سپس وارد شوید.';setAuthMode('in');return;}
     }else{
