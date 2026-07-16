@@ -158,10 +158,14 @@ revoke all on public.records from anon;
 -- ---------- ۳) سیاست‌ها ----------
 -- خواندن: فقط اعضای تاییدشده، بخشِ مخفی‌نشده، داخل محدوده داده، با حفظ حریم شخصی
 create policy rec_select on public.records for select to authenticated using (
-  app_approved()
-  and (app_is_meta(id) or app_ent_level(entity)<>'hide')
-  and app_priv_ok(data)
-  and app_in_scope(id,entity,data)
+  -- رکورد کاربران برای هر واردشده خواندنی است تا وضعیت خودش (تاییدشده/در انتظار) را بداند (لازمِ ثبت‌نام)
+  id='00000000-0000-4000-8000-00000000aaaa'
+  or (
+    app_approved()
+    and (app_is_meta(id) or app_ent_level(entity)<>'hide')
+    and app_priv_ok(data)
+    and app_in_scope(id,entity,data)
+  )
 );
 
 -- درج: عضو تاییدشده؛ متا فقط ادمین (به‌جز ساخت اولیه)؛ سطح read/hide حق درج ندارد؛ _by فقط خود فرد
@@ -209,6 +213,32 @@ end $$;
 drop trigger if exists trg_app_guard on public.records;
 create trigger trg_app_guard before update on public.records
   for each row execute function public.app_guard_update();
+
+-- ---------- ۴٫۵) ثبت‌نام امن تازه‌واردان (enroll_me) ----------
+-- زیر RLS، کاربر جدید نمی‌تواند مستقیماً رکورد کاربران (متا) را بنویسد.
+-- این تابع فقط «ایمیل خودش» را با نقش «در انتظار تایید» به لیست اضافه می‌کند
+-- (اگر لیست خالی باشد، اولین نفر ادمین می‌شود). نمی‌تواند نقش کسی را عوض کند یا کسی را حذف کند.
+create or replace function public.enroll_me() returns text
+language plpgsql security definer set search_path=public as $$
+declare em text; d jsonb; lst jsonb; MU uuid:='00000000-0000-4000-8000-00000000aaaa';
+begin
+  em:=app_email(); if em='' then return 'no-auth'; end if;
+  select data into d from records where id=MU and not deleted;
+  if d is null then
+    insert into records(id,entity,data,updated_at,deleted)
+      values(MU,'_users', jsonb_build_object('list', jsonb_build_array(jsonb_build_object('email',em,'role','ادمین'))), now(), false)
+      on conflict (id) do update set data=excluded.data, updated_at=now(), deleted=false;
+    return 'admin-bootstrap';
+  end if;
+  lst:=coalesce(d->'list','[]'::jsonb);
+  if exists(select 1 from jsonb_array_elements(lst) x where lower(coalesce(x->>'email',''))=em) then
+    return 'already';
+  end if;
+  update records set data=jsonb_set(d,'{list}', lst || jsonb_build_array(jsonb_build_object('email',em,'role','در انتظار تایید')), true),
+    updated_at=now() where id=MU;
+  return 'pending-added';
+end $$;
+grant execute on function public.enroll_me() to authenticated;
 
 -- ---------- ۵) فایل‌ها (Storage) — فقط اعضای تاییدشده ----------
 do $$ declare p record; begin

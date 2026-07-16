@@ -1362,14 +1362,22 @@ function myRole(){
   return PENDING; // ثبت‌نامی جدید تا تایید ادمین هیچ دسترسی‌ای ندارد
 }
 function isPending(){return !!session&&myRole()===PENDING;}
-function bootstrapAdmin(){
+async function bootstrapAdmin(){
   if(!session)return;
   const list=usersList();
-  if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
-  // ثبت خودکار تازه‌واردها در لیست، با وضعیت «در انتظار تایید» تا ادمین ببیندشان
-  if(!list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase())){
-    saveUsers([...list,{email:myEmail(),role:PENDING}]);
+  const inList=list.find(x=>x.email&&x.email.toLowerCase()===myEmail().toLowerCase());
+  if(list.length&&inList)return; // قبلاً ثبت شده
+  // 🛡️ زیر RLS، تازه‌واردان نمی‌توانند مستقیم رکورد کاربران را بنویسند —
+  // از تابع امن سرور (enroll_me) استفاده می‌کنیم تا خودشان را «در انتظار تایید» ثبت کنند.
+  if(sb){
+    try{
+      const {error}=await sb.rpc('enroll_me');
+      if(!error){await pullAll();return;}
+    }catch(e){}
   }
+  // حالت محلی یا نبود تابع سرور: مثل قبل
+  if(!list.length){saveUsers([{email:myEmail(),role:'ادمین'}]);return;}
+  if(!inList)saveUsers([...list,{email:myEmail(),role:PENDING}]);
 }
 /* --- ماتریس دسترسی سفارشی (قابل تنظیم توسط ادمین) --- */
 function acl(){const m=recs[MA];return (m&&!m.del&&m.d)||{};}
@@ -4605,6 +4613,10 @@ function usersHTML(){
     <select id="nu_role" style="max-width:160px">${aclRoles().map(r=>`<option>${r}</option>`).join('')}</select>
     <button class="btn" onclick="addUser()">افزودن کاربر</button>
   </div></div>
+  <div class="sec" style="border-inline-start:3px solid var(--bad)"><h3>🧹 پاک‌سازی و ثبت‌نام مجدد کاربران</h3>
+  <p style="font-size:12px;color:var(--tx2);line-height:2">با این کار، همه کاربران به‌جز خودتان از لیست پاک می‌شوند. از آن پس هر کسی که وارد شود دوباره در حالت «در انتظار تایید» قرار می‌گیرد و تا وقتی شما نقش ندهید، هیچ داده‌ای نمی‌بیند — یعنی عملاً باید دوباره از صفر تایید/ثبت‌نام شوند. داده‌های ثبت‌شده حذف نمی‌شوند، فقط دسترسی افراد صفر می‌شود.</p>
+  <button class="btn bad" onclick="resetUsers()">🧹 حذف همه کاربران به‌جز خودم</button>
+  <p style="font-size:11px;color:var(--tx2);margin-top:10px">🔑 اگر می‌خواهید حساب ورود افراد هم کاملاً حذف شود (تا با رمز جدید از نو ثبت‌نام کنند)، در داشبورد Supabase → Authentication → Users آن‌ها را حذف کنید (حساب خودتان را نگه دارید). راهنمای کامل در فایل «راهنمای-نصب».</p></div>
   <div class="sec"><h3>📋 شرح سطوح دسترسی</h3><div style="font-size:13px;color:var(--tx2);line-height:2.1">
   <b style="color:var(--tx)">ادمین:</b> همه‌کاره + مدیریت کاربران و تنظیمات.<br>
   <b style="color:var(--tx)">مدیرارشد:</b> ایجاد، ویرایش و حذف در همه بخش‌ها.<br>
@@ -4614,6 +4626,16 @@ function usersHTML(){
   <b style="color:var(--tx)">کارشناس:</b> ایجاد و ویرایش فقط تسک‌ها، ایده‌ها، KPI و مرخصی‌ها.<br>
   <b style="color:var(--tx)">کاربر:</b> مشاهده همه‌چیز + ثبت مرخصی و ایده.</div></div>`;
   return h;
+}
+function resetUsers(){
+  if(!isAdmin()){alert('فقط ادمین');return;}
+  const me=myEmail().toLowerCase();
+  const mine=usersList().find(u=>(u.email||'').toLowerCase()===me)||{email:myEmail(),role:'ادمین'};
+  mine.role='ادمین'; // مطمئن شویم خودتان ادمین می‌مانید تا لیست خالی نشود
+  if(!confirm('همه کاربران به‌جز خودتان («'+myEmail()+'») از لیست دسترسی حذف شوند؟\nبعد از این، بقیه هنگام ورود «در انتظار تایید» می‌شوند و چیزی نمی‌بینند تا دوباره نقش بگیرند.\nداده‌ها حذف نمی‌شوند.'))return;
+  saveUsers([mine]);
+  alert('✅ انجام شد. فقط شما (ادمین) باقی ماندید. بقیه با ورود بعدی باید دوباره تایید شوند.');
+  render();
 }
 function setRole(i,role){const l=usersList().slice();l[i].role=role;saveUsers(l);}
 function rmUser(i){const l=usersList().slice();if(!confirm('حذف '+l[i].email+'؟'))return;l.splice(i,1);saveUsers(l);}
