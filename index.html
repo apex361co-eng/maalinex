@@ -4491,6 +4491,24 @@ const CEO_SERIES=[
  {k:'ordcount',n:'تعداد فاکتور',f:(b,f,t)=>bizInvReal(b).filter(v=>{const d=ds(v.d.date)||'';return (!f||d>=f)&&(!t||d<=t);}).length},
 ];
 function ceoJShort(iso){const s=iso2jstr(iso)||'';const p=s.split(/[\/ ]/);return p.length>=3?p[1]+'/'+p[2]:s;}
+/* 📅 دوره‌های تقویمی شمسی برای داشبورد مدیرعامل: هفتگی │ ماهانه │ فصلی │ سالانه */
+const JM_NAMES=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JQ_NAMES=['اول (بهار)','دوم (تابستان)','سوم (پاییز)','چهارم (زمستان)'];
+function _jgIso(jy,jm,jd){const g=j2g(jy,jm,jd);return g[0]+'-'+String(g[1]).padStart(2,'0')+'-'+String(g[2]).padStart(2,'0');}
+function _faY(jy){return jy.toLocaleString('fa-IR',{useGrouping:false});}
+function ceoPeriodWin(mode,jy,n){ // بازه [from,to] میلادی + برچسب فارسی یک دوره تقویمی
+  if(mode==='w'){const from=_isoAdd(_jgIso(jy,1,1),(n-1)*7);return {from,to:_isoAdd(from,6),label:'هفته '+n.toLocaleString('fa-IR')+' — '+_faY(jy)};}
+  if(mode==='m'){const from=_jgIso(jy,n,1);const nx=n===12?_jgIso(jy+1,1,1):_jgIso(jy,n+1,1);return {from,to:_isoAdd(nx,-1),label:JM_NAMES[n-1]+' '+_faY(jy)};}
+  if(mode==='q'){const m1=(n-1)*3+1;const from=_jgIso(jy,m1,1);const nx=n===4?_jgIso(jy+1,1,1):_jgIso(jy,m1+3,1);return {from,to:_isoAdd(nx,-1),label:'سه‌ماهه '+JQ_NAMES[n-1].split(' ')[0]+' '+_faY(jy)};}
+  if(mode==='y'){return {from:_jgIso(jy,1,1),to:_isoAdd(_jgIso(jy+1,1,1),-1),label:'سال '+_faY(jy)};}
+  return null;
+}
+function ceoPeriodPrev(mode,jy,n){ // دوره‌ی بلافاصله قبلی (با چرخش سال)
+  if(mode==='w')return n>1?[jy,n-1]:[jy-1,52];
+  if(mode==='m')return n>1?[jy,n-1]:[jy-1,12];
+  if(mode==='q')return n>1?[jy,n-1]:[jy-1,4];
+  return [jy-1,1];
+}
 /* نمودار میله‌ای عمومی برای یک شاخص روی n دوره‌ی متوالی به طول P روز */
 function ceoBarsSVG(pts,pct){
   const W=620,H=190,pl=12,pr=12,pt=18,pb=34,iw=W-pl-pr,ih=H-pt-pb;
@@ -4503,28 +4521,43 @@ function ceoBarsSVG(pts,pct){
       <text x="${cx.toFixed(1)}" y="${H-10}" font-size="9" fill="var(--tx2)" text-anchor="middle">${esc(p.label)}</text>`;}).join('');
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block"><line x1="${pl}" y1="${zero}" x2="${W-pr}" y2="${zero}" stroke="var(--line)"/>${bars}</svg>`;
 }
-function ceoChartsHTML(b,P){
+function ceoChartsHTML(b,wins,winDesc){
   const sel=ceoChartSel();if(!sel.length)return '';
-  const t0=_isoToday(),N=6; // ۶ دوره‌ی متوالی
-  const wins=[];for(let i=N-1;i>=0;i--){const to=_isoAdd(t0,-P*i);const from=_isoAdd(to,-P+1);wins.push({from,to,label:ceoJShort(to)});}
   const blocks=sel.map(k=>{const s=CEO_SERIES.find(x=>x.k===k);if(!s)return '';
     const pts=wins.map(w=>({label:w.label,v:s.f(b,w.from,w.to)}));
     const has=pts.some(p=>p.v);
-    return `<div class="sec"><h3 style="font-size:13px">📊 ${esc(s.n)} <span style="font-size:10px;color:var(--tx2);font-weight:400">— ${N.toLocaleString('fa-IR')} دوره‌ی ${P.toLocaleString('fa-IR')} روزه اخیر</span></h3>
+    return `<div class="sec"><h3 style="font-size:13px">📊 ${esc(s.n)} <span style="font-size:10px;color:var(--tx2);font-weight:400">— ${esc(winDesc)}</span></h3>
       ${has?ceoBarsSVG(pts,s.pct):'<div class="empty">داده‌ای برای این بازه نیست</div>'}</div>`;}).join('');
   return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:8px">${blocks}</div>`;
 }
 function ceodashHTML(){
   const b=gBiz();const t0=_isoToday();
   if(!view.ct)view.ct='prof';
-  if(!view.cp)view.cp=7;
-  const P=+view.cp; // طول دوره: ۷ یا ۳۰ روز
-  const from=_isoAdd(t0,-P+1), prevFrom=_isoAdd(t0,-2*P+1), prevTo=_isoAdd(t0,-P);
-  const lines=ceoSaleLines(b,from,t0), prevLines=ceoSaleLines(b,prevFrom,prevTo);
+  // 📅 حالت دوره: d7/d30 نسبی │ w هفتگی │ m ماهانه │ q فصلی │ y سالانه (تقویم شمسی)
+  const _tp=t0.split('-').map(Number), _jt=g2j(_tp[0],_tp[1],_tp[2]);
+  const _doy=Math.round((new Date(t0)-new Date(_jgIso(_jt[0],1,1)))/86400000);
+  if(!view.cpm)view.cpm=(view.cp==30||view.cp==='30')?'d30':'d7';
+  if(!view.cpy)view.cpy=_jt[0];
+  if(!view.cpn)view.cpn={w:Math.min(52,Math.floor(_doy/7)+1),m:_jt[1],q:Math.ceil(_jt[1]/3),y:1}[view.cpm]||1;
+  const MODE=view.cpm, JY=+view.cpy, JN=+view.cpn;
+  let from,to,prevFrom,prevTo,periodLabel,wins=[];
+  if(MODE==='d7'||MODE==='d30'){
+    const P=MODE==='d7'?7:30;
+    from=_isoAdd(t0,-P+1);to=t0;prevFrom=_isoAdd(t0,-2*P+1);prevTo=_isoAdd(t0,-P);
+    periodLabel=P.toLocaleString('fa-IR')+' روز اخیر';
+    for(let i=5;i>=0;i--){const wt=_isoAdd(t0,-P*i);wins.push({from:_isoAdd(wt,-P+1),to:wt,label:ceoJShort(wt)});}
+  } else {
+    const win=ceoPeriodWin(MODE,JY,JN);from=win.from;to=win.to;periodLabel=win.label;
+    const [py,pn]=ceoPeriodPrev(MODE,JY,JN);const pw=ceoPeriodWin(MODE,py,pn);prevFrom=pw.from;prevTo=pw.to;
+    let cy=JY,cn=JN;const seq=[];
+    for(let i=0;i<6;i++){seq.unshift(ceoPeriodWin(MODE,cy,cn));[cy,cn]=ceoPeriodPrev(MODE,cy,cn);}
+    wins=seq.map(w=>({from:w.from,to:w.to,label:w.label.replace(' — ','−').replace('سه‌ماهه ','ف‌').replace('هفته ','ه').replace('سال ','')}));
+  }
+  const lines=ceoSaleLines(b,from,to), prevLines=ceoSaleLines(b,prevFrom,prevTo);
   const net=lines.reduce((a,L)=>a+L.rev,0), cogs=lines.reduce((a,L)=>a+L.cogs,0);
   const prevNet=prevLines.reduce((a,L)=>a+L.rev,0), prevGp=prevLines.reduce((a,L)=>a+L.rev-L.cogs,0);
   const gp=net-cogs, margin=net>0?gp/net*100:0;
-  const ox=ceoOpex(b,from,t0);
+  const ox=ceoOpex(b,from,to);
   const op=gp-ox.tot, opMargin=net>0?op/net*100:0;
   const agg=ceoAgg(lines);
   const stock=ceoStock(b);
@@ -4543,7 +4576,7 @@ function ceodashHTML(){
   const pfPending=byE('pfsettle').filter(s=>(!b||relIds(s,'biz').includes(b))&&s.d.status==='در انتظار واریز')
     .reduce((a,s)=>a+pfCalc(s).expected,0);
   const cashFc=cash+chqRecv14+pfIncoming-chqPay14-opexWeekly*2; // پیش‌بینی ساده نقد ۲ هفته (شامل واریزی پلتفرم)
-  const buyBudget=ceoBudget(b,'خرید کالا',t0), buySpent=buyBudget?ceoPurch(b,from,t0):ceoPurch(b,from,t0);
+  const buyBudget=ceoBudget(b,'خرید کالا',t0), buySpent=ceoPurch(b,from,to);
   const buyLeft=buyBudget?Math.max(0,buyBudget-buySpent):null;
   const canBuy=Math.max(0,Math.min(buyLeft==null?Infinity:buyLeft,Math.max(0,cashFc)));
   const oxBudget=ceoBudget(b,'هزینه عملیاتی',t0);
@@ -4571,7 +4604,23 @@ function ceodashHTML(){
   let h=`<div class="tools"><label style="margin:0">کسب‌وکار:</label>
     <select onchange="setGBiz(this.value)" style="max-width:180px"><option value="">همه</option>${byE('business').map(x=>`<option value="${x.id}" ${x.id===b?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select>
     <label style="margin:0 0 0 8px">دوره:</label>
-    <select onchange="view.cp=this.value;render()" style="max-width:120px"><option value="7" ${P===7?'selected':''}>۷ روز اخیر</option><option value="30" ${P===30?'selected':''}>۳۰ روز اخیر</option></select>
+    <select onchange="view.cpm=this.value;view.cpn=null;render()" style="max-width:120px">
+      <option value="d7" ${MODE==='d7'?'selected':''}>۷ روز اخیر</option>
+      <option value="d30" ${MODE==='d30'?'selected':''}>۳۰ روز اخیر</option>
+      <option value="w" ${MODE==='w'?'selected':''}>هفتگی</option>
+      <option value="m" ${MODE==='m'?'selected':''}>ماهانه</option>
+      <option value="q" ${MODE==='q'?'selected':''}>فصلی</option>
+      <option value="y" ${MODE==='y'?'selected':''}>سالانه</option>
+    </select>
+    ${MODE!=='d7'&&MODE!=='d30'?`
+    <select onchange="view.cpy=this.value;render()" style="max-width:95px">
+      ${[0,1,2,3,4].map(i=>{const y=_jt[0]+1-i;return `<option value="${y}" ${y===JY?'selected':''}>${_faY(y)}</option>`;}).join('')}
+    </select>
+    ${MODE==='w'?`<select onchange="view.cpn=this.value;render()" style="max-width:110px">${Array.from({length:52},(_,i)=>`<option value="${i+1}" ${i+1===JN?'selected':''}>هفته ${(i+1).toLocaleString('fa-IR')}</option>`).join('')}</select>`:''}
+    ${MODE==='m'?`<select onchange="view.cpn=this.value;render()" style="max-width:115px">${JM_NAMES.map((n,i)=>`<option value="${i+1}" ${i+1===JN?'selected':''}>${n}</option>`).join('')}</select>`:''}
+    ${MODE==='q'?`<select onchange="view.cpn=this.value;render()" style="max-width:150px">${JQ_NAMES.map((n,i)=>`<option value="${i+1}" ${i+1===JN?'selected':''}>سه‌ماهه ${n}</option>`).join('')}</select>`:''}
+    `:''}
+    <span class="chip" style="background:var(--bg3);font-size:10.5px">${esc(iso2jstr(from))} تا ${esc(iso2jstr(to))}</span>
     <span style="flex:1"></span>
     ${can('c','expense')?`<button class="btn gh sm" onclick="openRec('expense')">🧾 ثبت هزینه</button>`:''}
     ${can('c','pbudget')?`<button class="btn gh sm" onclick="openRec('pbudget')">🎛️ تعیین بودجه</button>`:''}
@@ -4631,7 +4680,7 @@ function ceodashHTML(){
     </div>`;
   }
   // 📊 نمودارها (شاخص‌های انتخاب‌شده)
-  h+=ceoChartsHTML(b,P);
+  h+=ceoChartsHTML(b,wins,'۶ دوره منتهی به '+periodLabel);
   if(alerts.length)h+=`<div class="sec" style="border-inline-start:3px solid var(--bad);margin-bottom:10px">${alerts.map(([k,m])=>`<div style="font-size:12px;padding:3px 0;color:${k==='bad'?'var(--bad)':'#e5b567'}">${k==='bad'?'🔴':'🟡'} ${m}</div>`).join('')}</div>`;
   if(T==='prof'){
     h+=renderCards('prof');
