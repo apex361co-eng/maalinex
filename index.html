@@ -671,6 +671,12 @@ product:{ic:'📦',n:'کالا و خدمات',grp:'مدیریت کسب و کار
  {k:'sell',n:'قیمت فروش واحد (تومان)',t:NUM},
  {k:'stock0',n:'موجودی اولیه',t:NUM},
  {k:'minstock',n:'حداقل موجودی (هشدار)',t:NUM},
+ {k:'sku',n:'کد SKU (شناسه یکتای مدل/رنگ/نسخه)',t:TXT},
+ {k:'model',n:'مدل',t:TXT},
+ {k:'color',n:'رنگ',t:TXT},
+ {k:'variant',n:'نسخه (گلوبال/چین و…)',t:TXT},
+ {k:'warranty',n:'گارانتی',t:TXT},
+ {k:'minmargin',n:'حداقل حاشیه سود هدف (٪)',t:NUM},
  {k:'cover',n:'تصویر',t:FIL,img:1}],
  cols:['title','biz','grp','sell'],comp:'productStat'},
 sale:{ic:'🛒',n:'فروش سریع (تک‌کالا)',grp:'مدیریت کسب و کار',f:[
@@ -1138,6 +1144,25 @@ efqm:{ic:'🏅',n:'ارزیابی EFQM 2025',grp:'استراتژی و تعالی
  {k:'owner',n:'ارزیاب / مسئول',t:REL,r:'hr',s:1},
  {k:'date',n:'تاریخ ارزیابی',t:DAT}],
  cols:['title','company','crit','sub','date'],comp:'efqmPts'},
+expense:{ic:'🧾',n:'هزینه‌های عملیاتی',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'شرح هزینه',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'cat',n:'سرفصل',t:SEL,o:['حقوق و دستمزد','اجاره','تبلیغات و مارکتینگ','حمل و ارسال','بسته‌بندی','کارمزد درگاه/مارکت‌پلیس','نرم‌افزار و اشتراک','پذیرایی','مرجوعی و خسارت','اداری و متفرقه','مالی (بهره/کارمزد بانکی)']},
+ {k:'amount',n:'مبلغ (تومان)',t:NUM},
+ {k:'date',n:'تاریخ',t:DAT},
+ {k:'offbudget',n:'خارج از بودجه',t:CHK},
+ {k:'unprod',n:'غیرمولد (نه فروش را بالا برد نه بهره‌وری)',t:CHK},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','biz','cat','amount','date']},
+pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'kind',n:'نوع بودجه',t:SEL,o:['خرید کالا','هزینه عملیاتی']},
+ {k:'from',n:'از تاریخ',t:DAT},
+ {k:'to',n:'تا تاریخ',t:DAT},
+ {k:'amount',n:'مبلغ مصوب (تومان)',t:NUM},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','biz','kind','amount','from','to']},
 };
 const GROUPS=['ساختار زنجیره‌ای','سازمان','روابط','مدیریت کسب و کار','مالی و حقوقی','حسابداری','مالی تخصصی (IFRS)','سرمایه‌گذاری و ثروت','فرآیندها (ISO)','استراتژی و تعالی','حاکمیت','رشد شخصی'];
 const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
@@ -1676,7 +1701,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M16',n:'رشد شخصی',ents:['growth','habit','win','plan','asset','area','book','course','booknote','note','reminder'],views:['gdash']}
 ];
@@ -4109,7 +4134,8 @@ function bizMenuHTML(){
   let h='';
   // 📊 داشبورد
   h+=sec('📊 داشبورد',
-    it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv'))));
+    it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
+    +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash')));
   // 📦 کالا و خدمات
   h+=sec('📦 کالا و خدمات',ent('product')+ent('channel'));
   // 💼 فروش
@@ -4131,7 +4157,7 @@ function bizMenuHTML(){
     it('settlenew','💵 دریافت / پرداخت',"settleDraft=null;go('settlenew')",canSee('settle')&&can('c','settle')&&canView('settlenew'))
     +it('arapdash','📊 مانده طلب و بدهی',"go('arapdash')",canSee('settle')&&canView('arapdash'))
     +it('cashdash','💰 دفتر صندوق/بانک',"go('cashdash')",canSee('settle')&&canView('cashdash'))
-    +ent('settle'));
+    +ent('settle')+ent('expense')+ent('pbudget'));
   return h;
 }
 function nav(){
@@ -4222,6 +4248,7 @@ function render(){
     view.type==='cal'?'📅 تقویم':
     view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
     view.type==='bizkpi'?'📊 داشبورد کسب‌وکار':
+    view.type==='ceodash'?'🧭 داشبورد مدیرعامل':
     view.type==='salesdash'?'🧾 داشبورد فروش':
     view.type==='invnew'?'🧾 صدور فاکتور':
     view.type==='pinvnew'?'🧾 ثبت فاکتور خرید':
@@ -4243,7 +4270,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -4266,6 +4293,7 @@ function render(){
     else if(view.type==='gldash')c.innerHTML=gldashHTML();
     else if(view.type==='glnew')c.innerHTML=glnewHTML();
     else if(view.type==='bizkpi')c.innerHTML=bizkpiHTML();
+    else if(view.type==='ceodash')c.innerHTML=ceodashHTML();
     else if(view.type==='salesdash')c.innerHTML=salesdashHTML();
     else if(view.type==='invnew')c.innerHTML=invnewHTML();
     else if(view.type==='pinvnew')c.innerHTML=pinvnewHTML();
@@ -4340,6 +4368,203 @@ function distinctVals(rows,f){
   return [...set].sort((a,b)=>a.localeCompare(b,'fa',{numeric:true})).slice(0,300);
 }
 function sortableFields(def){return def.f.filter(f=>fldMode(def._k,f.k)!=='hide'&&f.t!==FIL);}
+/* ===== 🧭 داشبورد مدیرعامل (CEO) — سودآوری │ انبار و سرمایه │ هزینه‌ها │ تصمیم خرید │ گزارش هفتگی ===== */
+function _isoToday(){return new Date().toISOString().slice(0,10);}
+function _isoAdd(iso,n){const d=new Date(iso+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function ceoSaleLines(biz,from,to){
+  const out=[];
+  bizInvReal(biz).forEach(v=>{const dt=ds(v.d.date)||'';if(from&&dt<from)return;if(to&&dt>to)return;
+    invLinesOf(v.id).forEach(l=>{const pid=relIds(l,'product')[0];if(!pid)return;
+      const bp=recs[pid]?(recs[pid].d.buy||0):0;const q=l.d.qty||0;
+      out.push({pid,q,rev:invLineAmt(l),cogs:q*bp,date:dt});});});
+  bizSaleLegacy(biz).forEach(s=>{const dt=ds(s.d.date)||'';if(from&&dt<from)return;if(to&&dt>to)return;
+    const pid=relIds(s,'product')[0];if(!pid)return;const q=s.d.qty||0;
+    out.push({pid,q,rev:q*(s.d.price||0),cogs:q*(recs[pid]?(recs[pid].d.buy||0):0),date:dt});});
+  return out;
+}
+function ceoAgg(lines){const m={};lines.forEach(L=>{const a=m[L.pid]||(m[L.pid]={q:0,rev:0,cogs:0,last:''});a.q+=L.q;a.rev+=L.rev;a.cogs+=L.cogs;if(L.date>a.last)a.last=L.date;});return m;}
+function ceoOpex(biz,from,to){const by={};let off=0,unp=0;
+  byE('expense').forEach(x=>{if(biz&&!relIds(x,'biz').includes(biz))return;const dt=ds(x.d.date)||'';if(from&&dt<from)return;if(to&&dt>to)return;
+    const a=+x.d.amount||0,c=x.d.cat||'اداری و متفرقه';by[c]=(by[c]||0)+a;
+    if(x.d.offbudget)off+=a;if(x.d.unprod)unp+=a;});
+  const fin=by['مالی (بهره/کارمزد بانکی)']||0;
+  const tot=Object.entries(by).reduce((s,[c,a])=>s+(c==='مالی (بهره/کارمزد بانکی)'?0:a),0);
+  return {tot,fin,by,off,unp};
+}
+function ceoBudget(biz,kind,ref){let amt=0;
+  byE('pbudget').forEach(x=>{if(biz&&!relIds(x,'biz').includes(biz))return;if((x.d.kind||'')!==kind)return;
+    const f=ds(x.d.from)||'',t=ds(x.d.to)||'';if(f&&ref<f)return;if(t&&ref>t)return;amt+=+x.d.amount||0;});
+  return amt;
+}
+function ceoPurch(biz,from,to){let tot=0;
+  byE('purchinv').filter(v=>v.d.status!=='باطل').forEach(v=>{if(biz&&!relIds(v,'biz').includes(biz))return;const dt=ds(v.d.date)||'';if(from&&dt<from)return;if(to&&dt>to)return;tot+=pinvCalc(v).total;});
+  byE('purchase').forEach(x=>{if(x.d._pinv)return;if(biz&&!relIds(x,'biz').includes(biz))return;const dt=ds(x.d.date)||'';if(from&&dt<from)return;if(to&&dt>to)return;tot+=(x.d.qty||0)*(x.d.price||0)+(x.d.extra||0);});
+  return tot;
+}
+function ceoChqDue(biz,kind,days){const t0=_isoToday(),t1=_isoAdd(t0,days);
+  return byE('cheque').filter(c=>chqOpen(c)&&(c.d.kind||'')===kind&&(!biz||relIds(c,'biz').includes(biz)))
+    .filter(c=>{const d=ds(c.d.due)||'';return d&&d<=t1;})
+    .reduce((a,c)=>a+(+c.d.amount||0),0);
+}
+function ceoStock(biz){ // وضعیت هر کالا: موجودی، ارزش، میانگین فروش روزانه ۲۸روزه، پوشش، آخرین فروش
+  const t0=_isoToday();
+  const agg28=ceoAgg(ceoSaleLines(biz,_isoAdd(t0,-28),t0));
+  const aggAll=ceoAgg(ceoSaleLines(biz,'',t0));
+  return byE('product').filter(p=>!biz||relIds(p,'biz').includes(biz)).map(p=>{
+    const st=stockNow(p);let val=0;try{val=stockValue(p);}catch(e){val=st*(p.d.buy||0);}
+    const a28=agg28[p.id]||{q:0},all=aggAll[p.id]||{q:0,rev:0,cogs:0,last:''};
+    const avg=a28.q/28;
+    const cover=avg>0?st/avg:(st>0?9999:0);
+    const marg=all.rev>0?Math.round((all.rev-all.cogs)/all.rev*100):null;
+    return {p,st,val,avg,cover,last:all.last,marg,minm:+p.d.minmargin||20};
+  });
+}
+function ceodashHTML(){
+  const b=gBiz();const t0=_isoToday();
+  if(!view.ct)view.ct='prof';
+  if(!view.cp)view.cp=7;
+  const P=+view.cp; // طول دوره: ۷ یا ۳۰ روز
+  const from=_isoAdd(t0,-P+1), prevFrom=_isoAdd(t0,-2*P+1), prevTo=_isoAdd(t0,-P);
+  const lines=ceoSaleLines(b,from,t0), prevLines=ceoSaleLines(b,prevFrom,prevTo);
+  const net=lines.reduce((a,L)=>a+L.rev,0), cogs=lines.reduce((a,L)=>a+L.cogs,0);
+  const prevNet=prevLines.reduce((a,L)=>a+L.rev,0), prevGp=prevLines.reduce((a,L)=>a+L.rev-L.cogs,0);
+  const gp=net-cogs, margin=net>0?gp/net*100:0;
+  const ox=ceoOpex(b,from,t0);
+  const op=gp-ox.tot, opMargin=net>0?op/net*100:0;
+  const agg=ceoAgg(lines);
+  const stock=ceoStock(b);
+  const totVal=stock.reduce((a,x)=>a+x.val,0);
+  const stale60=stock.filter(x=>x.st>0&&(!x.last||x.last<_isoAdd(t0,-60)));
+  const staleVal=stale60.reduce((a,x)=>a+x.val,0);
+  const stalePct=totVal>0?staleVal/totVal*100:0;
+  const cash=bizCashBal(b);
+  const chqPay14=ceoChqDue(b,'پرداختنی',14), chqPay7=ceoChqDue(b,'پرداختنی',7), chqRecv14=ceoChqDue(b,'دریافتنی',14);
+  const payDue=bizPay(b);
+  const opexWeekly=ceoOpex(b,_isoAdd(t0,-28),t0).tot/4;
+  const cashFc=cash+chqRecv14-chqPay14-opexWeekly*2; // پیش‌بینی ساده نقد ۲ هفته
+  const buyBudget=ceoBudget(b,'خرید کالا',t0), buySpent=buyBudget?ceoPurch(b,from,t0):ceoPurch(b,from,t0);
+  const buyLeft=buyBudget?Math.max(0,buyBudget-buySpent):null;
+  const canBuy=Math.max(0,Math.min(buyLeft==null?Infinity:buyLeft,Math.max(0,cashFc)));
+  const oxBudget=ceoBudget(b,'هزینه عملیاتی',t0);
+  const prodName=id=>recs[id]&&!recs[id].del?recs[id].d.title:'—';
+  const rows=Object.entries(agg).map(([pid,a])=>({pid,q:a.q,rev:a.rev,pr:a.rev-a.cogs,m:a.rev>0?(a.rev-a.cogs)/a.rev*100:0}));
+  // 🛒 پیشنهاد خرید
+  const buyPrior=stock.filter(x=>x.avg>0&&x.cover<14&&(x.marg==null||x.marg>=Math.min(x.minm,15)))
+    .map(x=>({...x,need:Math.max(0,Math.ceil(x.avg*14-x.st)),cost:Math.max(0,Math.ceil(x.avg*14-x.st))*(x.p.d.buy||0)}))
+    .filter(x=>x.need>0).sort((a,b)=>b.avg*(b.marg??20)-a.avg*(a.marg??20)).slice(0,10);
+  const buyBan=stock.filter(x=>x.st>0&&(x.cover>60||(x.marg!=null&&x.marg<0))).sort((a,b)=>b.val-a.val);
+  // 🚨 هشدارها
+  const alerts=[];
+  if(net>0&&margin<20)alerts.push(['bad','حاشیه سود ناخالص '+margin.toFixed(1)+'٪ — زیر هدف ۲۰٪']);
+  if(op<=0&&net>0)alerts.push(['bad','سود عملیاتی '+(op<0?'منفی':'صفر')+' است']);
+  if(stalePct>30)alerts.push(['bad','٪'+Math.round(stalePct)+' انبار راکد است (بالای حد ۳۰٪)']);
+  if(cashFc<0)alerts.push(['bad','⚠️ ریسک کمبود نقدینگی تا ۲ هفته آینده: '+money(-cashFc)+' کسری']);
+  const outAge=stock.filter(x=>x.avg>0&&x.cover<7);
+  if(outAge.length)alerts.push(['warn',outAge.length.toLocaleString('fa-IR')+' کالای پرفروش زیر ۷ روز پوشش موجودی دارند']);
+  if(ox.off>0)alerts.push(['warn','هزینه خارج از بودجه این دوره: '+money(ox.off)]);
+  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['week','🗞 گزارش هفتگی']];
+  const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:12px"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:17px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">${sub}</div>`:''}</div>`;
+  const grid=inner=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px">${inner}</div>`;
+  const topTbl=(title,arr,cols)=>`<div class="sec"><h3>${title} <span class="c">${arr.length.toLocaleString('fa-IR')}</span></h3>${arr.length?`<div class="tblwrap"><table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${arr.map(r=>`<tr>${cols.map(c=>`<td style="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">موردی نیست</div>'}</div>`;
+  const growth=(cur,prev)=>prev>0?((cur-prev)/prev*100).toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪':'—';
+  let h=`<div class="tools"><label style="margin:0">کسب‌وکار:</label>
+    <select onchange="setGBiz(this.value)" style="max-width:180px"><option value="">همه</option>${byE('business').map(x=>`<option value="${x.id}" ${x.id===b?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select>
+    <label style="margin:0 0 0 8px">دوره:</label>
+    <select onchange="view.cp=this.value;render()" style="max-width:120px"><option value="7" ${P===7?'selected':''}>۷ روز اخیر</option><option value="30" ${P===30?'selected':''}>۳۰ روز اخیر</option></select>
+    <span style="flex:1"></span>
+    ${can('c','expense')?`<button class="btn gh sm" onclick="openRec('expense')">🧾 ثبت هزینه</button>`:''}
+    ${can('c','pbudget')?`<button class="btn gh sm" onclick="openRec('pbudget')">🎛️ تعیین بودجه</button>`:''}</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    ${TABS.map(([k,n])=>`<button class="btn ${view.ct===k?'':'gh'} sm" onclick="view.ct='${k}';render()">${n}</button>`).join('')}
+  </div>`;
+  if(alerts.length)h+=`<div class="sec" style="border-inline-start:3px solid var(--bad);margin-bottom:10px">${alerts.map(([k,m])=>`<div style="font-size:12px;padding:3px 0;color:${k==='bad'?'var(--bad)':'#e5b567'}">${k==='bad'?'🔴':'🟡'} ${m}</div>`).join('')}</div>`;
+  const T=view.ct;
+  if(T==='prof'){
+    h+=grid(card('فروش خالص دوره',money(net),false,'رشد: '+growth(net,prevNet))
+      +card('بهای تمام‌شده (COGS)',money(cogs))
+      +card('سود ناخالص',money(gp),gp<0,'رشد: '+growth(gp,prevGp))
+      +card('حاشیه ناخالص',margin.toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪',margin<20)
+      +card('هزینه عملیاتی',money(ox.tot))
+      +card('سود عملیاتی',money(op),op<=0,'حاشیه: '+opMargin.toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪')
+      +card('نسبت OPEX به سود ناخالص',gp>0?Math.round(ox.tot/gp*100).toLocaleString('fa-IR')+'٪':'—',gp>0&&ox.tot/gp>0.7)
+      +card('GMROI (سود ناخالص/ارزش انبار)',totVal>0?(gp/totVal).toLocaleString('fa-IR',{maximumFractionDigits:2}):'—'));
+    const f2=r=>esc(prodName(r.pid));
+    h+=topTbl('🏆 ۱۰ کالای پرفروش (تعدادی)',rows.slice().sort((a,b)=>b.q-a.q).slice(0,10),[['کالا',f2,'text-align:right'],['تعداد',r=>r.q.toLocaleString('fa-IR')],['فروش',r=>money(r.rev)],['حاشیه',r=>r.m.toFixed(0)+'٪']]);
+    h+=topTbl('💎 ۱۰ کالای پرسود (مبلغی)',rows.slice().sort((a,b)=>b.pr-a.pr).slice(0,10),[['کالا',f2,'text-align:right'],['سود',r=>money(r.pr)],['فروش',r=>money(r.rev)],['حاشیه',r=>r.m.toFixed(0)+'٪']]);
+    h+=topTbl('⚠️ ۱۰ کالای کم‌سود یا زیان‌ده (فروش دارد، سود ندارد)',rows.filter(r=>r.rev>0&&r.m<15).sort((a,b)=>a.m-b.m).slice(0,10),[['کالا',f2,'text-align:right'],['حاشیه',r=>`<b style="color:${r.m<0?'var(--bad)':'#e5b567'}">${r.m.toFixed(1)}٪</b>`],['فروش',r=>money(r.rev)],['سود',r=>money(r.pr)]]);
+  }
+  if(T==='stock'){
+    h+=grid(card('ارزش کل موجودی (FIFO)',money(totVal))
+      +card('ارزش موجودی راکد (۶۰ روز بدون فروش)',money(staleVal),stalePct>30)
+      +card('درصد راکد از کل انبار',Math.round(stalePct).toLocaleString('fa-IR')+'٪',stalePct>30)
+      +card('سرمایه قفل‌شده در انبار',money(staleVal+stock.filter(x=>x.cover>60&&x.cover<9999&&x.st>0&&!stale60.includes(x)).reduce((a,x)=>a+x.val,0)),false,'راکد + اضافه‌موجودی')
+      +card('نرخ گردش موجودی (دوره)',totVal>0?(cogs/totVal).toLocaleString('fa-IR',{maximumFractionDigits:2}):'—')
+      +card('کالاهای در خطر اتمام (<۷ روز)',outAge.length.toLocaleString('fa-IR'),outAge.length>0));
+    const pn=x=>esc(x.p.d.title||'—');
+    const noSale=days=>stock.filter(x=>x.st>0&&(!x.last||x.last<_isoAdd(t0,-days)));
+    h+=grid(card('بدون گردش ۳۰ روز',noSale(30).length.toLocaleString('fa-IR')+' قلم │ '+money(noSale(30).reduce((a,x)=>a+x.val,0)))
+      +card('بدون گردش ۶۰ روز',noSale(60).length.toLocaleString('fa-IR')+' قلم │ '+money(noSale(60).reduce((a,x)=>a+x.val,0)))
+      +card('بدون گردش ۹۰ روز',noSale(90).length.toLocaleString('fa-IR')+' قلم │ '+money(noSale(90).reduce((a,x)=>a+x.val,0)),noSale(90).length>0));
+    h+=topTbl('⏳ کالاهای در خطر اتمام (پوشش زیر ۷ روز)',outAge.sort((a,b)=>a.cover-b.cover).slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['فروش روزانه',x=>x.avg.toLocaleString('fa-IR',{maximumFractionDigits:1})],['روز پوشش',x=>`<b style="color:var(--bad)">${x.cover.toFixed(1)}</b>`]]);
+    h+=topTbl('🧊 راکدها و اضافه‌خریدها (بیشترین سرمایه خوابیده)',stock.filter(x=>x.st>0&&(x.cover>60||(!x.last||x.last<_isoAdd(t0,-60)))).sort((a,b)=>b.val-a.val).slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['ارزش خوابیده',x=>money(x.val)],['آخرین فروش',x=>x.last?esc(iso2jstr(x.last)):'هرگز']]);
+  }
+  if(T==='cost'){
+    h+=grid(card('کل هزینه عملیاتی دوره',money(ox.tot))
+      +card('بودجه هزینه مصوب (امروز در بازه)',oxBudget?money(oxBudget):'تعیین نشده')
+      +card('انحراف از بودجه',oxBudget?money(ox.tot-oxBudget):'—',oxBudget&&ox.tot>oxBudget)
+      +card('هزینه خارج از بودجه',money(ox.off),ox.off>0)
+      +card('هزینه‌های غیرمولد',money(ox.unp),ox.unp>0)
+      +card('هزینه مالی (جدا از OPEX)',money(ox.fin)));
+    const cats=Object.entries(ox.by).filter(([c])=>c!=='مالی (بهره/کارمزد بانکی)').sort((a,b)=>b[1]-a[1]);
+    h+=`<div class="sec"><h3>🧾 هزینه‌ها به تفکیک سرفصل</h3><div class="tblwrap"><table><thead><tr><th>سرفصل</th><th>مبلغ</th><th>٪ از فروش</th><th>٪ از سود ناخالص</th></tr></thead><tbody>
+      ${cats.map(([c,a],i)=>`<tr style="${i<3?'background:rgba(224,106,95,.07)':''}"><td style="text-align:right">${i<3?'🔥 ':''}${esc(c)}</td><td>${money(a)}</td>
+        <td>${net>0?(a/net*100).toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪':'—'}</td>
+        <td>${gp>0?`<b style="color:${a/gp>0.25?'var(--bad)':'var(--tx)'}">${(a/gp*100).toLocaleString('fa-IR',{maximumFractionDigits:1})}٪</b>`:'—'}</td></tr>`).join('')}
+      ${cats.length?'':'<tr><td colspan="4" style="color:var(--tx2)">هنوز هزینه‌ای ثبت نشده — با «🧾 ثبت هزینه» شروع کن</td></tr>'}
+    </tbody></table></div>
+    ${cats.length?`<p style="font-size:11.5px;color:var(--tx2);margin-top:8px">🔥 = ۳ هزینه‌ی خورنده سود (بیشترین سهم از سود ناخالص) — کاندیدهای کاهش هفته آینده</p>`:''}</div>`;
+  }
+  if(T==='buy'){
+    h+=grid(card('💵 نقد قابل استفاده امروز',money(cash),cash<0)
+      +card('پیش‌بینی نقد ۲ هفته آینده',money(cashFc),cashFc<0,'نقد + چک دریافتنی − چک/تعهد پرداختنی − OPEX')
+      +card('تعهدات ۷ روز آینده (چک)',money(chqPay7),chqPay7>0)
+      +card('تعهدات ۱۴ روز آینده (چک)',money(chqPay14),chqPay14>0)
+      +card('بدهی باز به تامین‌کنندگان',money(payDue),payDue>0)
+      +card('بودجه خرید مصوب',buyBudget?money(buyBudget):'تعیین نشده')
+      +card('خرید واقعی دوره',money(buySpent),buyBudget&&buySpent>buyBudget)
+      +card('🟢 سقف خرید پیشنهادی این هفته',money(canBuy===Infinity?Math.max(0,cashFc):canBuy),false,'کمینه‌ی بودجه باقیمانده و نقد آزاد'));
+    const pn=x=>esc(x.p.d.title||'—');
+    h+=topTbl('🛒 اولویت خرید (پرفروش │ پوشش کم │ حاشیه سالم) + تعداد پیشنهادی',buyPrior,[['کالا',pn,'text-align:right'],['روز پوشش',x=>x.cover.toFixed(1)],['حاشیه',x=>x.marg==null?'—':x.marg+'٪'],['تعداد پیشنهادی (۱۴ روز)',x=>`<b>${x.need.toLocaleString('fa-IR')}</b>`],['بودجه لازم',x=>money(x.cost)]]);
+    h+=topTbl('⛔ ممنوع‌الخرید (موجودی زیاد یا زیان‌ده)',buyBan.slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['روز پوشش',x=>x.cover>=9999?'∞':x.cover.toFixed(0)],['حاشیه',x=>x.marg==null?'—':`<b style="color:${x.marg<0?'var(--bad)':'var(--tx)'}">${x.marg}٪</b>`],['ارزش خوابیده',x=>money(x.val)]]);
+  }
+  if(T==='week'){
+    const needBudget=buyPrior.reduce((a,x)=>a+x.cost,0);
+    const cats=Object.entries(ox.by).filter(([c])=>c!=='مالی (بهره/کارمزد بانکی)').sort((a,b)=>b[1]-a[1]).slice(0,3);
+    const li=(n,v)=>`<tr><td style="text-align:right;color:var(--tx2);white-space:nowrap">${n}</td><td style="font-weight:700">${v}</td></tr>`;
+    h+=`<div class="sec"><h3>🗞 گزارش مالی هفتگی <span style="flex:1"></span><button class="btn gh sm" onclick="window.print()">🖨️ چاپ</button></h3>
+    <div class="tblwrap"><table><tbody>
+      ${li('۱. نقد قابل استفاده',money(cash))}
+      ${li('۲. فروش خالص دوره',money(net))}
+      ${li('۳. سود ناخالص',money(gp)+' (حاشیه '+margin.toFixed(1)+'٪)')}
+      ${li('۴. هزینه‌های عملیاتی',money(ox.tot))}
+      ${li('۵. سود عملیاتی',money(op))}
+      ${li('۶. انحراف هزینه از بودجه',oxBudget?money(ox.tot-oxBudget):'بودجه تعیین نشده')}
+      ${li('۷. بودجه خرید پیشنهادی هفته آینده',money(canBuy===Infinity?Math.max(0,cashFc):canBuy))}
+      ${li('۸. موجودی راکد',money(staleVal)+' ('+Math.round(stalePct)+'٪ انبار)')}
+      ${li('۹. تعهدات ۱۴ روز آینده',money(chqPay14+payDue))}
+      ${li('۱۰. تسویه‌نشده از مشتریان/پلتفرم‌ها',money(bizRecv(b)))}
+    </tbody></table></div></div>
+    <div class="sec" style="border-inline-start:3px solid var(--ac)"><h3>🎯 ۵ پاسخ صریح این هفته</h3>
+    <div style="font-size:13px;line-height:2.4">
+      <div>۱. <b>چقدر می‌توانیم خرید کنیم؟</b> ${money(canBuy===Infinity?Math.max(0,cashFc):canBuy)}</div>
+      <div>۲. <b>کدام کالاها اولویت خریدند؟</b> ${buyPrior.length?buyPrior.map(x=>esc(x.p.d.title)).slice(0,10).join('، ')+' (بودجه لازم: '+money(needBudget)+')':'موردی نیست'}</div>
+      <div>۳. <b>کدام کالاها را نخریم؟</b> ${buyBan.length?buyBan.slice(0,10).map(x=>esc(x.p.d.title)).join('، '):'موردی نیست'}</div>
+      <div>۴. <b>کدام هزینه‌ها کم/متوقف شود؟</b> ${cats.length?cats.map(([c,a])=>esc(c)+' ('+money(a)+')').join('، ')+(ox.unp>0?' + هزینه‌های غیرمولد: '+money(ox.unp):''):'هزینه‌ای ثبت نشده'}</div>
+      <div>۵. <b>ریسک کمبود نقدینگی تا ۲ هفته؟</b> ${cashFc<0?`<b style="color:var(--bad)">بله — کسری ${money(-cashFc)}</b>`:`<b style="color:var(--ok)">خیر — مازاد ${money(cashFc)}</b>`}</div>
+    </div></div>`;
+  }
+  return h;
+}
 function listHTML(e){
   const def=E[e]; def._k=e;
   if(!canSee(e))return `<div class="empty">دسترسی شما به این بخش توسط ادمین محدود شده است</div>`;
@@ -4384,11 +4609,13 @@ function listHTML(e){
     </div>`;
   }
   // 🧰 نوار ابزار داده
+  window._listIds=rows.map(r=>r.id); // برای حذف گروهی: دقیقاً همین رکوردهای فیلترشده
   const sortFs=sortableFields(def);
   const gb=view.grp&&def.f.find(x=>x.k===view.grp);
   let h=`<div class="tools">
     ${can('c',e)?`<button class="btn" onclick="openRec('${e}')">＋ افزودن</button>`:''}
     ${can('c',e)?`<button class="btn gh sm" onclick="impOpen('${e}')" title="ورود گروهی داده از فایل اکسل یا CSV">📥 ورود از اکسل</button>`:''}
+    ${can('d',e)&&rows.length?`<button class="btn bad sm" onclick="bulkDel('${e}')" title="حذف همه رکوردهایی که الان در لیست (با فیلتر/جستجوی فعلی) می‌بینید">🗑 حذف گروهی</button>`:''}
     <input placeholder="🔍 جستجو در همه فیلدها…" value="${esc(q)}" oninput="view.q=this.value;view.page=0;render()">
     <span style="color:var(--tx2);font-size:12px">${rows.length.toLocaleString('fa-IR')} مورد</span></div>
   <div class="tools" style="margin-top:-4px">
@@ -6663,6 +6890,24 @@ function saveRec(){
   cur.u=Date.now();delete cur._new;
   put(cur);closeModal();
 }
+/* 🗑 حذف گروهی — همه رکوردهای فیلترشده‌ی فعلیِ لیست را یکجا حذف می‌کند */
+function bulkDel(e){
+  const ids=window._listIds||[];
+  const dels=ids.filter(id=>recs[id]&&!recs[id].del&&can('d',e,recs[id]));
+  if(!dels.length){alert('چیزی برای حذف نیست یا اجازه حذف ندارید');return;}
+  const n=dels.length;
+  const scope=(view.q||'').trim()||Object.values(view.cf||{}).some(Boolean)||view.flt||gBiz()?'فیلترشده‌ی فعلی':'همه';
+  if(!confirm('⚠️ '+n.toLocaleString('fa-IR')+' رکورد ('+scope+' در این لیست) حذف شود؟\nاگر فقط بخشی را می‌خواهید، اول با جستجو یا «فیلتر ستونی» لیست را محدود کنید و بعد این دکمه را بزنید.'))return;
+  if(n>50){const t=prompt('برای تایید نهایی، کلمه «حذف» را بنویسید:');if(t!=='حذف'){alert('لغو شد');return;}}
+  const now=Date.now();
+  dels.forEach(id=>{const r=recs[id];
+    if(AUDIT_ENTS.includes(e))r.d._log=(r.d._log||[]).concat([{t:now,by:myEmail(),c:['🗑 حذف گروهی']}]).slice(-40);
+    r.del=true;r.u=now;queue.push(id);});
+  invalidateByE();saveLocal();saveQ();flush();
+  view.page=0;render();
+  alert('✅ '+n.toLocaleString('fa-IR')+' رکورد حذف شد');
+}
+window.bulkDel=bulkDel;
 function delRec(){
   if(!can('d',cur.e,recs[cur.id])){alert('اجازه حذف ندارید');return;}
   if(!confirm('حذف شود؟'))return;
