@@ -1978,7 +1978,7 @@ function saveAcl(fn){
 function aclRoles(){const a=acl();return [...ROLES,...Object.keys(a.roles||{}).filter(r=>!ROLES.includes(r))];}
 function aclFor(){ // تنظیمات مؤثر برای کاربر جاری: نقش + جایگزینی فردی
   const a=acl(), roleCfg=(a.roles||{})[myRole()]||{}, userCfg=(a.users||{})[myEmail().toLowerCase()]||{};
-  return {ent:{...(roleCfg.ent||{}),...(userCfg.ent||{})},fld:{...(roleCfg.fld||{}),...(userCfg.fld||{})},views:{...(roleCfg.views||{}),...(userCfg.views||{})},scope:userCfg.scope||roleCfg.scope||null};
+  return {ent:{...(roleCfg.ent||{}),...(userCfg.ent||{})},fld:{...(roleCfg.fld||{}),...(userCfg.fld||{})},views:{...(roleCfg.views||{}),...(userCfg.views||{})},grp:{...(roleCfg.grp||{}),...(userCfg.grp||{})},scope:userCfg.scope||roleCfg.scope||null};
 }
 /* 🔭 محدوده داده — جداسازی رکوردها بر اساس شرکت / کسب‌وکار / واحد */
 let _domCache={};
@@ -2224,15 +2224,22 @@ function modAutopostHTML(){
 }
 function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('content').innerHTML=modcfgHTML();}
 window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
+const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
+ gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
+ findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
+ epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',
+ bscmap:'استراتژی و تعالی',bsccanvas:'استراتژی و تعالی',gdash:'رشد شخصی'};
+function grpHidden(g){if(isAdmin()||!g)return false;return (aclFor().grp||{})[g]==='hide';}
 function canView(v){
   if(isPending())return false;
   if(VIEW_MOD[v]&&!viewEnabled(v))return false; // ماژول خاموش
   if(isAdmin())return true;
+  if(grpHidden(VIEW_GRP[v]))return false; // کل گروه برای این نقش مخفی است
   return (aclFor().views||{})[v]!=='hide';
 }
 function entLevel(e){if(isAdmin())return null;return aclFor().ent[e]||null;} // hide|read|edit|full|null
 function fldMode(e,k){if(isAdmin())return null;return aclFor().fld[e+'.'+k]||null;} // hide|read|null
-function canSee(e){if(isPending())return false;if(!entEnabled(e))return false;return entLevel(e)!=='hide';}
+function canSee(e){if(isPending())return false;if(!entEnabled(e))return false;if(!isAdmin()&&E[e]&&grpHidden(E[e].grp))return false;return entLevel(e)!=='hide';}
 function visFields(e){return E[e].f.filter(f=>fldMode(e,f.k)!=='hide');}
 
 function can(a,e,rec){ // a: 'c' ایجاد | 'e' ویرایش | 'd' حذف
@@ -6882,6 +6889,23 @@ function setAclView(vk,val){
     const c=b[key]=b[key]||{};c.views=c.views||{};
     if(val)c.views[vk]=val;else delete c.views[vk];});
 }
+function setAclGrp(g,val){
+  const {t,v}=aclTarget(); if(!v)return;
+  const key=t==='user'?String(v).toLowerCase():v;
+  saveAcl(d=>{const b=t==='role'?(d.roles=d.roles||{}):(d.users=d.users||{});
+    const c=b[key]=b[key]||{};c.grp=c.grp||{};
+    if(val)c.grp[g]=val;else delete c.grp[g];});
+}
+window.setAclGrp=setAclGrp;
+function setAclGrpBulk(g,val){ // اعمال یک سطح به همه بخش‌های گروه با یک کلیک
+  const {t,v}=aclTarget(); if(!v)return;
+  const key=t==='user'?String(v).toLowerCase():v;
+  const ents=Object.entries(E).filter(([k,d])=>d.grp===g).map(([k])=>k);
+  saveAcl(d=>{const b=t==='role'?(d.roles=d.roles||{}):(d.users=d.users||{});
+    const c=b[key]=b[key]||{};c.ent=c.ent||{};
+    ents.forEach(ek=>{if(val)c.ent[ek]=val;else delete c.ent[ek];});});
+}
+window.setAclGrpBulk=setAclGrpBulk;
 function setAclScopeOn(on){
   const {t,v}=aclTarget(); if(!v)return;
   const key=t==='user'?String(v).toLowerCase():v;
@@ -6983,8 +7007,19 @@ function aclHTML(){
       <h3 style="font-size:12.5px;margin-top:10px">🧩 واحدهای سازمانی مجاز</h3>${pick('orgunit','u','🧩')}`:''}
     </div>`;
   }
-  GROUPS.forEach(g=>{
-    h+=`<div class="sec"><h3>${esc(grpLabel(g))}</h3><div class="tblwrap"><table><thead><tr><th>بخش</th><th>دسترسی</th><th>فیلدها</th></tr></thead><tbody>`;
+  allGroups().forEach((g,gi)=>{
+    if(!Object.values(E).some(d=>d.grp===g))return;
+    const gHid=(cfg.grp||{})[g]==='hide';
+    h+=`<div class="sec" style="${gHid?'opacity:.55':''}"><h3>${esc(grpLabel(g))}
+      <span style="flex:1"></span>
+      <select onchange="setAclGrp('${g.replace(/'/g,"\\'")}',this.value)" style="max-width:190px;font-size:11.5px" title="یک‌ضرب کل گروه (همه بخش‌ها و داشبوردهایش) را برای این نقش مخفی کن">
+        <option value="" ${!gHid?'selected':''}>گروه: نمایش عادی</option>
+        <option value="hide" ${gHid?'selected':''}>🙈 کل گروه مخفی</option></select>
+      <select id="aclblk_${gi}" style="max-width:170px;font-size:11.5px">
+        ${LVLOPTS.map(([val,l])=>`<option value="${val}">${l}</option>`).join('')}</select>
+      <button class="btn gh sm" onclick="setAclGrpBulk('${g.replace(/'/g,"\\'")}',document.getElementById('aclblk_${gi}').value)" title="سطح انتخابی را یکجا به همه بخش‌های این گروه بده">↙ اعمال به همه</button></h3>
+    ${gHid?`<p style="font-size:11px;color:var(--bad);margin-bottom:6px">این گروه برای این نقش/کاربر کاملاً مخفی است — همه بخش‌ها و داشبوردهایش از منو حذف می‌شوند.</p>`:''}
+    <div class="tblwrap"><table><thead><tr><th>بخش</th><th>دسترسی</th><th>فیلدها</th></tr></thead><tbody>`;
     Object.entries(E).filter(([k,d])=>d.grp===g).forEach(([ek,ed])=>{
       const cur=(cfg.ent||{})[ek]||'';
       h+=`<tr><td>${ed.ic} ${ed.n}</td>
