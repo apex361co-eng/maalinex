@@ -2035,7 +2035,7 @@ const MODULES=[
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','gateway','pfsettle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
- {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash']},
+ {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
  {id:'M19',n:'توکن‌سازی پروژه (Tokenization)',ents:['token','tokenholder','tokentx','tokenloan','tokenins'],views:['tokendash']},
  {id:'M16',n:'رشد شخصی',ents:['growth','habit','win','plan','asset','area','book','course','booknote','note','reminder'],views:['gdash']}
@@ -4751,6 +4751,7 @@ function nav(){
     if(g==='حسابداری'&&canSee('voucher')&&can('c','voucher')&&canView('glnew'))items+=`<div class="nav-i ${view.type==='glnew'?'on':''}" onclick="glDraft=null;go('glnew')">🖊️ ثبت سند</div>`;
     if(g==='حسابداری'&&canSee('cheque')&&canView('chqdash'))items+=`<div class="nav-i ${view.type==='chqdash'?'on':''}" onclick="go('chqdash')">💳 تابلوی چک‌ها</div>`;
     if(g==='EPCF'&&canSee('eproject')){
+      if(canView('perfdash'))items+=`<div class="nav-i ${view.type==='perfdash'?'on':''}" onclick="go('perfdash')">🎖️ داشبورد عملکرد</div>`;
       if(canView('portdash'))items+=`<div class="nav-i ${view.type==='portdash'?'on':''}" onclick="go('portdash')">🏦 پورتفوی پروژه‌ها (هلدینگ)</div>`;
       const prjs=byE('eproject');
       if(prjs.length)items+=`<div style="padding:5px 12px"><select onchange="setGPrj(this.value)" style="width:100%;font-size:11px" title="پروژه فعال — همه لیست‌ها و فرم‌های EPCF روی آن فیلتر می‌شوند">
@@ -4829,6 +4830,7 @@ function render(){
     view.type==='cdash'?'🏢 داشبورد ساخت‌وساز':
     view.type==='portdash'?'🏦 پورتفوی پروژه‌ها':
     view.type==='tokendash'?'🪙 داشبورد توکن':
+    view.type==='perfdash'?'🎖️ داشبورد عملکرد':
     view.type==='salesdash'?'🧾 داشبورد فروش':
     view.type==='invnew'?'🧾 صدور فاکتور':
     view.type==='pinvnew'?'🧾 ثبت فاکتور خرید':
@@ -4850,7 +4852,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -4879,6 +4881,7 @@ function render(){
     else if(view.type==='cdash')c.innerHTML=cdashHTML();
     else if(view.type==='portdash')c.innerHTML=portdashHTML();
     else if(view.type==='tokendash')c.innerHTML=tokendashHTML();
+    else if(view.type==='perfdash')c.innerHTML=perfdashHTML();
     else if(view.type==='salesdash')c.innerHTML=salesdashHTML();
     else if(view.type==='invnew')c.innerHTML=invnewHTML();
     else if(view.type==='pinvnew')c.innerHTML=pinvnewHTML();
@@ -5457,6 +5460,125 @@ function epcfdashHTML(){
   h+=mini('⚖️ تغییرات و ادعاهای باز',clOpen,[['عنوان',r=>esc(r.d.title||'—'),'text-align:right'],['نوع',r=>esc(r.d.kind||'—')],['اثر مالی',r=>abbrN(+r.d.amount||0)],['وضعیت',r=>esc(r.d.status||'—')]],'موردی نیست');
   h+=mini('👷 آخرین گزارش‌های کارگاه',sites.sort((a,b)=>{const da=ds(a.d.date)||'',db=ds(b.d.date)||'';return da>db?-1:1;}),[['شرح',r=>esc((r.d.title||'—').slice(0,40)),'text-align:right'],['تاریخ',r=>esc(iso2jstr(ds(r.d.date))||'—')],['نفرات',r=>(+r.d.manp||0).toLocaleString('fa-IR')],['توقف',r=>(+r.d.stop||0)?(+r.d.stop).toLocaleString('fa-IR')+' س':'—']],'گزارشی ثبت نشده');
   h+=`</div>`;
+  return h;
+}
+/* ===== 🎖️ داشبورد عملکرد — پیمانکاران │ افراد │ تامین‌کنندگان │ واحدها (هلدینگ + هر پروژه) ===== */
+function _prjName(r){const id=relIds(r,'eproject')[0];return id&&recs[id]?recs[id].d.title:'—';}
+function perfSubs(P){ // پیمانکاران جزء — گروه به نام (یک پیمانکار در چند پروژه)
+  const G={};
+  byE('csub').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(sb=>{
+    const k=(sb.d.title||'—').trim();const g=G[k]||(G[k]={k,ids:[],prjs:new Set(),contract:0,appr:0,paid:0,boqEst:0,boqW:0,items:0});
+    g.ids.push(sb.id);g.prjs.add(_prjName(sb));g.contract+=(+sb.d.camount||0);
+    byE('csubinv').filter(v=>relIds(v,'csub').includes(sb.id)).forEach(v=>{g.appr+=(+v.d.approved||0);g.paid+=(+v.d.paid||0);});
+    byE('cboq').filter(b=>relIds(b,'csub').includes(sb.id)).forEach(b=>{const e=(+b.d.qty||0)*(+b.d.uprice||0);const p=(+b.d.qty||0)>0?Math.min(100,(+b.d.done||0)/(+b.d.qty)*100):0;g.boqEst+=e;g.boqW+=e*p;g.items++;});
+  });
+  return Object.values(G).map(g=>({...g,due:g.appr-g.paid,pg:g.boqEst>0?g.boqW/g.boqEst:null,np:g.prjs.size}));
+}
+function perfPeople(P){ // مهندسان/افراد — از WBS، مدارک، اقلام خرید، HSE
+  const t0=_isoToday();const G={};
+  const g=id=>{if(!recs[id])return null;const k=id;return G[k]||(G[k]={id,n:recs[id].d.title||'—',prjs:new Set(),wbs:0,dev:0,late:0,docs:0,docLate:0,mrs:0,mrLate:0,hseOpen:0,hseDone:0});};
+  byE('ewbs').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(w=>{const o=relIds(w,'owner')[0];const x=o&&g(o);if(!x)return;
+    x.prjs.add(_prjName(w));x.wbs++;x.dev+=((+w.d.act||0)-(+w.d.plan||0));if((+w.d.act||0)<(+w.d.plan||0)-5&&w.d.status!=='تمام شده')x.late++;});
+  byE('edoc').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(d=>{const o=relIds(d,'owner')[0];const x=o&&g(o);if(!x)return;
+    x.prjs.add(_prjName(d));x.docs++;if(d.d.status!=='تایید نهایی (IFC)'&&d.d.status!=='باطل'&&ds(d.d.pdate)&&ds(d.d.pdate)<t0)x.docLate++;});
+  byE('emr').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(m=>{const o=relIds(m,'owner')[0];const x=o&&g(o);if(!x)return;
+    x.prjs.add(_prjName(m));x.mrs++;if(m.d.status!=='تحویل سایت'&&m.d.status!=='لغو'&&ds(m.d.pdel)&&ds(m.d.pdel)<t0)x.mrLate++;});
+  byE('ehse').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(hh=>{const o=relIds(hh,'owner')[0];const x=o&&g(o);if(!x)return;
+    x.prjs.add(_prjName(hh));if(hh.d.status==='بسته')x.hseDone++;else x.hseOpen++;});
+  return Object.values(G).map(x=>({...x,avgDev:x.wbs>0?x.dev/x.wbs:null,np:x.prjs.size,load:x.wbs+x.docs+x.mrs}));
+}
+function perfSuppliers(P){ // تامین‌کنندگان — از MR/PO و مصالح و استعلام‌ها
+  const G={};
+  const g=id=>{if(!recs[id])return null;return G[id]||(G[id]={id,n:recs[id].d.title||'—',prjs:new Set(),po:0,poAmt:0,onTime:0,delSum:0,delN:0,matAmt:0,quotes:0,wins:0});};
+  byE('emr').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(m=>{const sId=relIds(m,'supplier')[0];const x=sId&&g(sId);if(!x)return;
+    x.prjs.add(_prjName(m));x.po++;x.poAmt+=(+m.d.amount||0);
+    const pd=ds(m.d.pdel),ad=ds(m.d.adel);
+    if(ad&&pd){x.delN++;const diff=Math.round((new Date(ad)-new Date(pd))/86400000);x.delSum+=diff;if(diff<=0)x.onTime++;}});
+  byE('cmat').filter(r=>(!P||relIds(r,'eproject').includes(P))&&r.d.kind==='ورود به کارگاه').forEach(m=>{const sId=relIds(m,'supplier')[0];const x=sId&&g(sId);if(!x)return;
+    x.prjs.add(_prjName(m));x.matAmt+=(+m.d.qty||0)*(+m.d.uprice||0);});
+  byE('cquote').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(q=>{const sId=relIds(q,'supplier')[0];const x=sId&&g(sId);if(!x)return;
+    x.prjs.add(_prjName(q));x.quotes++;if(q.d.chosen)x.wins++;});
+  return Object.values(G).map(x=>({...x,np:x.prjs.size,total:x.poAmt+x.matAmt,
+    onTimePct:x.delN>0?x.onTime/x.delN*100:null,avgDelay:x.delN>0?x.delSum/x.delN:null}));
+}
+function perfUnits(P){ // واحدهای سازمانی — از WBS
+  const G={};
+  byE('ewbs').filter(r=>!P||relIds(r,'eproject').includes(P)).forEach(w=>{
+    const u=relIds(w,'orgu')[0];if(!u||!recs[u])return;
+    const x=G[u]||(G[u]={id:u,n:recs[u].d.title||'—',prjs:new Set(),wbs:0,plan:0,act:0,wsum:0,late:0});
+    const wt=+w.d.weight||1;x.prjs.add(_prjName(w));x.wbs++;x.wsum+=wt;x.plan+=wt*(+w.d.plan||0);x.act+=wt*(+w.d.act||0);
+    if((+w.d.act||0)<(+w.d.plan||0)-5&&w.d.status!=='تمام شده')x.late++;});
+  return Object.values(G).map(x=>({...x,np:x.prjs.size,pAvg:x.wsum>0?x.plan/x.wsum:0,aAvg:x.wsum>0?x.act/x.wsum:0}));
+}
+function perfdashHTML(){
+  const projects=byE('eproject');
+  const P=view.pfP||'';
+  if(!view.pfKind)view.pfKind='sub';
+  const K=view.pfKind;
+  const KINDS=[['sub','👷‍♂️ پیمانکاران جزء'],['ppl','👤 افراد (مهندس/کارشناس)'],['sup','🚚 تامین‌کنندگان'],['unit','🏢 واحدهای سازمانی']];
+  let h=`<div class="tools"><label style="margin:0">سطح:</label>
+    <select onchange="view.pfP=this.value;view.pfSel=null;render()" style="max-width:200px">
+      <option value="">🏦 کل هلدینگ (همه پروژه‌ها)</option>
+      ${projects.map(x=>`<option value="${x.id}" ${x.id===P?'selected':''}>🏗️ ${esc(x.d.title)}</option>`).join('')}</select>
+    <span style="flex:1"></span></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    ${KINDS.map(([k,n])=>`<button class="btn ${K===k?'':'gh'} sm" onclick="view.pfKind='${k}';view.pfSel=null;render()">${n}</button>`).join('')}
+  </div>`;
+  const dev=(v,inv)=>v==null?'—':`<b style="color:${(inv?-v:v)< -5?'var(--bad)':(inv?-v:v)>=0?'var(--ok)':'#e5b567'}">${(v>=0?'+':'')+v.toLocaleString('fa-IR',{maximumFractionDigits:1})}</b>`;
+  const tbl=(cols,rows,rowFn)=>rows.length?`<div class="tblwrap"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(rowFn).join('')}</tbody></table></div>`:'<div class="empty">داده‌ای برای این نما نیست</div>';
+  if(K==='sub'){
+    const rows=perfSubs(P).sort((a,b)=>b.appr-a.appr);
+    h+=`<div class="sec"><h3>👷‍♂️ کارنامه پیمانکاران جزء ${P?'— این پروژه':'— کل هلدینگ (تجمیع چندپروژه‌ای به نام)'} <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
+    ${tbl(['پیمانکار','پروژه‌ها','قراردادها','ص.و تایید','پرداخت','مانده ما به او','پیشرفت آیتم‌های محول','آیتم'],rows,r=>`
+      <tr onclick="view.pfSel=view.pfSel==='${esc(r.k)}'?null:'${esc(r.k)}';render()" style="cursor:pointer;${view.pfSel===r.k?'background:rgba(236,217,143,.06)':''}">
+      <td style="text-align:right"><b>${esc(r.k)}</b>${r.np>1?' 🔗':''}</td><td>${r.np.toLocaleString('fa-IR')}</td>
+      <td>${abbrN(r.contract)}</td><td>${abbrN(r.appr)}</td><td>${abbrN(r.paid)}</td>
+      <td><b style="color:${r.due>0?'#e5b567':'var(--tx)'}">${abbrN(r.due)}</b></td>
+      <td>${r.pg==null?'—':`<b style="color:${r.pg<50?'var(--bad)':r.pg<80?'#e5b567':'var(--ok)'}">${r.pg.toFixed(0)}٪</b>`}</td>
+      <td>${r.items.toLocaleString('fa-IR')}</td></tr>
+      ${view.pfSel===r.k?`<tr><td colspan="8" style="background:var(--bg)"><div style="padding:6px 10px;font-size:11.5px">
+        ${r.ids.map(id=>{const sb=recs[id];const iv=byE('csubinv').filter(v=>relIds(v,'csub').includes(id));
+          const ap=iv.reduce((a,v)=>a+(+v.d.approved||0),0),pd=iv.reduce((a,v)=>a+(+v.d.paid||0),0);
+          return `<div style="display:flex;gap:14px;padding:3px 0;border-bottom:1px dashed var(--line)"><span style="min-width:160px">🏗️ ${esc(_prjName(sb))}</span><span>${esc(sb.d.trade||'—')}</span><span>قرارداد: ${abbrN(+sb.d.camount||0)}</span><span>تایید: ${abbrN(ap)}</span><span>پرداخت: ${abbrN(pd)}</span><span style="color:${ap-pd>0?'#e5b567':'var(--tx2)'}">مانده: ${abbrN(ap-pd)}</span></div>`;}).join('')}
+      </div></td></tr>`:''}`)}
+    <p style="font-size:11px;color:var(--tx2);margin-top:8px">🔗 = در بیش از یک پروژه فعال است (تجمیع به نام). روی هر ردیف بزن تا شکست پروژه‌به‌پروژه‌اش باز شود.</p></div>`;
+  }
+  if(K==='ppl'){
+    const rows=perfPeople(P).sort((a,b)=>b.load-a.load);
+    h+=`<div class="sec"><h3>👤 کارنامه افراد <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
+    ${tbl(['فرد','پروژه‌ها','بسته‌های WBS','میانگین انحراف٪','بسته عقب','مدارک (معوق)','اقلام خرید (معوق)','HSE بسته/باز'],rows,r=>`
+      <tr onclick="go('rec','hr','${r.id}')" style="cursor:pointer">
+      <td style="text-align:right"><b>${esc(r.n)}</b>${r.np>1?' 🔗':''}</td><td>${r.np.toLocaleString('fa-IR')}</td>
+      <td>${r.wbs.toLocaleString('fa-IR')}</td><td>${dev(r.avgDev)}</td>
+      <td>${r.late?`<b style="color:var(--bad)">${r.late.toLocaleString('fa-IR')}</b>`:'۰'}</td>
+      <td>${r.docs.toLocaleString('fa-IR')}${r.docLate?` <b style="color:var(--bad)">(${r.docLate.toLocaleString('fa-IR')} معوق)</b>`:''}</td>
+      <td>${r.mrs.toLocaleString('fa-IR')}${r.mrLate?` <b style="color:var(--bad)">(${r.mrLate.toLocaleString('fa-IR')} معوق)</b>`:''}</td>
+      <td>${r.hseDone.toLocaleString('fa-IR')} / ${r.hseOpen?`<b style="color:var(--bad)">${r.hseOpen.toLocaleString('fa-IR')}</b>`:'۰'}</td></tr>`)}
+    <p style="font-size:11px;color:var(--tx2);margin-top:8px">میانگین انحراف = واقعی − برنامه‌ایِ بسته‌های تحت مسئولیت (مثبت سبز = جلوتر از برنامه). برای اتصال، فیلد «مسئول» را در WBS/مدارک/اقلام پر کن.</p></div>`;
+  }
+  if(K==='sup'){
+    const rows=perfSuppliers(P).sort((a,b)=>b.total-a.total);
+    h+=`<div class="sec"><h3>🚚 کارنامه تامین‌کنندگان <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
+    ${tbl(['تامین‌کننده','پروژه‌ها','PO / اقلام','مبلغ POها','خرید مصالح','مجموع هزینه با او','تحویل به‌موقع','تاخیر متوسط','استعلام (برد)'],rows,r=>`
+      <tr onclick="go('rec','crm','${r.id}')" style="cursor:pointer">
+      <td style="text-align:right"><b>${esc(r.n)}</b>${r.np>1?' 🔗':''}</td><td>${r.np.toLocaleString('fa-IR')}</td>
+      <td>${r.po.toLocaleString('fa-IR')}</td><td>${abbrN(r.poAmt)}</td><td>${abbrN(r.matAmt)}</td>
+      <td><b>${abbrN(r.total)}</b></td>
+      <td>${r.onTimePct==null?'—':`<b style="color:${r.onTimePct<60?'var(--bad)':r.onTimePct<85?'#e5b567':'var(--ok)'}">${r.onTimePct.toFixed(0)}٪</b>`}</td>
+      <td>${r.avgDelay==null?'—':`<b style="color:${r.avgDelay>7?'var(--bad)':r.avgDelay>0?'#e5b567':'var(--ok)'}">${r.avgDelay.toLocaleString('fa-IR',{maximumFractionDigits:1})} روز</b>`}</td>
+      <td>${r.quotes.toLocaleString('fa-IR')} (${r.wins.toLocaleString('fa-IR')})</td></tr>`)}
+    <p style="font-size:11px;color:var(--tx2);margin-top:8px">تحویل به‌موقع و تاخیر از مقایسه «موعد برنامه‌ای» و «تحویل واقعی» اقلام خرید حساب می‌شود — این جدول برای مذاکره قرارداد بعدی طلاست.</p></div>`;
+  }
+  if(K==='unit'){
+    const rows=perfUnits(P).sort((a,b)=>b.wbs-a.wbs);
+    h+=`<div class="sec"><h3>🏢 کارنامه واحدهای سازمانی <span class="c">${rows.length.toLocaleString('fa-IR')}</span></h3>
+    ${tbl(['واحد','پروژه‌ها','بسته‌ها','برنامه‌ای','واقعی','انحراف','بسته عقب'],rows,r=>`
+      <tr onclick="go('rec','orgunit','${r.id}')" style="cursor:pointer">
+      <td style="text-align:right"><b>${esc(r.n)}</b>${r.np>1?' 🔗':''}</td><td>${r.np.toLocaleString('fa-IR')}</td>
+      <td>${r.wbs.toLocaleString('fa-IR')}</td><td>${r.pAvg.toLocaleString('fa-IR',{maximumFractionDigits:1})}٪</td>
+      <td>${r.aAvg.toLocaleString('fa-IR',{maximumFractionDigits:1})}٪</td><td>${dev(r.aAvg-r.pAvg)}</td>
+      <td>${r.late?`<b style="color:var(--bad)">${r.late.toLocaleString('fa-IR')}</b>`:'۰'}</td></tr>`)}</div>`;
+  }
   return h;
 }
 /* ===== 🪙 داشبورد توکن — نمای ناشر │ مالکان │ بانک │ بیمه │ اتصال پروژه ===== */
