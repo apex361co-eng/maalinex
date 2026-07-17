@@ -240,6 +240,8 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     </div>
     <label>ایمیل</label><input id="l_email" dir="ltr" type="email" autocomplete="username">
     <label>رمز عبور</label><input id="l_pass" dir="ltr" type="password" autocomplete="current-password">
+    <div id="l_passhint" style="display:none;font-size:11px;color:#e5b567;margin:4px 2px 0">🔑 رمز باید <b>حداقل ۸ کاراکتر</b> باشد — ترکیب حروف و عدد بهتر است</div>
+    <div id="l_forgot" style="font-size:11.5px;margin:6px 2px 0"><a href="javascript:void(0)" onclick="forgotPass()" style="color:var(--ac)">🔓 رمز عبور را فراموش کرده‌ام</a></div>
     <details id="l_conn"><summary>⚙️ تنظیمات اتصال (Supabase)</summary>
       <label>Supabase URL</label><input id="l_url" dir="ltr" placeholder="https://xxxx.supabase.co">
       <label>Anon Key</label><input id="l_key" dir="ltr" placeholder="eyJ...">
@@ -4479,6 +4481,10 @@ function ceoHideToggle(k){const s=ceoHide();s.has(k)?s.delete(k):s.add(k);try{lo
 function ceoChartSel(){const raw=localStorage.getItem('xr_ceochart');if(raw==null)return ['net','gp'];try{const s=JSON.parse(raw);if(Array.isArray(s))return s;}catch(e){}return [];}
 function ceoChartToggle(k){let s=ceoChartSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_ceochart',JSON.stringify(s));}catch(e){}render();}
 window.ceoHideToggle=ceoHideToggle;window.ceoChartToggle=ceoChartToggle;
+/* 🧊 آستانه راکد بودن انبار (روز بدون فروش) — قابل تنظیم توسط خود کاربر */
+function ceoStaleDays(){const v=+localStorage.getItem('xr_ceostale');return (v>=1&&v<=3650)?v:60;}
+function setCeoStaleDays(v){v=Math.max(1,Math.min(3650,+String(v).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))||60));try{localStorage.setItem('xr_ceostale',v);}catch(e){}render();}
+window.setCeoStaleDays=setCeoStaleDays;
 /* شاخص‌های قابل‌نمودار: هرکدام برای بازه [from,to] یک عدد می‌دهند تا روی چند دوره متوالی رسم شوند */
 const CEO_SERIES=[
  {k:'net',n:'فروش خالص',f:(b,f,t)=>ceoSaleLines(b,f,t).reduce((a,L)=>a+L.rev,0)},
@@ -4562,7 +4568,8 @@ function ceodashHTML(){
   const agg=ceoAgg(lines);
   const stock=ceoStock(b);
   const totVal=stock.reduce((a,x)=>a+x.val,0);
-  const stale60=stock.filter(x=>x.st>0&&(!x.last||x.last<_isoAdd(t0,-60)));
+  const SD=ceoStaleDays();
+  const stale60=stock.filter(x=>x.st>0&&(!x.last||x.last<_isoAdd(t0,-SD)));
   const staleVal=stale60.reduce((a,x)=>a+x.val,0);
   const stalePct=totVal>0?staleVal/totVal*100:0;
   const cash=bizCashBal(b);
@@ -4591,7 +4598,7 @@ function ceodashHTML(){
   const alerts=[];
   if(net>0&&margin<20)alerts.push(['bad','حاشیه سود ناخالص '+margin.toFixed(1)+'٪ — زیر هدف ۲۰٪']);
   if(op<=0&&net>0)alerts.push(['bad','سود عملیاتی '+(op<0?'منفی':'صفر')+' است']);
-  if(stalePct>30)alerts.push(['bad','٪'+Math.round(stalePct)+' انبار راکد است (بالای حد ۳۰٪)']);
+  if(stalePct>30)alerts.push(['bad','٪'+Math.round(stalePct)+' انبار راکد است — بدون فروش در '+SD.toLocaleString('fa-IR')+' روز (بالای حد ۳۰٪)']);
   if(cashFc<0)alerts.push(['bad','⚠️ ریسک کمبود نقدینگی تا ۲ هفته آینده: '+money(-cashFc)+' کسری']);
   const outAge=stock.filter(x=>x.avg>0&&x.cover<7);
   if(outAge.length)alerts.push(['warn',outAge.length.toLocaleString('fa-IR')+' کالای پرفروش زیر ۷ روز پوشش موجودی دارند']);
@@ -4644,9 +4651,9 @@ function ceodashHTML(){
     ],
     stock:[
       ['totval','ارزش کل موجودی (FIFO)',money(totVal)],
-      ['staleval','ارزش موجودی راکد (۶۰ روز بدون فروش)',money(staleVal),stalePct>30],
+      ['staleval','ارزش موجودی راکد ('+SD.toLocaleString('fa-IR')+' روز بدون فروش)',money(staleVal),stalePct>30],
       ['stalepct','درصد راکد از کل انبار',Math.round(stalePct).toLocaleString('fa-IR')+'٪',stalePct>30],
-      ['locked','سرمایه قفل‌شده در انبار',money(staleVal+stock.filter(x=>x.cover>60&&x.cover<9999&&x.st>0&&!stale60.includes(x)).reduce((a,x)=>a+x.val,0)),false,'راکد + اضافه‌موجودی'],
+      ['locked','سرمایه قفل‌شده در انبار',money(staleVal+stock.filter(x=>x.cover>SD&&x.cover<9999&&x.st>0&&!stale60.includes(x)).reduce((a,x)=>a+x.val,0)),false,'راکد + اضافه‌موجودی'],
       ['turn','نرخ گردش موجودی (دوره)',totVal>0?(cogs/totVal).toLocaleString('fa-IR',{maximumFractionDigits:2}):'—'],
       ['risk','کالاهای در خطر اتمام (<۷ روز)',outAge.length.toLocaleString('fa-IR'),outAge.length>0],
     ],
@@ -4677,6 +4684,11 @@ function ceodashHTML(){
     <div style="display:flex;flex-wrap:wrap;gap:6px">${(REG[T]||[]).map(m=>{const on=!hide.has(T+':'+m[0]);return `<button class="btn sm ${on?'':'gh'}" onclick="ceoHideToggle('${T}:${m[0]}')">${on?'✅':'⬜'} ${esc(m[1])}</button>`;}).join('')||'<span style="font-size:11px;color:var(--tx2)">این بخش کارت قابل‌تنظیم ندارد</span>'}</div>
     <div style="font-size:11px;color:var(--ac);margin:12px 0 4px">📊 شاخص‌هایی که به‌صورت نمودار ببینم (روی ۶ دوره‌ی اخیر)</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px">${CEO_SERIES.map(s=>{const on=ceoChartSel().includes(s.k);return `<button class="btn sm ${on?'':'gh'}" onclick="ceoChartToggle('${s.k}')">${on?'📊':'⬜'} ${esc(s.n)}</button>`;}).join('')}</div>
+    <div style="font-size:11px;color:var(--ac);margin:12px 0 4px">🧊 تعریف «موجودی راکد»</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
+      کالایی که <input type="number" min="1" max="3650" value="${SD}" onchange="setCeoStaleDays(this.value)" style="width:80px;text-align:center"> روز فروش نداشته، راکد حساب شود
+      <span style="color:var(--tx2);font-size:10.5px">(روی کارت راکد، سرمایه قفل‌شده، جدول راکدها و هشدارها اثر می‌گذارد — پیش‌فرض ۶۰)</span>
+    </div>
     </div>`;
   }
   // 📊 نمودارها (شاخص‌های انتخاب‌شده)
@@ -4697,7 +4709,7 @@ function ceodashHTML(){
       +card('بدون گردش ۶۰ روز',noSale(60).length.toLocaleString('fa-IR')+' قلم │ '+money(noSale(60).reduce((a,x)=>a+x.val,0)))
       +card('بدون گردش ۹۰ روز',noSale(90).length.toLocaleString('fa-IR')+' قلم │ '+money(noSale(90).reduce((a,x)=>a+x.val,0)),noSale(90).length>0));
     h+=topTbl('⏳ کالاهای در خطر اتمام (پوشش زیر ۷ روز)',outAge.sort((a,b)=>a.cover-b.cover).slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['فروش روزانه',x=>x.avg.toLocaleString('fa-IR',{maximumFractionDigits:1})],['روز پوشش',x=>`<b style="color:var(--bad)">${x.cover.toFixed(1)}</b>`]]);
-    h+=topTbl('🧊 راکدها و اضافه‌خریدها (بیشترین سرمایه خوابیده)',stock.filter(x=>x.st>0&&(x.cover>60||(!x.last||x.last<_isoAdd(t0,-60)))).sort((a,b)=>b.val-a.val).slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['ارزش خوابیده',x=>money(x.val)],['آخرین فروش',x=>x.last?esc(iso2jstr(x.last)):'هرگز']]);
+    h+=topTbl('🧊 راکدها و اضافه‌خریدها (بیشترین سرمایه خوابیده)',stock.filter(x=>x.st>0&&(x.cover>SD||(!x.last||x.last<_isoAdd(t0,-SD)))).sort((a,b)=>b.val-a.val).slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['ارزش خوابیده',x=>money(x.val)],['آخرین فروش',x=>x.last?esc(iso2jstr(x.last)):'هرگز']]);
   }
   if(T==='cost'){
     h+=renderCards('cost');
@@ -7219,6 +7231,45 @@ function setAuthMode(m){
   document.getElementById('at_up').classList.toggle('on',m==='up');
   document.getElementById('l_go').textContent=m==='in'?'ورود':'ایجاد حساب';
   document.getElementById('l_err').textContent='';
+  // در حالت ثبت‌نام: راهنمای رمز │ در حالت ورود: لینک فراموشی رمز
+  const ph=document.getElementById('l_passhint'),fg=document.getElementById('l_forgot');
+  if(ph)ph.style.display=m==='up'?'':'none';
+  if(fg)fg.style.display=m==='in'?'':'none';
+}
+/* 🔓 بازیابی رمز عبور — ایمیل بازیابی Supabase */
+async function forgotPass(){
+  const errEl=document.getElementById('l_err');errEl.textContent='';
+  const url=document.getElementById('l_url').value.trim(),key=document.getElementById('l_key').value.trim(),
+        em=document.getElementById('l_email').value.trim();
+  if(!em){errEl.textContent='اول ایمیل‌تان را در کادر بالا بنویسید، بعد روی «فراموشی رمز» بزنید';return;}
+  if(!url||!key){errEl.textContent='در «تنظیمات اتصال»، URL و Anon Key را وارد کنید';document.getElementById('l_conn').open=true;return;}
+  cfg.url=url;cfg.key=key;localStorage.setItem('xr_cfg',JSON.stringify(cfg));
+  await initSupabase().catch(()=>false);
+  if(!sb){errEl.textContent='اتصال به سرور برقرار نشد (اینترنت را چک کنید)';return;}
+  const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
+  if(error){
+    if(/rate limit|too many/i.test(error.message||''))errEl.textContent='⏳ محدودیت ارسال ایمیل — چند دقیقه دیگر دوباره امتحان کنید';
+    else errEl.textContent='ارسال ناموفق: '+error.message;
+    return;
+  }
+  errEl.innerHTML='<span style="color:var(--ok)">📩 ایمیل بازیابی ارسال شد!</span> صندوق ایمیل (و پوشه Spam) را چک کنید و روی لینک داخل ایمیل بزنید — به همین‌جا برمی‌گردید و رمز تازه می‌گذارید.';
+}
+window.forgotPass=forgotPass;
+/* وقتی کاربر از لینک ایمیل بازیابی برگشت (type=recovery در آدرس) رمز تازه بگیر */
+async function handleRecovery(){
+  if(!sb||!session)return false;
+  if(!/type=recovery/.test(location.hash||''))return false;
+  try{history.replaceState(null,'',location.pathname);}catch(e){}
+  let pw='';
+  while(true){
+    pw=prompt('🔑 رمز عبور تازه‌ات را بنویس (حداقل ۸ کاراکتر):');
+    if(pw===null)return true; // انصراف — با نشست بازیابی وارد می‌ماند
+    if(pw.length>=8)break;
+    alert('رمز باید حداقل ۸ کاراکتر باشد');
+  }
+  const {error}=await sb.auth.updateUser({password:pw});
+  alert(error?('تغییر رمز ناموفق: '+error.message):'✅ رمز عبور با موفقیت عوض شد — از این به بعد با رمز تازه وارد شو');
+  return true;
 }
 function fillLoginForm(){
   if(cfg.url)document.getElementById('l_url').value=cfg.url;
@@ -7236,7 +7287,7 @@ async function doLogin(){
   if(!sb){errEl.textContent='اتصال به Supabase برقرار نشد (اینترنت/URL را چک کنید)';return;}
   if(!session){
     if(authMode==='up'){
-      if(pw.length<6){errEl.textContent='رمز عبور حداقل ۶ کاراکتر باشد';return;}
+      if(pw.length<8){errEl.textContent='🔑 رمز عبور باید حداقل ۸ کاراکتر باشد';return;}
       const su=await sb.auth.signUp({email:em,password:pw});
       if(su.error){
         const m=su.error.message||'';
@@ -7497,7 +7548,7 @@ loadLocal();render();fillLoginForm();checkDraft();
 (async()=>{
   if(cfg.url&&cfg.key){
     const ok=await initSupabase().catch(()=>false);
-    if(ok){await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();}
+    if(ok){try{await handleRecovery();}catch(e){} await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();}
     else if(cfg.local!==1){render();whoami();document.getElementById('login').classList.add('show');} // نشست نامعتبر — کش پاک شد، ورود لازم است
     else setSync('off','بدون سینک (محلی)');
   } else if(cfg.local===1){setSync('off','بدون سینک (محلی)');}
