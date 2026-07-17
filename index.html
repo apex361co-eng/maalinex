@@ -2353,6 +2353,42 @@ function impcenterHTML(){
   let h=`<div class="sec"><h3>📥 مرکز ورود اکسل</h3>
     <p style="font-size:12px;color:var(--tx2);line-height:2">برای هر بخش «⬇️ قالب» را بگیر، در اکسل پر کن و «📂 بارگذاری» کن. ستون‌های قالب همیشه با **فیلدهای فعلیِ همان بخش** (شامل فیلدهای سفارشی) هماهنگ‌اند — هر فیلدی کم/زیاد کنی، قالب هم عوض می‌شود. تیک «به‌روزرسانی رکورد هم‌نام» برای رفرش روزانه بدون تکرار است. چند فایل را پشت‌سرهم بالا بریز.</p>
     <div style="padding:8px 10px;border-radius:8px;background:var(--bg3);font-size:12px">${b&&recs[b]?`🏢 کسب‌وکار فعال: <b>${esc(recs[b].d.title)}</b> — رکوردهای واردشده که فیلد «کسب‌وکار» دارند، خودکار به همین وصل می‌شوند (لازم نیست در اکسل بیاد).`:'⚠️ کسب‌وکار فعالی انتخاب نشده؛ برای وصل خودکار، از بالای منو یک «کسب‌وکار فعال» انتخاب کن.'}</div></div>`;
+  // 🤖 ورود خودکار از پوشه
+  if(isAdmin()){
+    const c=aiCfg();let log=[];try{log=JSON.parse(localStorage.getItem('xr_ailog')||'[]');}catch(e){}
+    const stratOv=c.strat||{};
+    const impEnts=Object.entries(E).filter(([k,v])=>!v.sub&&can('c',k)&&impFields(k).length);
+    h+=`<div class="sec" style="border-inline-start:3px solid var(--ac)"><h3>🤖 ورود خودکار از پوشه
+      <span style="flex:1"></span>
+      ${_fsDir?`<span class="chip" style="background:var(--bg)">📂 ${esc(_fsDir.name)}</span>`:''}
+      <button class="btn gh sm" onclick="aiConnect()">📂 ${_fsDir?'تغییر پوشه':'اتصال پوشه'}</button>
+      <button class="btn sm" onclick="aiScan(true)">🔍 اسکن حالا</button></h3>
+    <p style="font-size:12px;color:var(--tx2);line-height:2">یک پوشه روی کامپیوترت انتخاب کن؛ فایل‌های اکسل را با <b>نام همان بخش</b> داخلش بگذار (مثل «کالا و خدمات.xlsx» یا «فروش سریع (تک‌کالا) - امروز.xlsx») — سیستم خودش می‌خواند و حسب نوع اطلاعات، <b>اضافه</b> یا <b>به‌روزرسانی</b> می‌کند. فایل تکراری (بدون تغییر) دوباره وارد نمی‌شود. زمان‌بندی فقط وقتی اپ باز باشد کار می‌کند.</p>
+    <div class="tools" style="margin:6px 0">
+      <label style="margin:0">زمان‌بندی:</label>
+      <select onchange="aiSetCfg(c=>c.mode=this.value)" style="max-width:170px">
+        <option value="off" ${!c.mode||c.mode==='off'?'selected':''}>خاموش (فقط دستی)</option>
+        <option value="m15" ${c.mode==='m15'?'selected':''}>هر ۱۵ دقیقه</option>
+        <option value="m30" ${c.mode==='m30'?'selected':''}>هر ۳۰ دقیقه</option>
+        <option value="m60" ${c.mode==='m60'?'selected':''}>هر ۱ ساعت</option>
+        <option value="daily" ${c.mode==='daily'?'selected':''}>روزانه در ساعت مشخص</option>
+      </select>
+      ${c.mode==='daily'?`<label style="margin:0">ساعت:</label><input type="number" min="0" max="23" value="${+c.hour||8}" onchange="aiSetCfg(x=>x.hour=+this.value)" style="width:70px;text-align:center">`:''}
+      <label style="margin:0 0 0 12px">روش برای بخش:</label>
+      <select id="ai_ent" style="max-width:180px">${impEnts.map(([k,v])=>`<option value="${k}">${v.ic} ${esc(v.n)}</option>`).join('')}</select>
+      <select id="ai_strat" style="max-width:200px">
+        <option value="">پیش‌فرض هوشمند</option>
+        <option value="add">➕ افزودن (رکورد جدید)</option>
+        <option value="up">🔁 به‌روزرسانی هم‌نام</option>
+        <option value="rep">♻️ جایگزینی کامل (حذف قبلی‌ها!)</option>
+      </select>
+      <button class="btn gh sm" onclick="aiSetCfg(c=>{c.strat=c.strat||{};const e=document.getElementById('ai_ent').value,v=document.getElementById('ai_strat').value;if(v)c.strat[e]=v;else delete c.strat[e];})">ثبت روش</button>
+    </div>
+    ${Object.keys(stratOv).length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">${Object.entries(stratOv).map(([k,v])=>E[k]?`<span class="tag y" style="font-size:10.5px">${esc(E[k].n)}: ${({add:'➕ افزودن',up:'🔁 به‌روزرسانی',rep:'♻️ جایگزینی'})[v]} <b style="cursor:pointer;color:var(--bad)" onclick="aiSetCfg(c=>{delete c.strat['${k}'];})">✕</b></span>`:'').join('')}</div>`:''}
+    <p style="font-size:10.5px;color:var(--tx2)">پیش‌فرض هوشمند: بخش‌های تراکنشی (فروش، خرید، هزینه، معاملات و…) ➕ افزوده می‌شوند؛ اطلاعات پایه (کالا، مشتری، پیمانکار و…) 🔁 با رکورد هم‌نام به‌روزرسانی می‌شوند. «جایگزینی کامل» فقط اگر خودت تعیین کنی.</p>
+    ${log.length?`<div class="tblwrap" style="max-height:180px;overflow:auto;margin-top:6px"><table><tbody>${log.map(l=>`<tr><td style="text-align:right;font-size:11px">${esc(l)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    </div>`;
+  }
   allGroups().forEach(g=>{
     const ents=Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&can('c',k)&&impFields(k).length);
     if(!ents.length)return;
@@ -2474,18 +2510,18 @@ function impFile(inp){
   }
 }
 window.impFile=impFile;
-function impParse(arr){
-  const e=impState.e, fs=impFields(e), prev=document.getElementById('imp_prev');
+function impBuildRows(e,arr){ // 🧠 اعتبارسنجی مشترک (پیش‌نمایش دستی + ورود خودکار)
+  const fs=impFields(e);
   arr=(arr||[]).filter(r=>Array.isArray(r)&&r.some(c=>String(c??'').trim()!==''));
-  if(arr.length<2){prev.innerHTML='<div class="empty">فایل خالی است یا فقط سربرگ دارد</div>';return;}
+  if(arr.length<2)return {err:'فایل خالی است یا فقط سربرگ دارد'};
   const heads=arr[0].map(h=>String(h??'').trim());
   const map=heads.map(h=>fs.find(f=>f.n===h||f.k===h)||null);
-  if(!map.some(f=>f&&f.k==='title')){prev.innerHTML=`<div class="empty" style="color:var(--bad)">⚠️ ستون «${esc(fs[0].n)}» در فایل پیدا نشد — از قالب دانلودی استفاده کنید و سربرگ‌ها را تغییر ندهید</div>`;return;}
+  if(!map.some(f=>f&&f.k==='title'))return {err:'ستون «'+fs[0].n+'» در فایل پیدا نشد — از قالب دانلودی استفاده کنید'};
   const unknown=heads.filter((h,i)=>h&&!map[i]);
   const out=[];
   arr.slice(1).forEach((row,ri)=>{
     const first=String(row.find(c=>String(c??'').trim()!=='')??'').trim();
-    if(first.startsWith('راهنما'))return; // ردیف راهنمای قالب
+    if(first.startsWith('راهنما'))return;
     const d={}, errs=[];
     map.forEach((f,ci)=>{
       if(!f)return;
@@ -2507,7 +2543,13 @@ function impParse(arr){
     const existing=d.title?byE(e).find(x=>(x.d.title||'').trim()===String(d.title).trim()):null;
     out.push({n:ri+2,d,errs,existing});
   });
-  const ok=out.filter(r=>!r.errs.length);
+  return {out,ok:out.filter(r=>!r.errs.length),unknown};
+}
+function impParse(arr){
+  const e=impState.e, prev=document.getElementById('imp_prev');
+  const res=impBuildRows(e,arr);
+  if(res.err){prev.innerHTML='<div class="empty" style="color:var(--bad)">⚠️ '+esc(res.err)+'</div>';return;}
+  const out=res.out, ok=res.ok, unknown=res.unknown;
   impState.valid=ok;
   let h=`<div style="display:flex;gap:10px;font-size:12px;margin-bottom:8px">
     <span class="imp-ok">✅ ${ok.length.toLocaleString('fa-IR')} ردیف سالم</span>
@@ -2552,6 +2594,117 @@ function impCommit(){
   alert('📥 ورود انجام شد: '+created.toLocaleString('fa-IR')+' رکورد جدید'+(updated?' و '+updated.toLocaleString('fa-IR')+' به‌روزرسانی':''));
 }
 window.impCommit=impCommit;
+/* ================= 🤖 ورود خودکار اکسل از پوشه (File System Access) ================= */
+let _fsDir=null;
+function _idb(){return new Promise((res,rej)=>{const r=indexedDB.open('xrfs',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function _idbSet(k,v){const db=await _idb();return new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}
+async function _idbGet(k){const db=await _idb();return new Promise((res,rej)=>{const tx=db.transaction('kv');const q=tx.objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+function aiCfg(){try{return JSON.parse(localStorage.getItem('xr_autoimp')||'{}');}catch(e){return {};}}
+function aiSetCfg(mut){const c=aiCfg();mut(c);try{localStorage.setItem('xr_autoimp',JSON.stringify(c));}catch(e){}render();}
+window.aiSetCfg=aiSetCfg;
+/* 🧠 روش پیش‌فرض حسب نوع اطلاعات: تراکنشی → افزودن │ اطلاعات پایه → به‌روزرسانی هم‌نام */
+const AI_TRANS=new Set(['sale','purchase','invoice','invline','purchline','settle','expense','tokentx','cmat','clabor','cmach','cpetty','esite','eprog','tx','stockmv','csubinv','einv','pfsettle','voucher','vline','payroll']);
+function aiDefaultStrat(e){return AI_TRANS.has(e)?'add':'up';}
+function aiStrat(e){return (aiCfg().strat||{})[e]||aiDefaultStrat(e);}
+function aiLog(msg){
+  let L=[];try{L=JSON.parse(localStorage.getItem('xr_ailog')||'[]');}catch(e){}
+  L.unshift(iso2jstr(new Date().toISOString().slice(0,10))+' '+new Date().toTimeString().slice(0,5)+' │ '+msg);
+  try{localStorage.setItem('xr_ailog',JSON.stringify(L.slice(0,30)));}catch(e){}
+}
+function aiMatchEntity(fname){ // نام فایل = نام بخش (پسوند « - هرچیزی» آزاد است)
+  const base=fname.replace(/\.(xlsx|xls|csv)$/i,'').split(/\s*[-–—]\s*/)[0].trim();
+  const hit=Object.entries(E).find(([k,v])=>!v.sub&&v.n.trim()===base&&can('c',k)&&impFields(k).length);
+  return hit?hit[0]:null;
+}
+async function aiConnect(){
+  if(!window.showDirectoryPicker){alert('این قابلیت به مرورگر Chrome یا Edge روی کامپیوتر نیاز دارد');return;}
+  try{_fsDir=await showDirectoryPicker();await _idbSet('dir',_fsDir);aiLog('📂 پوشه «'+_fsDir.name+'» متصل شد');render();}catch(e){}
+}
+window.aiConnect=aiConnect;
+async function aiRestoreDir(){try{const h=await _idbGet('dir');if(h)_fsDir=h;}catch(e){}}
+function aiReadFile(file){
+  return new Promise((res,rej)=>{
+    if(/\.csv$/i.test(file.name)){const r=new FileReader();r.onload=()=>res(csvParse(r.result));r.onerror=()=>rej(new Error('خوانده نشد'));r.readAsText(file,'utf-8');}
+    else loadXLSX().then(()=>{const r=new FileReader();
+      r.onload=()=>{try{const wb=XLSX.read(new Uint8Array(r.result),{type:'array'});res(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''}));}catch(err){rej(err);}};
+      r.onerror=()=>rej(new Error('خوانده نشد'));r.readAsArrayBuffer(file);}).catch(rej);
+  });
+}
+function aiCommit(e,okRows,strat){
+  const _bf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='business');
+  const _autoBiz=(_bf&&gBiz()&&recs[gBiz()])?_bf.k:null;
+  const _pf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='eproject');
+  const _autoPrj=(_pf&&gPrj())?_pf.k:null;
+  let created=0,updated=0,deleted=0;
+  if(strat==='rep'){ // جایگزینی کامل: رکوردهای فعلی این بخش حذف نرم می‌شوند
+    byE(e).slice().forEach(r=>{if(can('d',e,r)){r.del=true;r.u=Date.now();queue.push(r.id);deleted++;}});
+  }
+  okRows.forEach(r=>{
+    if(strat==='up'&&r.existing&&!r.existing.del){
+      const ex=recs[r.existing.id];
+      ex.d={...ex.d,...r.d};if(_autoBiz&&!(ex.d[_autoBiz]&&ex.d[_autoBiz].length))ex.d[_autoBiz]=[gBiz()];if(_autoPrj&&!(ex.d[_autoPrj]&&ex.d[_autoPrj].length))ex.d[_autoPrj]=[gPrj()];
+      ex.u=Date.now();ex.del=false;queue.push(ex.id);updated++;
+    } else {
+      const id=uid();const d={...r.d,_by:myEmail()};
+      if(_autoBiz&&!(d[_autoBiz]&&d[_autoBiz].length))d[_autoBiz]=[gBiz()];
+      if(_autoPrj&&!(d[_autoPrj]&&d[_autoPrj].length))d[_autoPrj]=[gPrj()];
+      recs[id]={id,e,d,u:Date.now()};queue.push(id);created++;
+    }
+  });
+  return created.toLocaleString('fa-IR')+' جدید'+(updated?'، '+updated.toLocaleString('fa-IR')+' به‌روزرسانی':'')+(deleted?'، '+deleted.toLocaleString('fa-IR')+' جایگزین‌شده':'');
+}
+async function aiScan(manual){
+  if(!_fsDir){if(manual)alert('اول با «📂 اتصال پوشه» یک پوشه انتخاب کن');return;}
+  try{
+    let perm=await _fsDir.queryPermission({mode:'read'});
+    if(perm!=='granted'){
+      if(!manual)return; // بدون کلیک کاربر نمی‌شود اجازه گرفت
+      perm=await _fsDir.requestPermission({mode:'read'});
+      if(perm!=='granted')return;
+    }
+  }catch(e){return;}
+  let doneMap={};try{doneMap=JSON.parse(localStorage.getItem('xr_aidone')||'{}');}catch(e){}
+  let imported=0,skipped=0;
+  try{
+    for await(const entry of _fsDir.values()){
+      if(entry.kind!=='file'||!/\.(xlsx|xls|csv)$/i.test(entry.name))continue;
+      const ent=aiMatchEntity(entry.name);
+      if(!ent){if(!doneMap['?'+entry.name]){aiLog('⚠️ «'+entry.name+'» با نام هیچ بخشی نمی‌خواند — نام فایل را نام بخش بگذار (مثل: کالا و خدمات.xlsx)');doneMap['?'+entry.name]=1;}continue;}
+      const file=await entry.getFile();
+      const sig=entry.name+'|'+file.size+'|'+file.lastModified;
+      if(doneMap[sig]){skipped++;continue;}
+      try{
+        const arr=await aiReadFile(file);
+        const res=impBuildRows(ent,arr);
+        if(res.err){aiLog('⚠️ «'+entry.name+'»: '+res.err);doneMap[sig]=1;continue;}
+        const strat=aiStrat(ent);
+        const stats=aiCommit(ent,res.ok,strat);
+        const badN=res.out.length-res.ok.length;
+        aiLog('✅ «'+entry.name+'» → '+E[ent].n+' │ '+stats+' │ روش: '+({add:'افزودن',up:'به‌روزرسانی',rep:'جایگزینی'})[strat]+(badN?' │ ⚠️ '+badN.toLocaleString('fa-IR')+' ردیف خطادار رد شد':''));
+        doneMap[sig]=Date.now();imported++;
+      }catch(err){aiLog('⚠️ «'+entry.name+'»: '+(err.message||'خطا در پردازش'));doneMap[sig]=1;}
+    }
+  }catch(e){if(manual)alert('خواندن پوشه ممکن نشد: '+(e.message||''));return;}
+  try{localStorage.setItem('xr_aidone',JSON.stringify(doneMap));}catch(e){}
+  localStorage.setItem('xr_ailast',String(Date.now()));
+  if(imported){invalidateByE();saveQ();saveLocal();flush();}
+  if(manual&&!imported)aiLog('🔍 اسکن شد — فایل جدیدی در پوشه نبود');
+  render();
+}
+window.aiScan=aiScan;
+/* ⏱️ زمان‌بند: هر دقیقه چک می‌کند (فقط وقتی اپ باز است) */
+setInterval(()=>{
+  const c=aiCfg();if(!c.mode||c.mode==='off'||!_fsDir)return;
+  const last=+localStorage.getItem('xr_ailast')||0;
+  if(c.mode==='daily'){
+    const h=new Date().getHours();
+    const today=new Date().toISOString().slice(0,10);
+    if(h>=(+c.hour||8)&&localStorage.getItem('xr_ailastday')!==today){localStorage.setItem('xr_ailastday',today);aiScan(false);}
+  } else {
+    const mins={m15:15,m30:30,m60:60}[c.mode]||60;
+    if(Date.now()-last>=mins*60000)aiScan(false);
+  }
+},60000);
 
 /* ================= گزینه‌های سفارشی فیلدها ================= */
 function customOpts(ent,fk){const m=recs[MO];return (m&&!m.del&&m.d[ent+'.'+fk])||[];}
@@ -8836,7 +8989,7 @@ function pomoReset(){clearInterval(pomo.iv);pomo.run=false;pomo.mode='focus';pom
 
 /* ================= BOOT ================= */
 (async()=>{
-  await loadLocal();render();fillLoginForm();checkDraft();
+  await loadLocal();aiRestoreDir();render();fillLoginForm();checkDraft();
   if(cfg.url&&cfg.key){
     const ok=await initSupabase().catch(()=>false);
     if(ok){try{await handleRecovery();}catch(e){} await pullAll();bootstrapAdmin();subscribeRT();flush();whoami();render();}
