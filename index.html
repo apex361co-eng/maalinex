@@ -2352,11 +2352,21 @@ function impTemplate(e){
   e=e||(impState&&impState.e); if(!e)return;
   const fs=impFields(e);
   const rows=[fs.map(f=>f.n),fs.map((f,i)=>(i===0?'راهنما: ':'')+impHint(e,f))];
-  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='قالب-'+E[e].n.replace(/[\\/:*?"<>|]/g,'-')+'.csv';
-  a.click();
+  const fname='قالب-'+E[e].n.replace(/[\\/:*?"<>|]/g,'-');
+  // 📗 خروجی Excel واقعی با نمای راست‌به‌چپ (شیت RTL) — اگر آفلاین بود، CSV پشتیبان
+  loadXLSX().then(()=>{
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=fs.map(()=>({wch:24}));
+    const wb=XLSX.utils.book_new();
+    wb.Workbook={Views:[{RTL:true}]}; // ⬅️ شیت از راست به چپ
+    XLSX.utils.book_append_sheet(wb,ws,'قالب');
+    XLSX.writeFile(wb,fname+'.xlsx');
+  }).catch(()=>{
+    const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    a.download=fname+'.csv';a.click();
+  });
 }
 window.impTemplate=impTemplate;
 function csvParse(t){
