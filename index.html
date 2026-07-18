@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.43</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.44</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.43</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.44</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -3730,7 +3730,9 @@ function epcfAutoPost(r){
 }
 /* 💼 حسابداری خودکار عملیات عمومی (غیر EPCF) — همه چیز به یک مخزن: اسناد حسابداری */
 function opsAcct(code,title,nat){let a=byE('acct').find(x=>x.d.code===code);if(a)return a.id;
-  const id=uid();put({id,e:'acct',d:{title,code,nature:nat||'بدهکار',level:'کل'},u:Date.now()});return id;}
+  const AT={'101':['دارایی جاری',1],'102':['دارایی جاری',0],'201':['بدهی جاری',0],'401':['درآمد',0],'601':['هزینه عملیاتی',0]};
+  const [atype,cash]=AT[code]||['هزینه عملیاتی',0];
+  const id=uid();put({id,e:'acct',d:{title,code,atype,cash:cash?true:null,level:'کل'},u:Date.now()});return id;}
 function opsAutoPost(r){
   if(autopostCfg().ops===false)return; // پیش‌فرض روشن
   try{
@@ -8776,6 +8778,75 @@ function glnewHTML(){
   return h;
 }
 /* ================= 📒 دفتر کل و صورت‌های مالی لحظه‌ای ================= */
+
+/* 💧 صورت جریان وجوه نقد خودکار — از اسناد دارای حساب نقد */
+function glCashflow(dom){
+  const lines=glLines(dom);
+  const byV={};
+  lines.forEach(l=>{const vid=relIds(l,'voucher')[0];if(!vid)return;(byV[vid]=byV[vid]||[]).push(l);});
+  const CF={op:0,inv:0,fin:0};const rowsBy={op:{},inv:{},fin:{}};
+  Object.values(byV).forEach(ls=>{
+    let cash=0;const cp={};
+    ls.forEach(l=>{const aid=relIds(l,'acct')[0];const a=recs[aid];if(!a)return;
+      const net=(+l.d.debit||0)-(+l.d.credit||0);
+      if(a.d.cash)cash+=net;
+      else{const t=ACC_TYPES[a.d.atype];const g=t?t.grp:'other';cp[g]=(cp[g]||0)+Math.abs(net);cp._n=aid;}});
+    if(!cash)return;
+    const top=Object.entries(cp).filter(([k])=>k!=='_n').sort((a,b)=>b[1]-a[1])[0];
+    const g=top?top[0]:'other';
+    const cls=(g==='nca')?'inv':(g==='ncl'||g==='eq'||g==='fin')?'fin':'op';
+    CF[cls]+=cash;
+    const nm=cp._n?nameOf(cp._n):'سایر';
+    rowsBy[cls][nm]=(rowsBy[cls][nm]||0)+cash;});
+  return {CF,rowsBy,net:CF.op+CF.inv+CF.fin};
+}
+/* 📥 ورود سند حسابداری از اکسل (کدینگ رسمی) — هر ردیف = یک آرتیکل */
+const GLIMP_HEADS=['عنوان سند','تاریخ','کد حساب','نام حساب (اگر حساب جدید است)','بدهکار','بستانکار','شرح ردیف'];
+function glimpTemplate(){
+  const rows=[GLIMP_HEADS,
+   ['سند حقوق مرداد','1404/05/31','601','هزینه حقوق','250000000','','حقوق مرداد'],
+   ['سند حقوق مرداد','1404/05/31','101','نقد و بانک','','250000000','پرداخت حقوق']];
+  const csv='﻿'+rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='قالب-سند-حسابداری.csv';a.click();
+}
+async function glimpFile(inp){
+  const file=inp.files[0];if(!file)return;inp.value='';
+  let arr;try{arr=await (window.aiReadFile?aiReadFile(file):impFile({files:[file]}));}catch(e){alert('فایل خوانده نشد');return;}
+  arr=(arr||[]).filter(r=>Array.isArray(r)&&r.some(c=>String(c??'').trim()!==''));
+  if(arr.length<2){alert('فایل خالی است');return;}
+  const H=arr[0].map(h=>String(h??'').trim());
+  const col=n=>H.findIndex(h=>h===n||h.includes(n.split(' ')[0]));
+  const ci={t:col('عنوان سند'),d:col('تاریخ'),c:col('کد حساب'),an:col('نام حساب (اگر حساب جدید است)'),db:col('بدهکار'),cr:col('بستانکار'),ds:col('شرح ردیف')};
+  if(ci.t<0||ci.c<0){alert('ستون‌های «عنوان سند» و «کد حساب» الزامی‌اند — از قالب استفاده کن');return;}
+  const groups={};const errs=[];
+  arr.slice(1).forEach((r,i)=>{
+    const t=String(r[ci.t]??'').trim();if(!t)return;
+    const code=String(r[ci.c]??'').trim();
+    const db=+faNum(String(r[ci.db]??'0')).replace(/[,٬\s]/g,'')||0;
+    const cr=+faNum(String(r[ci.cr]??'0')).replace(/[,٬\s]/g,'')||0;
+    if(!code||(!db&&!cr)){errs.push('ردیف '+(i+2)+': کد حساب یا مبلغ ندارد');return;}
+    (groups[t]=groups[t]||{date:String(r[ci.d]??'').trim(),lines:[]}).lines.push(
+      {code,an:ci.an>=0?String(r[ci.an]??'').trim():'',db,cr,ds:ci.ds>=0?String(r[ci.ds]??'').trim():''});});
+  let made=0,dupes=0;const unbal=[];
+  Object.entries(groups).forEach(([t,g])=>{
+    const td=g.lines.reduce((a,l)=>a+l.db,0),tc=g.lines.reduce((a,l)=>a+l.cr,0);
+    if(Math.abs(td-tc)>=1){unbal.push(t+' (اختلاف '+abbrN(td-tc)+')');return;}
+    // ضد تکرار: سند هم‌عنوان با همان تاریخ و همان جمع
+    const dup=byE('voucher').find(v=>(v.d.title||'')===t&&dnorm(v.d.vdate&&v.d.vdate.s||v.d.vdate||'')===dnorm(g.date)&&
+      Math.abs(byE('vline').filter(l=>relIds(l,'voucher').includes(v.id)).reduce((a,l)=>a+(+l.d.debit||0),0)-td)<1);
+    if(dup){dupes++;return;}
+    const vid=_prjVoucher(t,{s:g.date||today()},{_glimp:1});
+    g.lines.forEach(l=>{
+      let aid=acctByCode(l.code);
+      if(!aid){const id=uid();put({id,e:'acct',d:{title:l.an||('حساب '+l.code),code:l.code,atype:l.db>=l.cr?'هزینه عملیاتی':'درآمد',level:'کل'},u:Date.now()});aid=id;}
+      _vl(vid,aid,l.db,l.cr,l.ds);});
+    made++;});
+  alert('📥 '+made.toLocaleString('fa-IR')+' سند ثبت شد'+(dupes?' │ ⏭ '+dupes.toLocaleString('fa-IR')+' سند تکراری رد شد':'')+
+    (unbal.length?'\n⛔ ناتراز (ثبت نشد): '+unbal.slice(0,5).join('، '):'')+(errs.length?'\n⚠️ '+errs.slice(0,5).join('، '):''));
+  render();
+}
+window.glimpTemplate=glimpTemplate;window.glimpFile=glimpFile;
+
 function gldashHTML(){
   const accts=byE('acct');
   const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
@@ -8788,7 +8859,9 @@ function gldashHTML(){
     <label style="margin:0">دامنه (آبشار):</label>
     <select onchange="view.glD=this.value;render()" style="max-width:230px">${targets.map(x=>`<option value="${x.id}" ${x.id===dom?'selected':''}>${esc(x.t)}</option>`).join('')}</select>
     <span style="flex:1"></span>
-    ${can('c','voucher')?`<button class="btn sm" onclick="glDraft=null;go('glnew')">🖊️ ثبت سند</button>`:''}
+    ${can('c','voucher')?`<button class="btn sm" onclick="glDraft=null;go('glnew')">🖊️ ثبت سند</button>
+    <button class="btn gh sm" onclick="glimpTemplate()" title="قالب اکسل سند با کدینگ رسمی">📄 قالب سند</button>
+    <label class="btn gh sm" style="cursor:pointer">📥 ورود سند از اکسل<input type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="glimpFile(this)"></label>`:''}
     ${can('c','acct')&&!accts.length?`<button class="btn gh sm" onclick="if(confirm('ایجاد کدینگ استاندارد؟')){seedCOA();render();}">🔢 کدینگ استاندارد</button>`:''}
     ${isAdmin()&&accts.length?`<button class="btn gh sm" onclick="glCloseBooks()">🔒 بستن حساب‌های موقت</button>`:''}
   </div>`;
@@ -8808,6 +8881,18 @@ function gldashHTML(){
   if(Math.abs(T.bsCheck)>=1)h+=`<div class="sec"><p style="font-size:11px;color:var(--warn)">⚠️ معادله ترازنامه: دارایی − (بدهی + حقوق مالکانه) = ${fmtN(T.bsCheck)} (پیش از بستن حساب‌های موقت طبیعی است؛ سود دوره در حقوق مالکانه لحاظ شده)</p></div>`;
   // 📊 صورت سود و زیان لحظه‌ای
   const plRow=(n,v,b,ind)=>`<tr${b?' style="font-weight:800;background:rgba(255,255,255,.03)"':''}><td style="padding-inline-start:${ind?18:6}px">${n}</td><td style="text-align:left;color:${v<0?'var(--bad)':'inherit'}">${fmtN(v)}</td></tr>`;
+    // 💧 صورت جریان وجوه نقد (خودکار از اسناد نقدی)
+  const CFo=glCashflow(dom);
+  const cfRow=(n,v,b)=>`<tr${b?' style="font-weight:800;background:rgba(255,255,255,.03)"':''}><td style="text-align:right;padding:4px 6px">${n}</td><td style="text-align:left;color:${v<0?'var(--bad)':v>0?'var(--ok)':'inherit'}">${fmtN(v)}</td></tr>`;
+  const cfDet=k=>Object.entries(CFo.rowsBy[k]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,6).map(([n,v])=>cfRow('└ '+n,v)).join('');
+  h+=`<div class="sec"><h3>💧 صورت جریان وجوه نقد (خودکار)</h3>
+    <div class="tblwrap"><table><tbody>
+      ${cfRow('جریان نقد عملیاتی (CFO)',CFo.CF.op,true)}${cfDet('op')}
+      ${cfRow('جریان نقد سرمایه‌گذاری (CFI)',CFo.CF.inv,true)}${cfDet('inv')}
+      ${cfRow('جریان نقد تامین مالی (CFF)',CFo.CF.fin,true)}${cfDet('fin')}
+      ${cfRow('💧 خالص تغییر نقد دوره',CFo.net,true)}
+    </tbody></table></div>
+    <div style="font-size:10.5px;color:var(--tx2);margin-top:6px">از همه اسنادی که یک طرفشان حساب نقد/بانک است ساخته می‌شود │ طبقه‌بندی بر اساس حساب مقابل (دارایی غیرجاری → سرمایه‌گذاری، بدهی بلندمدت/حقوق مالکانه/مالی → تامین مالی، بقیه → عملیاتی) │ حساب نقد را در کدینگ با تیک «حساب نقد و بانک» مشخص کن</div></div>`;
   h+=`<div class="chartgrid">
     <div class="sec"><h3>📈 صورت سود و زیان (لحظه‌ای)</h3><div class="tblwrap"><table><tbody>
     ${plRow('درآمد فروش',T.rev)}
