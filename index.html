@@ -1488,8 +1488,71 @@ tokenins:{ic:'🛡️',n:'بیمه‌نامه‌های توکن/پروژه',grp:
  {k:'to',n:'تا تاریخ',t:DAT},
  {k:'status',n:'وضعیت',t:SEL,o:['فعال','منقضی','خسارت در جریان','باطل']}],
  cols:['title','token','cover','amount','to','status']},
+/* ================= 💻 توسعه نرم‌افزار — Agile / Scrum ================= */
+aepic:{ic:'🎯',n:'اپیک‌ها / قابلیت‌های بزرگ',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'عنوان اپیک (مثل: پرداخت درون‌برنامه‌ای)',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['Epic','Feature','Initiative']},
+ {k:'bv',n:'ارزش کسب‌وکاری (۱ تا ۱۰۰)',t:NUM},
+ {k:'prio',n:'اولویت',t:SEL,o:['بحرانی','بالا','متوسط','پایین']},
+ {k:'owner',n:'مالک محصول / مسئول',t:REL,r:'hr',s:1},
+ {k:'status',n:'وضعیت',t:SEL,o:['ایده','آماده تحلیل','در حال توسعه','منتشر شد','کنار گذاشته شد']},
+ {k:'note',n:'شرح و هدف',t:LNG}],
+ cols:['title','eproject','kind','prio','status'],comp:'aepicBrief'},
+asprint:{ic:'🏃',n:'اسپرینت‌ها',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'نام اسپرینت (مثل: اسپرینت ۱۲)',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'goal',n:'هدف اسپرینت',t:LNG},
+ {k:'from',n:'شروع',t:DAT},
+ {k:'to',n:'پایان',t:DAT},
+ {k:'cap',n:'ظرفیت تیم (استوری‌پوینت)',t:NUM},
+ {k:'status',n:'وضعیت',t:SEL,o:['برنامه‌ریزی','فعال','بسته شد']}],
+ cols:['title','eproject','from','to','cap','status'],comp:'asprintBrief'},
+astory:{ic:'📗',n:'بک‌لاگ (استوری/باگ/تسک)',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'عنوان',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'aepic',n:'اپیک',t:REL,r:'aepic',s:1},
+ {k:'asprint',n:'اسپرینت',t:REL,r:'asprint',s:1},
+ {k:'arelease',n:'نسخه هدف (ریلیز)',t:REL,r:'arelease',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['User Story','Task','Bug','Tech Debt','Spike (تحقیق)']},
+ {k:'prio',n:'اولویت',t:SEL,o:['بحرانی','بالا','متوسط','پایین']},
+ {k:'sp',n:'استوری‌پوینت',t:SEL,o:['1','2','3','5','8','13','21']},
+ {k:'status',n:'وضعیت',t:STA,o:['Backlog','Ready','In Progress','Code Review','QA','Done','Blocked']},
+ {k:'team',n:'تیم',t:SEL,o:['محصول','طراحی UX/UI','بک‌اند','فرانت‌اند','موبایل','QA و تست','DevOps','دیتا','بازرگانی و فروش','مارکتینگ']},
+ {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
+ {k:'accept',n:'معیارهای پذیرش (AC)',t:LNG},
+ {k:'blockwhy',n:'دلیل بلاک (اگر Blocked است)',t:TXT}],
+ cols:['title','kind','sp','status','team','owner'],comp:'astoryBrief'},
+arelease:{ic:'🚀',n:'نسخه‌ها / ریلیزها',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'نام نسخه (مثل: v2.4.0)',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'kind',n:'نوع',t:SEL,o:['MVP','Major','Minor','Hotfix','Beta']},
+ {k:'target',n:'تاریخ هدف انتشار',t:DAT},
+ {k:'released',n:'تاریخ انتشار واقعی',t:DAT},
+ {k:'status',n:'وضعیت',t:SEL,o:['برنامه‌ریزی','در حال توسعه','Code Freeze','منتشر شد','لغو']},
+ {k:'notes',n:'یادداشت انتشار (Release Notes)',t:LNG}],
+ cols:['title','eproject','kind','target','status'],comp:'areleaseBrief'},
+adep:{ic:'🔗',n:'وابستگی‌ها و بلاکرهای بین‌تیمی',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'شرح وابستگی (چه چیزی از چه کسی لازم است)',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'fromteam',n:'تیم نیازمند',t:SEL,o:['محصول','طراحی UX/UI','بک‌اند','فرانت‌اند','موبایل','QA و تست','DevOps','دیتا','بازرگانی و فروش','مارکتینگ']},
+ {k:'toteam',n:'تیم پاسخگو',t:SEL,o:['محصول','طراحی UX/UI','بک‌اند','فرانت‌اند','موبایل','QA و تست','DevOps','دیتا','بازرگانی و فروش','مارکتینگ']},
+ {k:'astory',n:'استوری مرتبط',t:REL,r:'astory',s:1},
+ {k:'due',n:'مهلت',t:DAT},
+ {k:'sev',n:'شدت',t:SEL,o:['بلاکر (کار خوابیده)','بالا','متوسط','پایین']},
+ {k:'status',n:'وضعیت',t:SEL,o:['باز','در حال رفع','رفع شد']},
+ {k:'note',n:'توضیح',t:TXT}],
+ cols:['title','fromteam','toteam','due','sev','status']},
+aretro:{ic:'🔄',n:'رتروسپکتیو (اقدامات بهبود)',grp:'توسعه نرم‌افزار',f:[
+ {k:'title',n:'آموخته / اقدام',t:TXT},
+ {k:'eproject',n:'پروژه',t:REL,r:'eproject',s:1},
+ {k:'asprint',n:'اسپرینت',t:REL,r:'asprint',s:1},
+ {k:'kind',n:'دسته',t:SEL,o:['✅ ادامه بدهیم','🛑 متوقف کنیم','🌱 شروع کنیم','⚡ اقدام اصلاحی']},
+ {k:'owner',n:'مسئول اقدام',t:REL,r:'hr',s:1},
+ {k:'status',n:'وضعیت',t:SEL,o:['ثبت شد','در حال انجام','انجام شد']}],
+ cols:['title','asprint','kind','owner','status']},
 };
-const GROUPS=['سازمان','روابط','مدیریت کسب و کار','مالی و حقوقی','حسابداری','مالی تخصصی (IFRS)','سرمایه‌گذاری و ثروت','فرآیندها (ISO)','EPCF','ساخت و ساز','توکن‌سازی','استراتژی و تعالی','حاکمیت','رشد شخصی'];
+const GROUPS=['سازمان','روابط','مدیریت کسب و کار','مالی و حقوقی','حسابداری','مالی تخصصی (IFRS)','سرمایه‌گذاری و ثروت','فرآیندها (ISO)','EPCF','ساخت و ساز','توکن‌سازی','توسعه نرم‌افزار','استراتژی و تعالی','حاکمیت','رشد شخصی'];
 const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
 /* ================= 🧩 ساختار سفارشی: فیلدها و بخش‌های قابل تعریف توسط ادمین ================= */
 const E_BASE=JSON.parse(JSON.stringify(E)); // اسکیمای پایه — سفارشی‌ها موقع اجرا رویش سوار می‌شوند
@@ -2086,12 +2149,13 @@ const MODULES=[
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
  {id:'M19',n:'توکن‌سازی پروژه (Tokenization)',ents:['token','tokenholder','tokentx','tokenloan','tokenins'],views:['tokendash']},
+ {id:'M20',n:'توسعه نرم‌افزار (Agile)',ents:['aepic','asprint','astory','arelease','adep','aretro'],views:['agiledash']},
  {id:'M16',n:'رشد شخصی',ents:['growth','habit','win','plan','asset','area','book','course','booknote','note','reminder'],views:['gdash']}
 ];
 const ENT_MOD={},VIEW_MOD={};MODULES.forEach(m=>{(m.ents||[]).forEach(e=>ENT_MOD[e]=m.id);(m.views||[]).forEach(v=>VIEW_MOD[v]=m.id);});
 /* ✨ ماژول‌های «تازه» — وقتی در یک مادرِ جدید ماژولی می‌سازیم، کدش را اینجا اضافه می‌کنیم
    تا برای مشتری‌های قبلی یک بنر «ماژول جدید در دسترس است» نشان داده شود. */
-const NEW_MODULES={M17:true,M18:true,M19:true};
+const NEW_MODULES={M17:true,M18:true,M19:true,M20:true};
 /* 🚀 قالب‌های آماده‌ی راه‌اندازی مشتری (وقتی مشتری از صفر می‌آد) */
 const PRESETS=[
  {k:'retail',n:'🛍️ خرده‌فروشی / فروشگاه',on:['M04','M09','M15']},
@@ -2227,7 +2291,7 @@ window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=s
 const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
  gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
  findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
- epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',
+ epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',agiledash:'توسعه نرم‌افزار',
  bscmap:'استراتژی و تعالی',bsccanvas:'استراتژی و تعالی',gdash:'رشد شخصی'};
 function grpHidden(g){if(isAdmin()||!g)return false;return (aclFor().grp||{})[g]==='hide';}
 function canView(v){
@@ -5171,6 +5235,7 @@ function nav(){
         <option value="">🏗️ همه پروژه‌ها</option>${prjs.map(x=>`<option value="${x.id}" ${x.id===gPrj()?'selected':''}>🏗️ ${esc(x.d.title)}</option>`).join('')}</select></div>`;
       if(canView('epcfdash'))items+=`<div class="nav-i ${view.type==='epcfdash'?'on':''}" onclick="go('epcfdash')">🎛️ داشبورد EPCF</div>`;
     }
+    if(g==='توسعه نرم‌افزار'&&canSee('astory')&&canView('agiledash'))items+=`<div class="nav-i ${view.type==='agiledash'?'on':''}" onclick="go('agiledash')">💻 داشبورد Agile</div>`;
     if(g==='توکن‌سازی'&&canSee('token')&&canView('tokendash'))items+=`<div class="nav-i ${view.type==='tokendash'?'on':''}" onclick="go('tokendash')">🪙 داشبورد توکن</div>`;
     if(g==='ساخت و ساز'&&canSee('cboq')&&canView('cdash'))items+=`<div class="nav-i ${view.type==='cdash'?'on':''}" onclick="go('cdash')">🏢 داشبورد ساخت‌وساز</div>`;
     if(g==='فرآیندها (ISO)'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
@@ -5245,6 +5310,7 @@ function render(){
     view.type==='tokendash'?'🪙 داشبورد توکن':
     view.type==='perfdash'?'🎖️ داشبورد عملکرد':
     view.type==='backupdash'?'💾 پشتیبان‌گیری و بازیابی':
+    view.type==='agiledash'?'💻 داشبورد Agile':
     view.type==='salesdash'?'🧾 داشبورد فروش':
     view.type==='invnew'?'🧾 صدور فاکتور':
     view.type==='pinvnew'?'🧾 ثبت فاکتور خرید':
@@ -5266,7 +5332,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -5297,6 +5363,7 @@ function render(){
     else if(view.type==='tokendash')c.innerHTML=tokendashHTML();
     else if(view.type==='perfdash')c.innerHTML=perfdashHTML();
     else if(view.type==='backupdash')c.innerHTML=backupdashHTML();
+    else if(view.type==='agiledash')c.innerHTML=agiledashHTML();
     else if(view.type==='salesdash')c.innerHTML=salesdashHTML();
     else if(view.type==='invnew')c.innerHTML=invnewHTML();
     else if(view.type==='pinvnew')c.innerHTML=pinvnewHTML();
@@ -5892,6 +5959,135 @@ function epcfdashHTML(){
   }).sort((a,b)=>{const da=ds(a.d.due)||'9999',db=ds(b.d.due)||'9999';return da<db?-1:1;});
   h+=mini('📘 تسک‌های باز تیم روی پروژه',pjTasks,[['تسک',r=>esc((r.d.title||'—').slice(0,38)),'text-align:right'],['مسئول',r=>{const o=relIds(r,'owner')[0];return o&&recs[o]?esc(recs[o].d.title):'—';}],['ددلاین',r=>{const d=ds(r.d.due);const over=d&&d<_t0;return d?`<span style="${over?'color:var(--bad);font-weight:700':''}">${esc(iso2jstr(d))}${over?' ⏰':''}</span>`:'—';}],['وضعیت',r=>esc(STATFA[r.d.status]||r.d.status||'—')]],'تسک بازی نیست ✅ — از «📘 تسک‌ها» با انتخاب پروژه EPCF یا بسته WBS تعریف کن');
   h+=mini('👷 آخرین گزارش‌های کارگاه',sites.sort((a,b)=>{const da=ds(a.d.date)||'',db=ds(b.d.date)||'';return da>db?-1:1;}),[['شرح',r=>esc((r.d.title||'—').slice(0,40)),'text-align:right'],['تاریخ',r=>esc(iso2jstr(ds(r.d.date))||'—')],['نفرات',r=>(+r.d.manp||0).toLocaleString('fa-IR')],['توقف',r=>(+r.d.stop||0)?(+r.d.stop).toLocaleString('fa-IR')+' س':'—']],'گزارشی ثبت نشده');
+  h+=`</div>`;
+  return h;
+}
+/* ===== 💻 داشبورد Agile — اسپرینت │ کانبان │ سرعت تیم │ تیم‌ها │ وابستگی‌ها │ ریلیز │ کیفیت ===== */
+const A_STATUSES=['Backlog','Ready','In Progress','Code Review','QA','Done','Blocked'];
+const A_STFA={'Backlog':'بک‌لاگ','Ready':'آماده','In Progress':'در حال انجام','Code Review':'بازبینی کد','QA':'تست','Done':'انجام شد','Blocked':'🚫 بلاک'};
+const A_STCLR={'Backlog':'#8a97a8','Ready':'#5b9bd5','In Progress':'#e0a23c','Code Review':'#b07fd6','QA':'#4db6ac','Done':'#3a9e5f','Blocked':'#e06a5f'};
+function aSP(s){return +s.d.sp||0;}
+function aStoryMove(id,st){const r=recs[id];if(!r||!can('e','astory',r))return;r.d.status=st;r.u=Date.now();put(r);}
+window.aStoryMove=aStoryMove;
+function agiledashHTML(){
+  if(view.epP==null)view.epP=gPrj();
+  const P=view.epP||'';
+  const t0=_isoToday();
+  const inP=r=>!P||relIds(r,'eproject').includes(P);
+  const projects=byE('eproject');
+  const sprints=byE('asprint').filter(inP).sort((a,b)=>(ds(b.d.from)||'').localeCompare(ds(a.d.from)||''));
+  const active=sprints.find(s=>s.d.status==='فعال')||sprints[0];
+  if(view.aSp===undefined)view.aSp=active?active.id:'';
+  const sp=view.aSp&&recs[view.aSp]?recs[view.aSp]:null;
+  let stories=byE('astory').filter(inP);
+  if(view.aTeam)stories=stories.filter(s=>s.d.team===view.aTeam);
+  if(view.aOwn)stories=stories.filter(s=>relIds(s,'owner').includes(view.aOwn));
+  const spStories=sp?stories.filter(s=>relIds(s,'asprint').includes(sp.id)):stories;
+  const deps=byE('adep').filter(inP), rels=byE('arelease').filter(inP), retros=byE('aretro').filter(inP);
+  const TEAMS=['محصول','طراحی UX/UI','بک‌اند','فرانت‌اند','موبایل','QA و تست','DevOps','دیتا','بازرگانی و فروش','مارکتینگ'];
+  let h=`<div class="tools" style="flex-wrap:wrap">
+    <label style="margin:0">پروژه:</label><select onchange="setGPrj(this.value)" style="max-width:160px"><option value="">همه</option>${projects.map(x=>`<option value="${x.id}" ${x.id===P?'selected':''}>💻 ${esc(x.d.title)}</option>`).join('')}</select>
+    <label style="margin:0">اسپرینت:</label><select onchange="view.aSp=this.value;render()" style="max-width:150px"><option value="">همه بک‌لاگ</option>${sprints.map(x=>`<option value="${x.id}" ${sp&&x.id===sp.id?'selected':''}>${esc(x.d.title)}${x.d.status==='فعال'?' 🟢':''}</option>`).join('')}</select>
+    <label style="margin:0">تیم:</label><select onchange="view.aTeam=this.value;render()" style="max-width:130px"><option value="">همه</option>${TEAMS.map(t=>`<option ${view.aTeam===t?'selected':''}>${t}</option>`).join('')}</select>
+    <label style="margin:0">فرد:</label><select onchange="view.aOwn=this.value;render()" style="max-width:130px"><option value="">همه</option>${byE('hr').map(x=>`<option value="${x.id}" ${view.aOwn===x.id?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select>
+    <span style="flex:1"></span>
+    ${can('c','astory')?`<button class="btn sm" onclick="openRec('astory')">📗 استوری جدید</button>`:''}
+    ${can('c','asprint')?`<button class="btn gh sm" onclick="openRec('asprint')">🏃 اسپرینت جدید</button>`:''}</div>`;
+  if(!byE('astory').filter(inP).length&&!sprints.length)
+    return h+`<div class="empty">شروع اسکرام: ۱) «🎯 اپیک‌ها» را تعریف کن ۲) بک‌لاگ را با «📗 استوری» بشکن (با استوری‌پوینت) ۳) «🏃 اسپرینت» بساز و استوری‌ها را به آن بده — این داشبورد بقیه‌اش را نشانت می‌دهد</div>`;
+  // 📊 شاخص‌های اسپرینت
+  const doneSP=spStories.filter(s=>s.d.status==='Done').reduce((a,s)=>a+aSP(s),0);
+  const totSP=spStories.reduce((a,s)=>a+aSP(s),0);
+  const blocked=spStories.filter(s=>s.d.status==='Blocked');
+  const wip=spStories.filter(s=>['In Progress','Code Review','QA'].includes(s.d.status));
+  const cap=sp?(+sp.d.cap||0):0;
+  const daysLeft=sp&&ds(sp.d.to)?Math.max(0,Math.round((new Date(ds(sp.d.to))-new Date(t0))/86400000)):null;
+  const openBugs=stories.filter(s=>s.d.kind==='Bug'&&s.d.status!=='Done');
+  const critBugs=openBugs.filter(s=>s.d.prio==='بحرانی');
+  const depsOpen=deps.filter(d=>d.d.status!=='رفع شد');
+  const depsLate=depsOpen.filter(d=>{const dd=ds(d.d.due);return dd&&dd<t0;});
+  // 🚨 هشدارها
+  const alerts=[];
+  if(cap>0&&totSP>cap)alerts.push('🔴 تعهد اسپرینت ('+totSP.toLocaleString('fa-IR')+' SP) از ظرفیت تیم ('+cap.toLocaleString('fa-IR')+' SP) بیشتر است — بیش‌تعهدی');
+  if(blocked.length)alerts.push('🚫 '+blocked.length.toLocaleString('fa-IR')+' آیتم بلاک‌شده: '+blocked.slice(0,3).map(s=>esc(s.d.title)).join('، ')+(blocked.length>3?'…':''));
+  if(depsLate.length)alerts.push('🔴 '+depsLate.length.toLocaleString('fa-IR')+' وابستگی بین‌تیمی از مهلت گذشته');
+  if(critBugs.length)alerts.push('🐞 '+critBugs.length.toLocaleString('fa-IR')+' باگ بحرانی باز');
+  rels.filter(r=>!['منتشر شد','لغو'].includes(r.d.status)).forEach(r=>{
+    const tg=ds(r.d.target);if(!tg)return;
+    const open=byE('astory').filter(s=>relIds(s,'arelease').includes(r.id)&&s.d.status!=='Done').length;
+    if(open&&tg<=_isoAdd(t0,7))alerts.push('🚀 ریلیز «'+esc(r.d.title)+'» ('+esc(iso2jstr(tg))+') در خطر: '+open.toLocaleString('fa-IR')+' آیتم هنوز باز است');
+  });
+  if(alerts.length)h+=`<div class="sec" style="border-inline-start:3px solid var(--bad)">${alerts.map(a=>`<div style="font-size:12px;padding:3px 0">${a}</div>`).join('')}</div>`;
+  const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:11px"><div style="font-size:10.5px;color:var(--tx2)">${t}</div><div style="font-size:16px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:2px">${sub}</div>`:''}</div>`;
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:4px">
+    ${card(sp?'اسپرینت: '+esc(sp.d.title):'کل بک‌لاگ',sp?esc(sp.d.status||''):spStories.length.toLocaleString('fa-IR')+' آیتم',false,sp&&daysLeft!=null?daysLeft.toLocaleString('fa-IR')+' روز مانده':'')}
+    ${card('پیشرفت (SP)',totSP>0?Math.round(doneSP/totSP*100).toLocaleString('fa-IR')+'٪':'—',false,doneSP.toLocaleString('fa-IR')+' از '+totSP.toLocaleString('fa-IR')+' SP')}
+    ${card('تعهد در برابر ظرفیت',cap?totSP.toLocaleString('fa-IR')+' / '+cap.toLocaleString('fa-IR')+' SP':'—',cap>0&&totSP>cap)}
+    ${card('در جریان (WIP)',wip.length.toLocaleString('fa-IR'),wip.length>8,'محدود نگه‌دار!')}
+    ${card('بلاک‌شده',blocked.length.toLocaleString('fa-IR'),blocked.length>0)}
+    ${card('باگ باز │ بحرانی',openBugs.length.toLocaleString('fa-IR')+' │ '+critBugs.length.toLocaleString('fa-IR'),critBugs.length>0)}
+  </div>`;
+  // 🗂 کانبان بورد
+  const kb=A_STATUSES.map(st=>{
+    const col=spStories.filter(s=>s.d.status===st);
+    const colSP=col.reduce((a,s)=>a+aSP(s),0);
+    return `<div style="min-width:170px;flex:1;background:var(--bg);border:1px solid var(--line);border-top:3px solid ${A_STCLR[st]};border-radius:10px;padding:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:6px"><span>${A_STFA[st]}</span><span style="color:var(--tx2)">${col.length.toLocaleString('fa-IR')}│${colSP.toLocaleString('fa-IR')}SP</span></div>
+      ${col.slice(0,12).map(s=>{const o=relIds(s,'owner')[0];const ic=s.d.kind==='Bug'?'🐞':s.d.kind==='Tech Debt'?'🧹':s.d.kind==='Spike (تحقیق)'?'🔬':'📗';
+        return `<div onclick="go('rec','astory','${s.id}')" style="background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-bottom:5px;cursor:pointer;font-size:11px;line-height:1.8">
+        ${ic} ${esc((s.d.title||'').slice(0,42))}
+        <div style="display:flex;justify-content:space-between;color:var(--tx2);font-size:9.5px;margin-top:3px">
+          <span>${esc(s.d.team||'—')}</span><span>${o&&recs[o]?esc(recs[o].d.title.split(' ')[0]):''} │ ${aSP(s).toLocaleString('fa-IR')}SP</span></div>
+        ${s.d.status!=='Done'?`<div style="margin-top:4px;display:flex;gap:3px">${A_STATUSES.filter(x=>x!==s.d.status&&x!=='Backlog').slice(0,7).map(x=>`<span onclick="event.stopPropagation();aStoryMove('${s.id}','${x}')" title="${A_STFA[x]}" style="cursor:pointer;font-size:8.5px;padding:1px 5px;border-radius:6px;background:${A_STCLR[x]}22;color:${A_STCLR[x]};border:1px solid ${A_STCLR[x]}55">${A_STFA[x].slice(0,6)}</span>`).join('')}</div>`:''}
+      </div>`;}).join('')||'<div style="font-size:10px;color:var(--tx2);text-align:center;padding:8px">—</div>'}
+      ${col.length>12?`<div style="font-size:10px;color:var(--tx2);text-align:center">… ${(col.length-12).toLocaleString('fa-IR')} مورد دیگر</div>`:''}
+    </div>`;}).join('');
+  h+=`<div class="sec"><h3>🗂 برد کانبان ${sp?'— '+esc(sp.d.title):''} <span style="font-size:10px;color:var(--tx2);font-weight:400">(روی برچسب رنگی هر کارت بزن تا وضعیتش جابجا شود)</span></h3>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px">${kb}</div></div>`;
+  // 📈 سرعت تیم (Velocity) — SP انجام‌شده در اسپرینت‌های اخیر
+  const closed=sprints.filter(s=>s.d.status!=='برنامه‌ریزی').slice(0,6).reverse();
+  if(closed.length>=2){
+    const pts=closed.map(s=>({label:(s.d.title||'').replace('اسپرینت','اسپ'),v:byE('astory').filter(x=>relIds(x,'asprint').includes(s.id)&&x.d.status==='Done').reduce((a,x)=>a+aSP(x),0)}));
+    const avgV=pts.reduce((a,p)=>a+p.v,0)/pts.length;
+    h+=`<div class="sec"><h3>📈 سرعت تیم (Velocity) <span class="chip" style="background:var(--bg)">میانگین: ${avgV.toLocaleString('fa-IR',{maximumFractionDigits:1})} SP در اسپرینت</span></h3>
+      ${ceoBarsSVG(pts,false)}
+      <p style="font-size:10.5px;color:var(--tx2)">برای برنامه‌ریزی اسپرینت بعدی، حدوداً به اندازه میانگین سرعت تعهد بده — نه بیشتر.</p></div>`;
+  }
+  // 🧑‍🤝‍🧑 وضعیت تیم‌ها + 🔗 وابستگی‌ها
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px">`;
+  const tRows=TEAMS.map(t=>{const ts=stories.filter(s=>s.d.team===t);if(!ts.length)return null;
+    return {t,open:ts.filter(s=>s.d.status!=='Done').length,sp:ts.filter(s=>s.d.status!=='Done').reduce((a,s)=>a+aSP(s),0),done:ts.filter(s=>s.d.status==='Done').reduce((a,s)=>a+aSP(s),0),bl:ts.filter(s=>s.d.status==='Blocked').length};}).filter(Boolean);
+  h+=`<div class="sec"><h3>🧑‍🤝‍🧑 وضعیت تیم‌ها</h3>${tRows.length?`<div class="tblwrap"><table><thead><tr><th>تیم</th><th>باز</th><th>SP باز</th><th>SP انجام</th><th>بلاک</th></tr></thead><tbody>
+    ${tRows.map(r=>`<tr><td style="text-align:right">${esc(r.t)}</td><td>${r.open.toLocaleString('fa-IR')}</td><td>${r.sp.toLocaleString('fa-IR')}</td><td style="color:var(--ok)">${r.done.toLocaleString('fa-IR')}</td><td>${r.bl?`<b style="color:var(--bad)">${r.bl.toLocaleString('fa-IR')}</b>`:'۰'}</td></tr>`).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">فیلد «تیم» استوری‌ها را پر کن</div>'}</div>`;
+  h+=`<div class="sec"><h3>🔗 وابستگی‌های بین‌تیمی باز <span class="c">${depsOpen.length.toLocaleString('fa-IR')}</span></h3>
+    ${depsOpen.length?`<div class="tblwrap"><table><thead><tr><th>شرح</th><th>از → به</th><th>مهلت</th><th>شدت</th></tr></thead><tbody>
+    ${depsOpen.slice(0,8).map(d=>{const dd=ds(d.d.due);const late=dd&&dd<t0;
+      return `<tr onclick="go('rec','adep','${d.id}')" style="cursor:pointer"><td style="text-align:right">${esc((d.d.title||'').slice(0,40))}</td>
+      <td style="font-size:10.5px">${esc(d.d.fromteam||'؟')} ← ${esc(d.d.toteam||'؟')}</td>
+      <td>${dd?`<span style="${late?'color:var(--bad);font-weight:700':''}">${esc(iso2jstr(dd))}${late?' ⏰':''}</span>`:'—'}</td>
+      <td>${d.d.sev==='بلاکر (کار خوابیده)'?'<b style="color:var(--bad)">بلاکر</b>':esc(d.d.sev||'—')}</td></tr>`;}).join('')}
+    </tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">وابستگی بازی نیست ✅ — هر جا تیمی منتظر تیم دیگر ماند، اینجا ثبتش کن</div>'}</div>`;
+  // 🚀 ریلیزها + 🎯 اپیک‌ها + 🔄 رترو
+  const relRows=rels.filter(r=>r.d.status!=='لغو').sort((a,b)=>(ds(a.d.target)||'9999').localeCompare(ds(b.d.target)||'9999'));
+  h+=`<div class="sec"><h3>🚀 ریلیزها</h3>${relRows.length?`<div class="tblwrap"><table><thead><tr><th>نسخه</th><th>نوع</th><th>هدف</th><th>آمادگی</th><th>وضعیت</th></tr></thead><tbody>
+    ${relRows.slice(0,6).map(r=>{const rs=byE('astory').filter(s=>relIds(s,'arelease').includes(r.id));
+      const dn=rs.filter(s=>s.d.status==='Done').length;const pct=rs.length?Math.round(dn/rs.length*100):null;
+      return `<tr onclick="go('rec','arelease','${r.id}')" style="cursor:pointer"><td style="text-align:right"><b>${esc(r.d.title)}</b></td><td>${esc(r.d.kind||'—')}</td>
+      <td>${esc(iso2jstr(ds(r.d.target))||'—')}</td>
+      <td>${pct==null?'—':`<b style="color:${pct<70?'#e5b567':'var(--ok)'}">${pct.toLocaleString('fa-IR')}٪</b> (${dn.toLocaleString('fa-IR')}/${rs.length.toLocaleString('fa-IR')})`}</td>
+      <td>${esc(r.d.status||'—')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">ریلیزی تعریف نشده</div>'}</div>`;
+  const epics=byE('aepic').filter(inP).filter(e=>e.d.status!=='کنار گذاشته شد');
+  h+=`<div class="sec"><h3>🎯 پیشرفت اپیک‌ها</h3>${epics.length?epics.slice(0,8).map(e=>{
+    const es=byE('astory').filter(s=>relIds(s,'aepic').includes(e.id));
+    const tot=es.reduce((a,s)=>a+aSP(s),0),dn=es.filter(s=>s.d.status==='Done').reduce((a,s)=>a+aSP(s),0);
+    const pct=tot>0?dn/tot*100:0;
+    return `<div style="margin:7px 0"><div style="display:flex;justify-content:space-between;font-size:11.5px"><span>${esc(e.d.title)}</span><b style="color:var(--ac)">${pct.toLocaleString('fa-IR',{maximumFractionDigits:0})}٪</b></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:99px;height:7px;margin-top:4px;overflow:hidden"><div style="width:${Math.min(100,pct)}%;height:100%;background:var(--ac)"></div></div>
+    <div style="font-size:9.5px;color:var(--tx2);margin-top:2px">${dn.toLocaleString('fa-IR')} از ${tot.toLocaleString('fa-IR')} SP │ ${es.length.toLocaleString('fa-IR')} آیتم</div></div>`;}).join(''):'<div style="color:var(--tx2);font-size:12px;padding:6px">اپیکی تعریف نشده</div>'}</div>`;
+  const retroOpen=retros.filter(r=>r.d.status!=='انجام شد');
+  h+=`<div class="sec"><h3>🔄 اقدامات باز رتروسپکتیو <span class="c">${retroOpen.length.toLocaleString('fa-IR')}</span></h3>
+    ${retroOpen.length?retroOpen.slice(0,8).map(r=>{const o=relIds(r,'owner')[0];
+      return `<div onclick="go('rec','aretro','${r.id}')" style="cursor:pointer;font-size:11.5px;padding:4px 0;border-bottom:1px dashed var(--line)">${esc(r.d.kind||'')} ${esc(r.d.title||'')} <span style="color:var(--tx2)">— ${o&&recs[o]?esc(recs[o].d.title):'?'}</span></div>`;}).join(''):'<div style="color:var(--tx2);font-size:12px;padding:6px">اقدام بازی نیست — بعد از هر اسپرینت، آموخته‌ها را ثبت کن</div>'}</div>`;
   h+=`</div>`;
   return h;
 }
