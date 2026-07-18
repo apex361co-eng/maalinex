@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.37</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.38</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.37</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.38</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1741,6 +1741,20 @@ function rebuildSchema(){
     E[ek].f.forEach(f=>{if(map[f.k]&&String(map[f.k]).trim())f.n=String(map[f.k]).trim();});
   });
 }
+/* 🔁 مهاجرت: idهای غیر uuid (mdef_/mval_/dash_/wid_/auto_) → uuid تا سینک خطا ندهد */
+function migrateUuidIds(){
+  const bad=Object.keys(recs).filter(k=>/^(mdef_|mval_|dash_|wid_|auto_)/.test(k)&&!recs[k].del);
+  if(!bad.length)return;
+  const map={};
+  bad.forEach(k=>{const nid=uid();map[k]=nid;const r=recs[k];delete recs[k];r.id=nid;r.u=Date.now();recs[nid]=r;});
+  Object.values(recs).forEach(r=>{if(!r.d)return;let ch=false;
+    Object.keys(r.d).forEach(fk=>{const v=r.d[fk];
+      if(Array.isArray(v)){const nv=v.map(x=>map[x]||x);if(nv.some((x,i)=>x!==v[i])){r.d[fk]=nv;ch=true;}}
+      else if(typeof v==='string'&&map[v]){r.d[fk]=map[v];ch=true;}});
+    if(ch){r.u=Date.now();try{put(r);}catch(e){}}});
+  Object.values(map).forEach(nid=>{try{put(recs[nid]);}catch(e){}});
+  invalidateByE();saveLocal&&saveLocal();
+}
 /* --- 🔁 مهاجرت یک‌باره: استراتژی + اهداف سازمانی ← استراتژی و اهداف (BSC) --- */
 function migrateChain(){
   // رکوردهای قدیمی strategy/objective در جا به bsc تبدیل می‌شوند — id ثابت می‌ماند تا همه لینک‌ها کار کنند
@@ -2770,8 +2784,8 @@ function impBuildRows(e,arr){ // 🧠 اعتبارسنجی مشترک (پیش‌
         const names=f.s?[raw]:raw.split(/[،;]/).map(x=>x.trim()).filter(Boolean);
         const ids=[];
         names.forEach(nm=>{let r2=byE(f.r).find(x=>(x.d.title||'').trim()===nm);
-          if(!r2&&(f.r==='business'||f.r==='company')){const nid='auto_'+f.r+'_'+nm.replace(/\s+/g,'_');
-            if(!recs[nid]||recs[nid].del){recs[nid]={id:nid,e:f.r,d:{title:nm},u:Date.now(),c:Date.now()};invalidateByE();try{put(recs[nid]);}catch(e){}}
+          if(!r2&&(f.r==='business'||f.r==='company')){let nid=Object.keys(recs).find(k=>recs[k].e===f.r&&!recs[k].del&&(recs[k].d.title||'')===nm);
+            if(!nid){nid=uid();recs[nid]={id:nid,e:f.r,d:{title:nm},u:Date.now(),c:Date.now()};invalidateByE();try{put(recs[nid]);}catch(e){}}
             r2=recs[nid];}
           if(r2)ids.push(r2.id);else errs.push(f.n+': «'+nm+'» در '+E[f.r].n+' یافت نشد');});
         if(ids.length)d[f.k]=f.s?[ids[0]]:ids;
@@ -2814,6 +2828,8 @@ function impCommit(){
   const _autoBiz=(_bf&&gBiz()&&recs[gBiz()])?_bf.k:null;
   const _pf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='eproject');
   const _autoPrj=(_pf&&gPrj())?_pf.k:null;
+  const _cf2=(E[e].f||[]).find(f=>f.t===REL&&f.r==='company');
+  const _autoCo=(_cf2&&gCo()&&recs[gCo()])?_cf2.k:null;
   impState.valid.forEach(r=>{
     if(up&&r.existing){
       const ex=recs[r.existing.id];
@@ -2822,6 +2838,7 @@ function impCommit(){
     } else {
       const id=uid();const d={...r.d,_by:myEmail()};
       if(_autoBiz&&!(d[_autoBiz]&&d[_autoBiz].length))d[_autoBiz]=[gBiz()];
+      if(typeof _autoCo!=='undefined'&&_autoCo&&!(d[_autoCo]&&d[_autoCo].length))d[_autoCo]=[gCo()];
       if(_autoPrj&&!(d[_autoPrj]&&d[_autoPrj].length))d[_autoPrj]=[gPrj()];
       recs[id]={id,e,d,u:Date.now()};
       queue.push(id);created++;
@@ -3059,6 +3076,8 @@ function aiCommit(e,okRows,strat){
   const _autoBiz=(_bf&&gBiz()&&recs[gBiz()])?_bf.k:null;
   const _pf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='eproject');
   const _autoPrj=(_pf&&gPrj())?_pf.k:null;
+  const _cf2=(E[e].f||[]).find(f=>f.t===REL&&f.r==='company');
+  const _autoCo=(_cf2&&gCo()&&recs[gCo()])?_cf2.k:null;
   let created=0,updated=0,deleted=0;
   if(strat==='rep'){ // جایگزینی کامل: رکوردهای فعلی این بخش حذف نرم می‌شوند
     byE(e).slice().forEach(r=>{if(can('d',e,r)){r.del=true;r.u=Date.now();queue.push(r.id);deleted++;}});
@@ -3071,6 +3090,7 @@ function aiCommit(e,okRows,strat){
     } else {
       const id=uid();const d={...r.d,_by:myEmail()};
       if(_autoBiz&&!(d[_autoBiz]&&d[_autoBiz].length))d[_autoBiz]=[gBiz()];
+      if(typeof _autoCo!=='undefined'&&_autoCo&&!(d[_autoCo]&&d[_autoCo].length))d[_autoCo]=[gCo()];
       if(_autoPrj&&!(d[_autoPrj]&&d[_autoPrj].length))d[_autoPrj]=[gPrj()];
       recs[id]={id,e,d,u:Date.now()};queue.push(id);created++;
     }
@@ -5027,7 +5047,7 @@ function mbuilderHTML(){
 }
 function mAddChild(pid){
   const d={};if(pid)d.parent=[pid];
-  const id='mdef_'+Date.now()+'_'+Math.floor(Math.random()*1e4);
+  const id=uid();
   recs[id]={id,e:'mdef',d:{title:'',src:'دستی (ثبت دوره‌ای)',...d},u:Date.now(),c:Date.now()};
   invalidateByE();try{put(recs[id]);}catch(e){}
   go('rec','mdef',id);}
@@ -5037,7 +5057,7 @@ function mQuickVal(mid){
   const jy=view.myYr||nowJ[0];const jm=view.myMn&&view.myMn!=='همه'?view.myMn:Mn[nowJ[1]-1];
   const v=prompt('مقدار «'+nameOf(mid)+'» برای '+jy+' '+jm+':');if(v==null)return;
   const n=+faNum(String(v)).replace(/[,٬\s]/g,'');if(isNaN(n)){alert('عدد نامعتبر');return;}
-  const id='mval_'+Date.now();
+  const id=uid();
   recs[id]={id,e:'mval',d:{title:jy+' '+jm+' - '+nameOf(mid),mdef:[mid],jy,jm,value:n},u:Date.now(),c:Date.now()};
   invalidateByE();try{put(recs[id]);}catch(e){}render();}
 window.mAddChild=mAddChild;window.mQuickVal=mQuickVal;
@@ -5176,7 +5196,7 @@ function mydashHTML(){
   </div>`;
 }
 function mydNewDash(){const nm=prompt('نام داشبرد جدید:');if(!nm)return;
-  const id='dash_'+Date.now();recs[id]={id,e:'dashdef',d:{title:nm,ic:'📐'},u:Date.now(),c:Date.now()};
+  const id=uid();recs[id]={id,e:'dashdef',d:{title:nm,ic:'📐'},u:Date.now(),c:Date.now()};
   invalidateByE();try{put(recs[id]);}catch(e){}view.mdSel=id;render();}
 let mydDraft=null;
 function mydNewWid(did){mydDraft={id:'',dash:did,title:'',wtype:'🔢 کارت عددی',src:'جمع فیلد عددی یک بخش',ent:'',fld:'',grpf:'',fx:'',mdef:'',target:'',size:'متوسط',ord:''};view.mdEdit=1;render();}
@@ -5194,7 +5214,7 @@ function mydSaveWid(){
   if((d.src.startsWith('جمع')||d.src.startsWith('میانگین'))&&!d.fld){alert('فیلد عددی را انتخاب کن');return;}
   if(d.src.startsWith('فرمول')&&!d.fx.trim()){alert('فرمول را بنویس — فیلدها را از چیپ‌های زیر اضافه کن');return;}
   if((d.wtype.startsWith('🥧')||d.wtype.startsWith('📋'))&&needEnt&&!d.grpf){alert('برای دایره‌ای/جدول، «تفکیک بر اساس» را انتخاب کن');return;}
-  const id=d.id||('wid_'+Date.now());
+  const id=d.id||uid();
   const rec=recs[id]||{id,e:'widdef',c:Date.now()};
   rec.d={title:d.title.trim(),dash:d.dash?[d.dash]:[],wtype:d.wtype,src:d.src,
     ent:d.ent?E[d.ent].n:'',fld:d.fld,grpf:d.grpf,fx:d.fx,
@@ -5720,14 +5740,23 @@ function gBiz(){try{return localStorage.getItem('xr_bizsel')||'';}catch(e){retur
 function gPrj(){try{const id=localStorage.getItem('xr_prjsel')||'';return (id&&recs[id]&&!recs[id].del)?id:'';}catch(e){return '';}}
 function setGPrj(id){try{if(id)localStorage.setItem('xr_prjsel',id);else localStorage.removeItem('xr_prjsel');}catch(e){}view.epP=id||'';render();}
 window.setGPrj=setGPrj;
-function setGBiz(id){try{if(id)localStorage.setItem('xr_bizsel',id);else localStorage.removeItem('xr_bizsel');}catch(e){}render();}
+function setGBiz(id){try{if(id)localStorage.setItem('xr_bizsel',id);else localStorage.removeItem('xr_bizsel');}catch(e){}
+  try{if(id&&recs[id]){const co=relIds(recs[id],'companies')[0]||relIds(recs[id],'company')[0];if(co)localStorage.setItem('xr_cosel',co);}}catch(e){}
+  render();}
+function gCo(){try{const v=localStorage.getItem('xr_cosel');return v&&recs[v]&&!recs[v].del?v:'';}catch(e){return '';}}
+function setGCo(id){try{if(id)localStorage.setItem('xr_cosel',id);else localStorage.removeItem('xr_cosel');}catch(e){}render();}
+window.setGCo=setGCo;
 function bizSelPos(){try{return localStorage.getItem('xr_bizselpos')||'top';}catch(e){return 'top';}}
 function setBizSelPos(v){try{localStorage.setItem('xr_bizselpos',v);}catch(e){}nav();try{drawArrange();}catch(e){}}
 function bizSelectorHTML(){
   const bl=byE('business');
   if(!bl.length||!(canSee('invoice')||canSee('product')||canSee('customer')||canSee('purchinv')||canSee('sale')))return '';
+  const cl=byE('company');
   return `<div style="margin:9px 4px 6px;padding:7px 9px;background:var(--bg3);border:1px solid var(--ac);border-radius:10px">
-    <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">🏢 کسب‌وکار فعال</div>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">🏢 شرکت فعال</div>
+    <select onchange="setGCo(this.value)" style="width:100%;font-size:12px;padding:5px 6px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);font-family:inherit;margin-bottom:6px">
+      <option value="">همه‌ی شرکت‌ها</option>${cl.map(c=>`<option value="${c.id}" ${c.id===gCo()?'selected':''}>${esc(c.d.title)}</option>`).join('')}</select>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">🧢 کسب‌وکار فعال</div>
     <select onchange="setGBiz(this.value)" style="width:100%;font-size:12px;padding:5px 6px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--line);font-family:inherit">
       <option value="">همه‌ی کسب‌وکارها</option>${bl.map(b=>`<option value="${b.id}" ${b.id===gBiz()?'selected':''}>${esc(b.d.title)}</option>`).join('')}</select></div>`;
 }
@@ -5843,6 +5872,7 @@ function render(){
   _domCache={}; // کش محدوده داده در هر رندر تازه می‌شود
   // 🐎 کش‌ها بین رندرها زنده می‌مانند؛ فقط put/pull/realtime آن‌ها را نامعتبر می‌کنند
   try{migrateChain();}catch(e){} // تبدیل رکوردهای قدیمی استراتژی/هدف به BSC
+  try{migrateUuidIds();}catch(e){} // idهای غیر uuid → uuid (رفع خطای سینک)
   try{applyBrand();}catch(e){} // نام/لوگو/رنگ سفارشی نسخه
   try{rebuildSchema();}catch(e){} // فیلدها و بخش‌های سفارشی ادمین
   try{rebuildHabitFields();}catch(e){} // لیست عادت‌های شخصی کاربر جاری
@@ -7557,6 +7587,8 @@ function listHTML(e){
   let rows=visE(e);
   // 🏢 فیلتر کسب‌وکار فعالِ سراسری (فقط برای موجودیت‌هایی که فیلد کسب‌وکار دارند)
   let _bizHint='';
+  if(gCo()&&e!=='company'&&e!=='business'){const cf=def.f.find(f=>f.t===REL&&f.r==='company');
+    if(cf)rows=rows.filter(r=>{const ids=relIds(r,cf.k);return !ids.length||ids.includes(gCo());});}
   if(gBiz()&&e!=='business'){const bf=def.f.find(f=>f.t===REL&&f.r==='business');
     if(bf){const nb=rows.filter(r=>!relIds(r,bf.k).length).length;
       rows=rows.filter(r=>{const ids=relIds(r,bf.k);return !ids.length||ids.includes(gBiz());});
@@ -9638,6 +9670,7 @@ function openRec(e,id,preset){
   if(preset&&preset.k&&!id)cur.d[preset.k]=[preset.id];
   // 🏢 پرکردن خودکار «کسب‌وکار» از کسب‌وکار فعالِ سراسری (برای رکورد جدید)
   if(!id&&gBiz()&&recs[gBiz()]){const bf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='business');if(bf&&!(cur.d[bf.k]&&cur.d[bf.k].length))cur.d[bf.k]=[gBiz()];}
+  if(!id&&gCo()&&recs[gCo()]){const cf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='company');if(cf&&!(cur.d[cf.k]&&cur.d[cf.k].length))cur.d[cf.k]=[gCo()];}
   if(!id&&gPrj()){const pf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='eproject');if(pf&&!(cur.d[pf.k]&&cur.d[pf.k].length))cur.d[pf.k]=[gPrj()];}
   // تسک جدید: تاریخ و ساعت ایجاد خودکار پر می‌شود (قابل ویرایش)
   if(e==='task'&&!id){
