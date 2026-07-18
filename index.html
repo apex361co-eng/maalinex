@@ -254,11 +254,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۲۳</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۲۵</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
-      <span id="ttl">اتاق کنترل</span><span class="sp"></span>
+      <button onclick="goBack()" title="بازگشت به صفحه قبل" style="background:var(--cd);border:1px solid var(--bd);color:var(--tx);border-radius:9px;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:13px">→</button> <span id="ttl">اتاق کنترل</span><span class="sp"></span>
       <span id="who" style="font-size:11px;color:var(--tx2)"></span>
       <span id="synctxt"></span><span id="syncdot"></span>
       <span id="topmv_wrap" style="display:contents">
@@ -327,6 +327,64 @@ const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',S
 const STATUS=['Not started','In progress','Done'];
 const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
 const PRIO=['بحرانی','بالا','متوسط','پایین'];
+const CTRL_TREE=[
+ {c:'1',n:'شاخص مالی',ic:'💰',kids:[
+  {c:'1-1',n:'فروش',kids:[
+   {c:'1-1-1-1',n:'فروش ریالی',kids:[{c:'1-1-1-1-1',n:'رشد فروش ریالی'}]},
+   {c:'1-1-1-2',n:'فروش تعدادی',kids:[{c:'1-1-1-2-1',n:'رشد تعدادی'}]},
+   {c:'1-1-1-3',n:'عملکرد ماهیانه',kids:[{c:'1-1-1-3-1',n:'بدترین ماه'},{c:'1-1-1-3-2',n:'بهترین ماه'}]}]},
+  {c:'1-2',n:'سودآوری',kids:[
+   {c:'1-2-1',n:'سود خالص',kids:[
+    {c:'1-2-1-1-1',n:'سود قبل از مالیات'},{c:'1-2-1-1-2',n:'حاشیه سود خالص'},{c:'1-2-1-1-3',n:'رشد سود خالص'}]},
+   {c:'1-2-2',n:'سود ناخالص'},
+   {c:'1-2-3',n:'حاشیه سود ناخالص'},
+   {c:'1-2-5',n:'سود عملیاتی تعدیل‌شده',kids:[
+    {c:'1-2-5-1',n:'سود بدون اقلام غیرعملیاتی'},{c:'1-2-5-2',n:'اثر اقلام غیرعملیاتی بر سود'}]}]},
+  {c:'1-3',n:'هزینه‌ها',kids:[
+   {c:'1-3-1',n:'هزینه‌های عملیاتی'},{c:'1-3-2',n:'هزینه‌های غیرعملیاتی (مالی)'},
+   {c:'1-3-3',n:'نسبت هزینه به فروش',d:0},{c:'1-3-4',n:'نسبت هزینه به سود خالص',d:0}]}]},
+ {c:'2',n:'شاخص عملیاتی',ic:'⚙️',kids:[
+  {c:'2-1',n:'بهای تمام‌شده',kids:[{c:'2-1-1',n:'نسبت به فروش',d:0},{c:'2-1-2',n:'روند بهای تمام‌شده',d:0}]},
+  {c:'2-2',n:'حمل و انبارداری',d:0},
+  {c:'2-3',n:'حقوق و دستمزد',d:0},
+  {c:'2-4',n:'کیفیت فروش',kids:[
+   {c:'2-4-1',n:'نرخ برگشت از فروش',d:0},{c:'2-4-2',n:'مبلغ برگشت از فروش',d:0},
+   {c:'2-4-3',n:'نرخ تخفیف',d:0},{c:'2-4-4',n:'مبلغ تخفیف',d:0}]},
+  {c:'2-5',n:'هزینه‌های اصلی عملیات',kids:[
+   {c:'2-5-1',n:'حقوق به سود خالص',d:0},{c:'2-5-2',n:'حمل و انبارداری به سود خالص',d:0},
+   {c:'2-5-3',n:'هزینه سایت به سود ناخالص',d:0},{c:'2-5-4',n:'اجاره به سود خالص',d:0}]},
+  {c:'2-6',n:'خرید',kids:[
+   {c:'2-6-1',n:'سود خرید'},{c:'2-6-2',n:'سود خرید تعدیل‌شده با ارز'},{c:'2-6-3',n:'کیفیت خرید'},
+   {c:'2-6-4',n:'پوشش خرید خارجی',kids:[{c:'2-6-4-1',n:'نسبت خرید ارزی به کل'},{c:'2-6-4-2',n:'پوشش خرید آینده'}]}]}]},
+ {c:'3',n:'هشدار و کنترل',ic:'🚨',kids:[
+  {c:'3-1',n:'ضایعات',kids:[{c:'3-1-1',n:'مبلغ ضایعات',d:0},{c:'3-1-2',n:'نسبت ضایعات به فروش',d:0},{c:'3-1-3',n:'روند ضایعات',d:0}]},
+  {c:'3-2',n:'گارانتی',kids:[{c:'3-2-1',n:'مبلغ گارانتی',d:0},{c:'3-2-2',n:'نسبت گارانتی به فروش',d:0},{c:'3-2-3',n:'روند گارانتی',d:0},{c:'3-2-4',n:'سود و زیان گارانتی'}]},
+  {c:'3-3',n:'هزینه‌های حساس',kids:[
+   {c:'3-3-1-1',n:'پذیرایی به سود ناخالص',d:0},{c:'3-3-1-2',n:'روند هزینه پذیرایی',d:0},{c:'3-3-1-3',n:'رشد غیرعادی هزینه‌ها',d:0}]},
+  {c:'3-4',n:'کالاهای زیان‌ده',d:0},
+  {c:'3-6',n:'ماه‌های هشدار',kids:[{c:'3-6-1',n:'ماه‌های زیان‌ده',d:0},{c:'3-6-2',n:'ماه‌های با سود پایین',d:0},{c:'3-6-3',n:'افت شدید سود',d:0}]},
+  {c:'3-7',n:'اقلام غیرعملیاتی',kids:[{c:'3-7-1',n:'سود تسعیر ارز'},{c:'3-7-2',n:'سهم سود غیرعملیاتی از کل',d:0}]},
+  {c:'3-8',n:'جریان نقدینگی',kids:[
+   {c:'3-8-1',n:'بدهی',d:0},{c:'3-8-2',n:'مطالبات',d:0},{c:'3-8-3',n:'دوره وصول مطالبات',d:0},
+   {c:'3-8-4',n:'دوره پرداخت بدهی'},{c:'3-8-5',n:'رشد تعهدات',d:0},{c:'3-8-6',n:'مطالبات معوق',d:0},
+   {c:'3-8-7',n:'کسری نقدینگی',d:0},
+   {c:'3-8-9',n:'تسهیلات و وام‌ها',kids:[
+    {c:'3-8-9-1',n:'مبلغ وام‌ها',d:0},{c:'3-8-9-2',n:'اقساط هر تسهیلات',d:0},
+    {c:'3-8-9-3',n:'سررسید وام‌ها'},{c:'3-8-9-4',n:'توان پرداخت اقساط'}]}]}]},
+ {c:'4',n:'خزانه',ic:'🏦',kids:[
+  {c:'4-1-1',n:'صندوق ریالی'},
+  {c:'4-1-2',n:'صندوق ارزی',kids:[
+   {c:'4-1-2-1',n:'خرید ارز در دوره'},{c:'4-1-2-2',n:'مصرف ارز در دوره',d:0},
+   {c:'4-1-2-3',n:'سود تسعیر ارز'},{c:'4-1-2-4',n:'سهم تسعیر از سود کل',d:0}]},
+  {c:'4-3',n:'حساب‌های بانکی'}]},
+ {c:'5',n:'انبار',ic:'📦',kids:[
+  {c:'5-1',n:'موجودی انبار',kids:[{c:'5-1-1',n:'موجودی تعدادی'},{c:'5-1-2-1',n:'موجودی ریالی'},{c:'5-1-2-2',n:'موجودی ارزی'}]},
+  {c:'5-2',n:'گردش موجودی',kids:[{c:'5-2-1',n:'نرخ گردش موجودی'},{c:'5-2-2',n:'روزهای خواب کالا',d:0}]},
+  {c:'5-3',n:'کفایت موجودی نسبت به فروش'},
+  {c:'5-4',n:'ریسک کمبود موجودی',kids:[{c:'5-4-1',n:'نرخ کسری کالا',d:0},{c:'5-4-2',n:'دفعات اتمام کالا (Stockout)',d:0}]},
+  {c:'5-5',n:'ریسک تورم موجودی',kids:[{c:'5-5-1',n:'موجودی راکد',d:0},{c:'5-5-2',n:'موجودی کم‌گردش',d:0},{c:'5-5-3',n:'درصد بالاتر از هدف',d:0}]},
+  {c:'5-6',n:'کیفیت موجودی',kids:[{c:'5-6-1',n:'ضایعات انبار',d:0},{c:'5-6-2',n:'ناشی از انبارش',d:0},{c:'5-6-3',n:'آسیب‌دیدگی',d:0},{c:'5-6-4',n:'کسری انبار',d:0}]}]}];
+const CTRL_CODES=(()=>{const out=[];const walk=n=>{out.push(n.c+' │ '+n.n);(n.kids||[]).forEach(walk);};CTRL_TREE.forEach(walk);return out;})();
 const KPIC=[
  {k:'sales',n:'فروش و سودآوری',ic:'💰',subs:[['فروش خالص',1],['سود خالص',1],['سود هر سفارش',1]]},
  {k:'inv',n:'موجودی و خرید',ic:'📦',subs:[['پوشش موجودی',1],['ارزش موجودی راکد',0],['نرخ کسری موجودی پرفروش',0]]},
@@ -1229,7 +1287,7 @@ kpival:{ic:'🎯',n:'ثبت KPI فروش (دوره‌ای)',grp:'مدیریت ک
  cols:['title','scope','jy','jm','kpi','value','target']},
 ctrlval:{ic:'🎛',n:'ثبت شاخص کنترلی (داشبرد کنترلی)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: 1404 مهر - مطالبات معوق)',t:TXT},
- {k:'code',n:'کد شاخص (مثل: 3-8-6)',t:TXT},
+ {k:'code',n:'شاخص (از فهرست داشبرد کنترلی)',t:SEL,o:CTRL_CODES},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'jy',n:'سال شمسی',t:NUM},
  {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
@@ -2656,7 +2714,11 @@ function impBuildRows(e,arr){ // 🧠 اعتبارسنجی مشترک (پیش‌
       else if(f.t===REL){
         const names=f.s?[raw]:raw.split(/[،;]/).map(x=>x.trim()).filter(Boolean);
         const ids=[];
-        names.forEach(nm=>{const r2=byE(f.r).find(x=>(x.d.title||'').trim()===nm);if(r2)ids.push(r2.id);else errs.push(f.n+': «'+nm+'» در '+E[f.r].n+' یافت نشد');});
+        names.forEach(nm=>{let r2=byE(f.r).find(x=>(x.d.title||'').trim()===nm);
+          if(!r2&&(f.r==='business'||f.r==='company')){const nid='auto_'+f.r+'_'+nm.replace(/\s+/g,'_');
+            if(!recs[nid]||recs[nid].del){recs[nid]={id:nid,e:f.r,d:{title:nm},u:Date.now(),c:Date.now()};invalidateByE();try{put(recs[nid]);}catch(e){}}
+            r2=recs[nid];}
+          if(r2)ids.push(r2.id);else errs.push(f.n+': «'+nm+'» در '+E[f.r].n+' یافت نشد');});
         if(ids.length)d[f.k]=f.s?[ids[0]]:ids;
       }
       else d[f.k]=raw;
@@ -4640,6 +4702,20 @@ function plmonthBrief(r){
   return {label:'فروش خالص │ ناخالص٪ │ سود خالص',v:abbrN(net)+' │ '+(net>0?(gp/net*100).toFixed(1)+'٪':'—')+' │ '+abbrN(np),bad:np<0};}
 window.plmonthBrief=plmonthBrief;
 window.pfBrief=pfBrief;
+function astoryBrief(r){const st=r.d.status||'Backlog';const bad=st==='Blocked';
+  return {label:'وضعیت │ SP',v:st+' │ '+(r.d.sp||'—')+(r.d.team?' │ '+r.d.team:''),bad};}
+function asprintBrief(r){const st=byE('astory').filter(x=>relIds(x,'asprint').includes(r.id));
+  const done=st.filter(x=>x.d.status==='Done').reduce((a,x)=>a+(+x.d.sp||0),0);
+  const tot=st.reduce((a,x)=>a+(+x.d.sp||0),0);
+  return {label:'پیشرفت SP',v:done+' / '+tot+(r.d.cap?' (ظرفیت '+r.d.cap+')':''),bad:r.d.cap&&tot>+r.d.cap};}
+function aepicBrief(r){const st=byE('astory').filter(x=>relIds(x,'aepic').includes(r.id));
+  const done=st.filter(x=>x.d.status==='Done').length;
+  return {label:'استوری‌ها',v:done+' / '+st.length+' انجام شد',bad:false};}
+function areleaseBrief(r){const st=byE('astory').filter(x=>relIds(x,'arelease').includes(r.id));
+  const open=st.filter(x=>x.d.status!=='Done').length;
+  return {label:'باقیمانده',v:open+' آیتم باز از '+st.length,bad:open>0&&st.length>0};}
+window.astoryBrief=astoryBrief;window.asprintBrief=asprintBrief;window.aepicBrief=aepicBrief;window.areleaseBrief=areleaseBrief;
+
 window.itemBrief=itemBrief;window.mvBrief=mvBrief;window.chqBrief=chqBrief;window.payBrief=payBrief;
 /* 💳 تابلوی چک‌ها + وصول/پرداخت متصل به چرخه‌ی نقد */
 const CHQ_OPEN=['نزد صندوق','در جریان وصول'];
@@ -5144,6 +5220,7 @@ function activeGrp(){ // گروهی که صفحه فعلی به آن تعلق د
 }
 function navIsCol(g){ // بسته است؟ (پیش‌فرض: همه بسته، جز گروه صفحه فعال)
   if(navCol&&g in navCol)return !!navCol[g];
+  if(g==='مدیریت کسب و کار')return false; // منوی اصلی کار روزانه — پیش‌فرض باز
   return g!==activeGrp();
 }
 function toggleGrp(g){
@@ -5669,63 +5746,6 @@ function ceoChartsHTML(b,wins,winDesc){
 }
 
 /* ===== 🎛 داشبرد کنترلی — گیج‌های خودرویی آبشاری ===== */
-const CTRL_TREE=[
- {c:'1',n:'شاخص مالی',ic:'💰',kids:[
-  {c:'1-1',n:'فروش',kids:[
-   {c:'1-1-1-1',n:'فروش ریالی',kids:[{c:'1-1-1-1-1',n:'رشد فروش ریالی'}]},
-   {c:'1-1-1-2',n:'فروش تعدادی',kids:[{c:'1-1-1-2-1',n:'رشد تعدادی'}]},
-   {c:'1-1-1-3',n:'عملکرد ماهیانه',kids:[{c:'1-1-1-3-1',n:'بدترین ماه'},{c:'1-1-1-3-2',n:'بهترین ماه'}]}]},
-  {c:'1-2',n:'سودآوری',kids:[
-   {c:'1-2-1',n:'سود خالص',kids:[
-    {c:'1-2-1-1-1',n:'سود قبل از مالیات'},{c:'1-2-1-1-2',n:'حاشیه سود خالص'},{c:'1-2-1-1-3',n:'رشد سود خالص'}]},
-   {c:'1-2-2',n:'سود ناخالص'},
-   {c:'1-2-3',n:'حاشیه سود ناخالص'},
-   {c:'1-2-5',n:'سود عملیاتی تعدیل‌شده',kids:[
-    {c:'1-2-5-1',n:'سود بدون اقلام غیرعملیاتی'},{c:'1-2-5-2',n:'اثر اقلام غیرعملیاتی بر سود'}]}]},
-  {c:'1-3',n:'هزینه‌ها',kids:[
-   {c:'1-3-1',n:'هزینه‌های عملیاتی'},{c:'1-3-2',n:'هزینه‌های غیرعملیاتی (مالی)'},
-   {c:'1-3-3',n:'نسبت هزینه به فروش',d:0},{c:'1-3-4',n:'نسبت هزینه به سود خالص',d:0}]}]},
- {c:'2',n:'شاخص عملیاتی',ic:'⚙️',kids:[
-  {c:'2-1',n:'بهای تمام‌شده',kids:[{c:'2-1-1',n:'نسبت به فروش',d:0},{c:'2-1-2',n:'روند بهای تمام‌شده',d:0}]},
-  {c:'2-2',n:'حمل و انبارداری',d:0},
-  {c:'2-3',n:'حقوق و دستمزد',d:0},
-  {c:'2-4',n:'کیفیت فروش',kids:[
-   {c:'2-4-1',n:'نرخ برگشت از فروش',d:0},{c:'2-4-2',n:'مبلغ برگشت از فروش',d:0},
-   {c:'2-4-3',n:'نرخ تخفیف',d:0},{c:'2-4-4',n:'مبلغ تخفیف',d:0}]},
-  {c:'2-5',n:'هزینه‌های اصلی عملیات',kids:[
-   {c:'2-5-1',n:'حقوق به سود خالص',d:0},{c:'2-5-2',n:'حمل و انبارداری به سود خالص',d:0},
-   {c:'2-5-3',n:'هزینه سایت به سود ناخالص',d:0},{c:'2-5-4',n:'اجاره به سود خالص',d:0}]},
-  {c:'2-6',n:'خرید',kids:[
-   {c:'2-6-1',n:'سود خرید'},{c:'2-6-2',n:'سود خرید تعدیل‌شده با ارز'},{c:'2-6-3',n:'کیفیت خرید'},
-   {c:'2-6-4',n:'پوشش خرید خارجی',kids:[{c:'2-6-4-1',n:'نسبت خرید ارزی به کل'},{c:'2-6-4-2',n:'پوشش خرید آینده'}]}]}]},
- {c:'3',n:'هشدار و کنترل',ic:'🚨',kids:[
-  {c:'3-1',n:'ضایعات',kids:[{c:'3-1-1',n:'مبلغ ضایعات',d:0},{c:'3-1-2',n:'نسبت ضایعات به فروش',d:0},{c:'3-1-3',n:'روند ضایعات',d:0}]},
-  {c:'3-2',n:'گارانتی',kids:[{c:'3-2-1',n:'مبلغ گارانتی',d:0},{c:'3-2-2',n:'نسبت گارانتی به فروش',d:0},{c:'3-2-3',n:'روند گارانتی',d:0},{c:'3-2-4',n:'سود و زیان گارانتی'}]},
-  {c:'3-3',n:'هزینه‌های حساس',kids:[
-   {c:'3-3-1-1',n:'پذیرایی به سود ناخالص',d:0},{c:'3-3-1-2',n:'روند هزینه پذیرایی',d:0},{c:'3-3-1-3',n:'رشد غیرعادی هزینه‌ها',d:0}]},
-  {c:'3-4',n:'کالاهای زیان‌ده',d:0},
-  {c:'3-6',n:'ماه‌های هشدار',kids:[{c:'3-6-1',n:'ماه‌های زیان‌ده',d:0},{c:'3-6-2',n:'ماه‌های با سود پایین',d:0},{c:'3-6-3',n:'افت شدید سود',d:0}]},
-  {c:'3-7',n:'اقلام غیرعملیاتی',kids:[{c:'3-7-1',n:'سود تسعیر ارز'},{c:'3-7-2',n:'سهم سود غیرعملیاتی از کل',d:0}]},
-  {c:'3-8',n:'جریان نقدینگی',kids:[
-   {c:'3-8-1',n:'بدهی',d:0},{c:'3-8-2',n:'مطالبات',d:0},{c:'3-8-3',n:'دوره وصول مطالبات',d:0},
-   {c:'3-8-4',n:'دوره پرداخت بدهی'},{c:'3-8-5',n:'رشد تعهدات',d:0},{c:'3-8-6',n:'مطالبات معوق',d:0},
-   {c:'3-8-7',n:'کسری نقدینگی',d:0},
-   {c:'3-8-9',n:'تسهیلات و وام‌ها',kids:[
-    {c:'3-8-9-1',n:'مبلغ وام‌ها',d:0},{c:'3-8-9-2',n:'اقساط هر تسهیلات',d:0},
-    {c:'3-8-9-3',n:'سررسید وام‌ها'},{c:'3-8-9-4',n:'توان پرداخت اقساط'}]}]}]},
- {c:'4',n:'خزانه',ic:'🏦',kids:[
-  {c:'4-1-1',n:'صندوق ریالی'},
-  {c:'4-1-2',n:'صندوق ارزی',kids:[
-   {c:'4-1-2-1',n:'خرید ارز در دوره'},{c:'4-1-2-2',n:'مصرف ارز در دوره',d:0},
-   {c:'4-1-2-3',n:'سود تسعیر ارز'},{c:'4-1-2-4',n:'سهم تسعیر از سود کل',d:0}]},
-  {c:'4-3',n:'حساب‌های بانکی'}]},
- {c:'5',n:'انبار',ic:'📦',kids:[
-  {c:'5-1',n:'موجودی انبار',kids:[{c:'5-1-1',n:'موجودی تعدادی'},{c:'5-1-2-1',n:'موجودی ریالی'},{c:'5-1-2-2',n:'موجودی ارزی'}]},
-  {c:'5-2',n:'گردش موجودی',kids:[{c:'5-2-1',n:'نرخ گردش موجودی'},{c:'5-2-2',n:'روزهای خواب کالا',d:0}]},
-  {c:'5-3',n:'کفایت موجودی نسبت به فروش'},
-  {c:'5-4',n:'ریسک کمبود موجودی',kids:[{c:'5-4-1',n:'نرخ کسری کالا',d:0},{c:'5-4-2',n:'دفعات اتمام کالا (Stockout)',d:0}]},
-  {c:'5-5',n:'ریسک تورم موجودی',kids:[{c:'5-5-1',n:'موجودی راکد',d:0},{c:'5-5-2',n:'موجودی کم‌گردش',d:0},{c:'5-5-3',n:'درصد بالاتر از هدف',d:0}]},
-  {c:'5-6',n:'کیفیت موجودی',kids:[{c:'5-6-1',n:'ضایعات انبار',d:0},{c:'5-6-2',n:'ناشی از انبارش',d:0},{c:'5-6-3',n:'آسیب‌دیدگی',d:0},{c:'5-6-4',n:'کسری انبار',d:0}]}]}];
 function ctrlClamp(x){return x==null?null:Math.max(0,Math.min(100,x));}
 function ctrldashHTML(){
   const Mn=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
@@ -5809,7 +5829,7 @@ function ctrldashHTML(){
    '3-7-2':()=>{const sh=C.np>0?C.oinc/C.np*100:null;return sh==null?null:{v:sh.toFixed(1)+'٪',p:ctrlClamp(100-sh)};},
   };
   // مقدار دستی از ctrlval
-  const man=c=>{const rs=cvs.filter(r=>bizF(r)&&inP(r)&&(r.d.code||'').trim()===c);
+  const man=c=>{const rs=cvs.filter(r=>bizF(r)&&inP(r)&&String(r.d.code||'').split('│')[0].trim()===c);
     if(!rs.length)return null;const v=rs.reduce((a,r)=>a+(+r.d.value||0),0),t=rs.reduce((a,r)=>a+(+r.d.target||0),0);
     return {v:F(v)+(t?' / '+F(t):''),t,raw:v};};
   const nodeVal=nd=>{
@@ -5835,7 +5855,7 @@ function ctrldashHTML(){
         <circle cx=75 cy=70 r=5 fill="${gcol(p)}"/>
         <text x=75 y=52 text-anchor=middle font-size=15 font-weight=800 fill="${gcol(p)}">${p==null?'—':Math.round(p)}</text>
       </svg>
-      <div style="font-size:11.5px;font-weight:700;line-height:1.6">${nd.ic?nd.ic+' ':''}${nd.n}</div>
+      <div style="font-size:11.5px;font-weight:700;line-height:1.6">${nd.ic?nd.ic+' ':''}${nd.n} <span style="opacity:.45;font-size:9px;font-weight:400" dir="ltr">${nd.c}</span></div>
       <div style="font-size:11px;color:var(--tx2)">${vv.v}${vv.src&&vv.src!=='auto'?' <span style="opacity:.6">('+vv.src+')</span>':''}</div>
       ${nd.kids?`<div style="font-size:9px;color:var(--tx2);opacity:.7">▼ ${nd.kids.length} زیرشاخص</div>`:''}
     </div>`;};
@@ -7090,7 +7110,11 @@ function listHTML(e){
   const q=(view.q||'').trim();
   let rows=visE(e);
   // 🏢 فیلتر کسب‌وکار فعالِ سراسری (فقط برای موجودیت‌هایی که فیلد کسب‌وکار دارند)
-  if(gBiz()){const bf=def.f.find(f=>f.t===REL&&f.r==='business');if(bf)rows=rows.filter(r=>relIds(r,bf.k).includes(gBiz()));}
+  let _bizHint='';
+  if(gBiz()&&e!=='business'){const bf=def.f.find(f=>f.t===REL&&f.r==='business');
+    if(bf){const nb=rows.filter(r=>!relIds(r,bf.k).length).length;
+      rows=rows.filter(r=>{const ids=relIds(r,bf.k);return !ids.length||ids.includes(gBiz());});
+      _bizHint=`<div style="font-size:11px;color:var(--tx2);margin-bottom:6px">🏢 فیلتر کسب‌وکار فعال: «${esc(nameOf(gBiz()))}»${nb?` │ ${nb.toLocaleString('fa-IR')} رکورد بدون کسب‌وکار هم نمایش داده می‌شود`:''} — <span style="color:var(--ac);cursor:pointer" onclick="setGBiz('')">نمایش همه</span></div>`;}}
   // 🏗️ فیلتر پروژه فعال EPCF
   if(gPrj()){const pf=def.f.find(f=>f.t===REL&&f.r==='eproject');if(pf)rows=rows.filter(r=>relIds(r,pf.k).includes(gPrj()));}
   if(view.flt&&FILTERS[view.flt])rows=rows.filter(FILTERS[view.flt].f);
@@ -7151,7 +7175,7 @@ function listHTML(e){
       ${sortFs.filter(f=>[SEL,STA,REL,CHK,MUL,TXT].includes(f.t)).map(f=>`<option value="${f.k}" ${view.grp===f.k?'selected':''}>${esc(f.n)}</option>`).join('')}</select>
     <button class="btn gh sm" onclick="view.filterOpen=!view.filterOpen;render()">🔎 فیلتر ستونی${Object.values(colFlt).filter(Boolean).length?' ('+Object.values(colFlt).filter(Boolean).length.toLocaleString('fa-IR')+')':''}</button>
     ${(view.sort||view.grp||Object.values(colFlt).some(Boolean)||view.flt)?`<button class="btn bad sm" onclick="view.sort=null;view.grp=null;view.cf={};view.flt=null;view.page=0;render()">پاک‌سازی ابزارها ✕</button>`:''}
-  </div>${lvlBar}`;
+  </div>${_bizHint}${lvlBar}`;
   // پنل فیلتر ستونی
   if(view.filterOpen){
     h+=`<div class="sec" style="margin-bottom:10px"><h3 style="font-size:13px">🔎 فیلتر بر اساس فیلد</h3>
@@ -7208,7 +7232,7 @@ function listHTML(e){
     if(e==='measure'){const b=relIds(r,'bsc')[0],sc=(b&&recs[b]&&recs[b].d&&recs[b].d.scope)||'';
       s+=`<td>${sc?`${LVIC[sc]||''} ${sc}`:'<span style="color:var(--warn)">—</span>'}</td>`;}
     if(def.prog)s+=`<td>${pbarHTML(progOf(def.prog,r))}</td>`;
-    if(def.comp){const c=window[def.comp](r);s+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;}
+    if(def.comp){let c;try{c=typeof window[def.comp]==='function'?window[def.comp](r):null;}catch(e){c=null;}if(c)s+=`<td style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</td>`;else s+=`<td>—</td>`;}
     return s+`</tr>`;
   };
   // ▦ نمای گروه‌بندی‌شده
@@ -7270,7 +7294,7 @@ function recHTML(e,id){
   // computed chips
   const chips=[];
   if(def.prog)chips.push(['پیشرفت کل',pbarHTML(progOf(def.prog,r))]);
-  if(def.comp){const c=window[def.comp](r);chips.push([c.label,`<b style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</b>`]);}
+  if(def.comp){let c;try{c=typeof window[def.comp]==='function'?window[def.comp](r):null;}catch(e){c=null;}if(c)chips.push([c.label,`<b style="color:${c.bad?'var(--bad)':'var(--tx)'}">${c.v}</b>`]);}
   if(e==='project'){
     const ac=projectSpent(r);
     chips.push(['هزینه واقعی',`<b>${money(ac)}</b>`]);
@@ -9221,7 +9245,7 @@ function drawModal(){
   if(id){
     const chips=[];
     if(def.prog)chips.push(['پیشرفت',Math.round(progOf(def.prog,recs[id]))+'٪']);
-    if(def.comp){const c=window[def.comp](recs[id]);chips.push([c.label,c.v]);}
+    if(def.comp){let c;try{c=typeof window[def.comp]==='function'?window[def.comp](recs[id]):null;}catch(e){c=null;}if(c)chips.push([c.label,c.v]);}
     if(e==='project')chips.push(['هزینه واقعی',fmtN(projectSpent(recs[id]))]);
     if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
   }
