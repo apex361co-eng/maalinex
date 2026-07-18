@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.47</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.48</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.47</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.48</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1711,10 +1711,10 @@ const GROUPS=['سازمان','مدیریت کسب و کار','مالی و حقو
 const GROWTH=['growth','habit','win','plan','asset','area','note','book','booknote','course','reminder'];
 /* ================= 🧩 ساختار سفارشی: فیلدها و بخش‌های قابل تعریف توسط ادمین ================= */
 const E_BASE=JSON.parse(JSON.stringify(E)); // اسکیمای پایه — سفارشی‌ها موقع اجرا رویش سوار می‌شوند
-function schemaCfg(){const m=recs[MO];const s=(m&&!m.del&&m.d._schema)||{};return {fields:s.fields||{},ents:s.ents||{},order:s.order||{},names:s.names||{},fnames:s.fnames||{},gnames:s.gnames||{}};}
+function schemaCfg(){const m=recs[MO];const s=(m&&!m.del&&m.d._schema)||{};return {fields:s.fields||{},ents:s.ents||{},order:s.order||{},names:s.names||{},fnames:s.fnames||{},gnames:s.gnames||{},hidden:s.hidden||{}};}
 function saveSchema(mut){
   const m=recs[MO]||{id:MO,e:'_opts',d:{}};
-  const s=JSON.parse(JSON.stringify(m.d._schema||{}));s.fields=s.fields||{};s.ents=s.ents||{};s.names=s.names||{};s.fnames=s.fnames||{};s.gnames=s.gnames||{};
+  const s=JSON.parse(JSON.stringify(m.d._schema||{}));s.fields=s.fields||{};s.ents=s.ents||{};s.names=s.names||{};s.fnames=s.fnames||{};s.gnames=s.gnames||{};s.hidden=s.hidden||{};
   mut(s);
   m.d={...m.d,_schema:s};m.u=Date.now();m.del=false;put(m);
 }
@@ -10171,6 +10171,30 @@ document.addEventListener('mousedown',e=>{
   const p=document.getElementById('jcal');
   if(p&&p.style.display==='block'&&!p.contains(e.target)&&!(e.target.closest&&e.target.closest('button')&&e.target.textContent==='📅'))p.style.display='none';
 },true);
+/* 🧲 فیلدهای قابل‌نمایش در فرم (با حذف فیلدهای مخفی‌شده‌ی ادمین جز در حالت چیدمان) */
+let formArrange=false;
+function formHidden(e){return (schemaCfg().hidden||{})[e]||[];}
+function formFields(e){
+  const hid=formHidden(e);
+  return visFields(e).filter(f=>f.k==='title'||formArrange||!hid.includes(f.k));
+}
+function fmArrange(ek,fk,dir){
+  harvest();
+  const keys=E[ek].f.map(f=>f.k);
+  const from=keys.indexOf(fk), to=from+dir;
+  if(from<0||to<0||to>=keys.length)return;
+  keys.splice(to,0,keys.splice(from,1)[0]);
+  saveSchema(s=>{s.order=s.order||{};s.order[ek]=keys;});
+  rebuildSchema();drawModal();
+}
+function fmHide(ek,fk){
+  if(fk==='title'){alert('فیلد «عنوان» ستون کلیدی است و مخفی نمی‌شود');return;}
+  harvest();
+  saveSchema(s=>{s.hidden=s.hidden||{};const cur=s.hidden[ek]||[];
+    s.hidden[ek]=cur.includes(fk)?cur.filter(x=>x!==fk):cur.concat(fk);});
+  rebuildSchema();drawModal();
+}
+window.fmArrange=fmArrange;window.fmHide=fmHide;
 function drawModal(){
   if(cur&&cur.e==='habit')rebuildHabitFields(); // لیست عادت‌های شخصی کاربر
   const e=cur.e, def=E[e], id=cur._new?null:cur.id;
@@ -10182,14 +10206,27 @@ function drawModal(){
     if(e==='project')chips.push(['هزینه واقعی',fmtN(projectSpent(recs[id]))]);
     if(chips.length)h+=`<div class="comp">${chips.map(c=>`<div class="chip">${c[0]}: <b>${c[1]}</b></div>`).join('')}</div>`;
   }
-  const drag=canLayout();
+  const drag=canLayout()&&!formArrange;
+  if(canLayout()){
+    h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:7px 10px;border-radius:9px;background:${formArrange?'rgba(212,175,55,.12)':'var(--bg)'};border:1px solid ${formArrange?'var(--ac)':'var(--line)'}">
+      <button class="btn ${formArrange?'':'gh'} sm" onclick="if(!formArrange){try{harvest();}catch(e){}}formArrange=!formArrange;drawModal()">🧲 چیدمان فیلدها</button>
+      <span style="font-size:11px;color:var(--tx2)">${formArrange?'با ▲▼ جابجا کن، با 👁 مخفی/نمایش بده — روی همه کاربران اعمال می‌شود. دوباره بزن تا تمام شود.':'ترتیب و نمایش فیلدهای این فرم را تغییر بده'}</span></div>`;
+  }
+  const hid=formHidden(e);
   h+=`<div class="mrow" id="mrow_dnd">`;
-  visFields(e).forEach(f=>{
+  const _ff=formFields(e), _ffkeys=_ff.map(x=>x.k);
+  _ff.forEach((f,_fi)=>{
     const v=cur.d[f.k];
     const ro=fldMode(e,f.k)==='read';
-    const full=(f.t===LNG||f.t===REL||f.t===DAT)?'full':'';
+    const full=(f.t===LNG||f.t===REL||f.t===DAT||(formArrange))?'full':'';
     const plus=(f.t===SEL||f.t===MUL||f.t===STA)?` <a onclick="addOpt('${f.k}')" style="color:var(--ac);cursor:pointer;font-size:11px">＋ گزینه جدید</a>`:'';
-    h+=`<div class="${full}" data-fk="${f.k}" ${drag?'draggable="true"':''} ${drag?'style="cursor:grab"':''}><label>${drag?'<span class="dndh" title="بکشید و جابجا کنید" style="cursor:grab;color:var(--tx2)">⋮⋮</span> ':''}${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}</label>`;
+    const isHidden=hid.includes(f.k);
+    const arrCtl=formArrange?`<span style="float:left;display:inline-flex;gap:3px">
+        <button class="btn gh sm" style="padding:1px 7px" onclick="fmArrange('${e}','${f.k}',-1)" title="بالا">▲</button>
+        <button class="btn gh sm" style="padding:1px 7px" onclick="fmArrange('${e}','${f.k}',1)" title="پایین">▼</button>
+        <button class="btn ${isHidden?'':'gh'} sm" style="padding:1px 7px" onclick="fmHide('${e}','${f.k}')" title="${isHidden?'نمایش این فیلد':'مخفی‌کردن این فیلد'}">${isHidden?'🙈':'👁'}</button></span>`:'';
+    h+=`<div class="${full}" data-fk="${f.k}" ${drag?'draggable="true"':''} ${drag?'style="cursor:grab"':''} ${formArrange&&isHidden?'style="opacity:.5"':''}><label>${drag?'<span class="dndh" title="بکشید و جابجا کنید" style="cursor:grab;color:var(--tx2)">⋮⋮</span> ':''}${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}${arrCtl}</label>`;
+    if(formArrange){h+=`<div style="font-size:10.5px;color:var(--tx2);padding:6px 8px;background:var(--bg);border:1px dashed var(--line);border-radius:8px">${isHidden?'🙈 مخفی از فرم':'نوع: '+((CF_TYPES.find(t=>t[0]===f.t)||[,f.t])[1])}</div></div>`;return;}
     if(f.t==='calc'){
       const cv=calcVal(e,f,cur.d);
       h+=`<div data-calck="${f.k}" style="background:var(--bg);border:1px dashed rgba(212,175,55,.4);border-radius:8px;padding:9px 10px;font-weight:700;color:#ecd98f" dir="ltr">${cv==null?'—':fmtN(cv)}</div>
@@ -10245,12 +10282,12 @@ function drawModal(){
       <span style="flex:1"></span><button class="btn gh" onclick="closeModal()">بستن</button></div>`;
   document.getElementById('modal').innerHTML=h;
   // فیلدهای «فقط مشاهده»
-  visFields(e).filter(f=>fldMode(e,f.k)==='read').forEach(f=>{
+  formFields(e).filter(f=>fldMode(e,f.k)==='read').forEach(f=>{
     document.querySelectorAll(`#modal [data-k="${f.k}"],#modal [data-dk="${f.k}"]`).forEach(el=>{el.disabled=true;el.style.opacity=.55;});
   });
   document.getElementById('ovl').classList.add('show');
   // 🧲 جابجایی چیدمان فیلدها با درگ‌اند‌دراپ (ذخیره برای همه)
-  if(canLayout()){
+  if(canLayout()&&!formArrange){
     const wrap=document.getElementById('mrow_dnd');
     let dragK=null;
     wrap.querySelectorAll('[data-fk]').forEach(el=>{
@@ -10433,7 +10470,7 @@ function delRec(){
   cur.del=true;cur.u=Date.now();const e=cur.e,id=cur.id;put(cur);closeModal();
   if(view.type==='rec'&&view.id===id)go('list',e);
 }
-function closeModal(){document.getElementById('ovl').classList.remove('show');cur=null;clearDraft();}
+function closeModal(){document.getElementById('ovl').classList.remove('show');cur=null;formArrange=false;clearDraft();}
 /* کلیک اشتباهی بیرون فرم دیگر فرم را نمی‌بندد — فقط تکان می‌خورد تا یادآوری کند */
 document.getElementById('ovl').addEventListener('click',e=>{
   if(e.target.id==='ovl'){
