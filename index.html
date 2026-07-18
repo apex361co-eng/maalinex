@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.34</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.36</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.34</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.36</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -760,6 +760,8 @@ sale:{ic:'🛒',n:'فروش سریع (تک‌کالا)',grp:'مدیریت کسب
  {k:'qty',n:'تعداد',t:NUM},{k:'price',n:'قیمت واحد (تومان)',t:NUM},
  {k:'extra',n:'هزینه‌های جانبی (حمل و…)',t:NUM},
  {k:'customer',n:'مشتری',t:REL,r:'customer',s:1},
+ {k:'seller',n:'فروشنده (برای تارگت)',t:REL,r:'hr',s:1},
+ {k:'orgu',n:'واحد فروش (برای تارگت)',t:REL,r:'orgunit',s:1},
  {k:'channel',n:'کانال فروش',t:REL,r:'channel',s:1},
  {k:'kind',n:'نوع',t:SEL,o:['نقدی','اعتباری']},
  {k:'settled',n:'تسویه شد',t:CHK},
@@ -1317,6 +1319,23 @@ mval:{ic:'✍️',n:'ثبت مقدار شاخص من (دوره‌ای)',grp:'م�
  {k:'value',n:'مقدار',t:NUM},
  {k:'target',n:'هدف (اختیاری)',t:NUM}],
  cols:['title','mdef','jy','jm','value']},
+dashdef:{ic:'📐',n:'داشبردهای من',grp:'مدیریت کسب و کار',sub:1,f:[
+ {k:'title',n:'نام داشبرد',t:TXT},
+ {k:'ic',n:'آیکن (ایموجی)',t:TXT},
+ {k:'note',n:'توضیح',t:LNG}],cols:['title']},
+widdef:{ic:'🧱',n:'ویجت داشبرد',grp:'مدیریت کسب و کار',sub:1,f:[
+ {k:'title',n:'عنوان ویجت',t:TXT},
+ {k:'dash',n:'داشبرد',t:REL,r:'dashdef',s:1},
+ {k:'wtype',n:'نوع نمایش',t:SEL,o:['🔢 کارت عددی','🌡 گیج (با هدف)','📊 میله‌ای ماهانه','📈 خطی ماهانه','🥧 دایره‌ای (تفکیک)','📋 جدول برترین‌ها']},
+ {k:'src',n:'منبع داده',t:SEL,o:['شاخص من (ساختارساز)','جمع فیلد عددی یک بخش','میانگین فیلد عددی یک بخش','شمارش رکوردهای یک بخش']},
+ {k:'mdef',n:'شاخص (اگر منبع = ساختارساز)',t:REL,r:'mdef',s:1},
+ {k:'ent',n:'نام بخش (مثل: هزینه‌های عملیاتی)',t:TXT},
+ {k:'fld',n:'نام فیلد عددی (مثل: مبلغ (تومان))',t:TXT},
+ {k:'grpf',n:'تفکیک بر اساس فیلد (برای دایره‌ای/جدول — مثل: سرفصل)',t:TXT},
+ {k:'target',n:'هدف (برای گیج)',t:NUM},
+ {k:'size',n:'اندازه',t:SEL,o:['کوچک','متوسط','بزرگ']},
+ {k:'ord',n:'ترتیب (عدد کوچکتر جلوتر)',t:NUM}],
+ cols:['title','dash','wtype','src']},
 pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -1701,7 +1720,7 @@ function rebuildSchema(){
   Object.keys(E).forEach(k=>{if(!E_BASE[k])delete E[k];});
   Object.keys(E_BASE).forEach(k=>{E[k]=JSON.parse(JSON.stringify(E_BASE[k]));});
   Object.entries(s.ents).forEach(([k,d])=>{
-    E[k]={ic:d.ic||'📁',n:d.n||k,grp:'بخش‌های سفارشی',f:[{k:'title',n:d.tname||'عنوان',t:TXT}],cols:['title']};
+    E[k]={ic:d.ic||'📁',n:d.n||k,grp:d.grp||'بخش‌های سفارشی',f:[{k:'title',n:d.tname||'عنوان',t:TXT}],cols:['title']};
   });
   Object.entries(s.fields).forEach(([ek,fl])=>{
     if(!E[ek])return;
@@ -2288,7 +2307,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','ctrldash','mbuilder','pfdash']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','ctrldash','mbuilder','mydash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
@@ -4189,6 +4208,14 @@ function targetActual(t){
   const invs=targetInvoices(t);
   let amount=0,qty=0;
   invs.forEach(v=>{amount+=invCalc(v).total;invLinesOf(v.id).forEach(l=>{qty+=(l.d.qty||0);});});
+  // 🛒 فروش‌های سریع (بدون فاکتور) هم در تارگت حساب می‌شوند
+  const from=dnorm(t.d.from), to=dnorm(t.d.to);
+  byE('sale').filter(x=>!x.d._inv).forEach(x=>{
+    if(!tgtMatch(x,t))return;
+    const d=dnorm(x.d.date);
+    if(from&&(!d||d<from))return; if(to&&(!d||d>to))return;
+    amount+=saleAmt(x);qty+=(+x.d.qty||0);
+  });
   return {amount,qty,count:invs.length};
 }
 function targetProgress(t){
@@ -5014,6 +5041,134 @@ function mQuickVal(mid){
   invalidateByE();try{put(recs[id]);}catch(e){}render();}
 window.mAddChild=mAddChild;window.mQuickVal=mQuickVal;
 
+
+/* ===== 📐 داشبردساز من ===== */
+const MYD_MN=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function mydEnt(name){name=(name||'').trim();if(!name)return null;
+  const k=Object.keys(E).find(k=>E[k].n===name||E[k].n.includes(name)||k===name);return k||null;}
+function mydFld(ek,name){name=(name||'').trim();if(!ek||!name)return null;
+  return (E[ek].f||[]).find(f=>f.n===name||f.k===name||f.n.includes(name))||null;}
+function mydRows(ek,jy,mIdx){ // رکوردهای بخش در دوره (بر اساس تاریخ شمسی یا jy/jm)
+  const rows=byE(ek);const hasJy=(E[ek].f||[]).some(f=>f.k==='jy');
+  const df=(E[ek].f||[]).find(f=>f.t===DAT&&['date','when','vdate'].includes(f.k))||(E[ek].f||[]).find(f=>f.t===DAT);
+  if(hasJy)return rows.filter(r=>(!jy||+r.d.jy===jy)&&(mIdx<0||r.d.jm===MYD_MN[mIdx]));
+  if(df){const [f,t]=myPeriodRange(jy,mIdx);return rows.filter(r=>{const d=dnorm(r.d[df.k]||'');return d&&d>=f&&d<=t;});}
+  return rows;}
+function mydMonthOf(ek,r){ // ماه شمسی رکورد
+  if(r.d.jm)return MYD_MN.indexOf(r.d.jm);
+  const df=(E[ek].f||[]).find(f=>f.t===DAT&&['date','when','vdate'].includes(f.k))||(E[ek].f||[]).find(f=>f.t===DAT);
+  if(!df)return -1;const d=dnorm(r.d[df.k]||'');if(!d)return -1;
+  const p=d.split('-');if(p.length<2)return -1;
+  const j=g2j(+p[0],+p[1],+(p[2]||1));return j[1]-1;}
+function mydValue(w,jy,mIdx){ // مقدار اسکالر ویجت
+  const src=w.d.src||'';
+  if(src.startsWith('شاخص من')){const m=relIds(w,'mdef')[0];return m&&recs[m]?myVal(recs[m],jy,mIdx):null;}
+  const ek=mydEnt(w.d.ent);if(!ek)return null;
+  const rows=mydRows(ek,jy,mIdx);
+  if(src.startsWith('شمارش'))return rows.length;
+  const f=mydFld(ek,w.d.fld);if(!f)return null;
+  const vals=rows.map(r=>+faNum(String(r.d[f.k]??'')).replace(/[,٬\s]/g,'')||0);
+  if(!vals.length)return null;
+  const sum=vals.reduce((a,b)=>a+b,0);
+  return src.startsWith('میانگین')?sum/vals.length:sum;}
+function mydSeries(w,jy){ // سری ۱۲ ماهه
+  const src=w.d.src||'';
+  if(src.startsWith('شاخص من')){const m=relIds(w,'mdef')[0];if(!m||!recs[m])return null;
+    return MYD_MN.map((_,i)=>myVal(recs[m],jy,i)||0);}
+  const ek=mydEnt(w.d.ent);if(!ek)return null;
+  const f=src.startsWith('شمارش')?null:mydFld(ek,w.d.fld);
+  const out=Array(12).fill(0);
+  mydRows(ek,jy,-1).forEach(r=>{const mi=mydMonthOf(ek,r);if(mi<0)return;
+    out[mi]+=f?(+faNum(String(r.d[f.k]??'')).replace(/[,٬\s]/g,'')||0):1;});
+  return out;}
+function mydGroups(w,jy,mIdx){ // تفکیک برای دایره‌ای/جدول
+  const ek=mydEnt(w.d.ent);if(!ek)return null;
+  const gf=mydFld(ek,w.d.grpf)||{k:'title'};
+  const vf=(w.d.src||'').startsWith('شمارش')?null:mydFld(ek,w.d.fld);
+  const by={};
+  mydRows(ek,jy,mIdx).forEach(r=>{
+    let key=r.d[gf.k];if(Array.isArray(key))key=key.map(nameOf).join('،');
+    key=String(key??'—');
+    by[key]=(by[key]||0)+(vf?(+faNum(String(r.d[vf.k]??'')).replace(/[,٬\s]/g,'')||0):1);});
+  return Object.entries(by).sort((a,b)=>b[1]-a[1]);}
+function mydLineSVG(pts){ // خطی
+  const mx=Math.max(...pts.map(Math.abs),1);const W=300,H=110;
+  const xy=pts.map((v,i)=>[15+i*(W-30)/11,H-18-(v/mx)*(H-40)]);
+  return `<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="max-height:130px">
+    <polyline points="${xy.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--ac)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${xy.map((p,i)=>`<circle cx=${p[0].toFixed(1)} cy=${p[1].toFixed(1)} r=2.6 fill="var(--ac)"/><text x=${p[0].toFixed(1)} y=${H-4} text-anchor=middle font-size=7 fill="var(--tx2)">${MYD_MN[i].slice(0,3)}</text>`).join('')}
+  </svg>`;}
+function mydPieSVG(groups){
+  const tot=groups.reduce((a,[,v])=>a+v,0)||1;
+  const cols=['#16c784','#f5a623','#ff3b30','#3b82f6','#a855f7','#14b8a6','#eab308','#f43f5e','#64748b'];
+  let a0=0;const segs=groups.slice(0,8).map(([k,v],i)=>{
+    const a1=a0+v/tot*Math.PI*2;
+    const x0=60+48*Math.sin(a0),y0=60-48*Math.cos(a0),x1=60+48*Math.sin(a1),y1=60-48*Math.cos(a1);
+    const big=(a1-a0)>Math.PI?1:0;const path=`<path d="M60 60 L ${x0.toFixed(1)} ${y0.toFixed(1)} A 48 48 0 ${big} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="${cols[i%cols.length]}" opacity=".9"/>`;
+    a0=a1;return path;}).join('');
+  const leg=groups.slice(0,8).map(([k,v],i)=>`<div style="display:flex;align-items:center;gap:5px;font-size:10.5px"><span style="width:9px;height:9px;border-radius:2px;background:${cols[i%cols.length]}"></span>${esc(k.slice(0,22))} <b>${abbrN(v)}</b> <span style="color:var(--tx2)">${Math.round(v/tot*100)}٪</span></div>`).join('');
+  return `<div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap"><svg width=120 height=120 viewBox="0 0 120 120">${segs}</svg><div>${leg}</div></div>`;}
+function mydashHTML(){
+  const dashes=byE('dashdef');
+  const yrsSet=new Set();['plmonth','mval','expense','invoice','ctrlval'].forEach(e=>byE(e).forEach(r=>{if(+r.d.jy)yrsSet.add(+r.d.jy);const mi=mydMonthOf(e,r);}));
+  byE('plmonth').forEach(r=>yrsSet.add(+r.d.jy||0));
+  const nowJ=g2j(new Date().getFullYear(),new Date().getMonth()+1,new Date().getDate());
+  yrsSet.add(nowJ[0]);
+  const yrs=[...yrsSet].filter(Boolean).sort();
+  view.mdYr=yrs.includes(+view.mdYr)?+view.mdYr:nowJ[0];
+  view.mdMn=view.mdMn||'همه';
+  const mIdx=MYD_MN.indexOf(view.mdMn);
+  if(!dashes.find(d=>d.id===view.mdSel))view.mdSel=dashes[0]?.id||'';
+  const cur=recs[view.mdSel];
+  const wids=cur?byE('widdef').filter(w=>relIds(w,'dash').includes(cur.id)).sort((a,b)=>(+a.d.ord||99)-(+b.d.ord||99)):[];
+  const gcol=p=>p==null?'var(--tx2)':p>=70?'#16c784':p>=40?'#f5a623':'#ff3b30';
+  const widBox=w=>{
+    const sz=w.d.size==='بزرگ'?'span 2':'span 1';
+    const t=w.d.wtype||'🔢 کارت عددی';
+    let body='';
+    try{
+      if(t.startsWith('🔢')){const v=mydValue(w,view.mdYr,mIdx);
+        body=`<div style="font-size:26px;font-weight:900;margin:14px 0;color:var(--ac)">${v==null?'—':abbrN(v)}</div>`;}
+      else if(t.startsWith('🌡')){const v=mydValue(w,view.mdYr,mIdx);const tg=+w.d.target||null;
+        const p=(v!=null&&tg)?Math.min(150,Math.round(v/tg*100)):null;
+        body=`<div style="font-size:24px;font-weight:900;color:${gcol(p)}">${p==null?'—':p+'٪'}</div>
+          <div style="height:10px;background:var(--bd);border-radius:6px;margin:8px 12px;overflow:hidden"><div style="height:100%;width:${Math.min(100,p||0)}%;background:${gcol(p)}"></div></div>
+          <div style="font-size:11px;color:var(--tx2)">${v==null?'مقدار ندارد':abbrN(v)}${tg?' / هدف '+abbrN(tg):' — هدف تعریف نشده'}</div>`;}
+      else if(t.startsWith('📊')){const pts=mydSeries(w,view.mdYr);
+        body=pts?ceoBarsSVG(pts.map((v,i)=>({l:MYD_MN[i].slice(0,3),v})),false):'<div class="empty">داده نیست</div>';}
+      else if(t.startsWith('📈')){const pts=mydSeries(w,view.mdYr);
+        body=pts?mydLineSVG(pts):'<div class="empty">داده نیست</div>';}
+      else if(t.startsWith('🥧')){const g=mydGroups(w,view.mdYr,mIdx);
+        body=(g&&g.length)?mydPieSVG(g):'<div class="empty">داده یا تفکیک نیست</div>';}
+      else if(t.startsWith('📋')){const g=mydGroups(w,view.mdYr,mIdx);
+        body=(g&&g.length)?`<div class="tblwrap" style="max-height:220px;overflow:auto"><table><tbody>${g.slice(0,10).map(([k,v],i)=>`<tr><td style="text-align:right">${i+1}. ${esc(k.slice(0,30))}</td><td style="font-weight:700">${abbrN(v)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">داده یا تفکیک نیست</div>';}
+    }catch(e){body='<div class="empty">خطا در محاسبه</div>';}
+    return `<div class="sec" style="grid-column:${sz};text-align:center;position:relative">
+      <div style="position:absolute;top:8px;inset-inline-start:8px;display:flex;gap:4px">
+        <button class="btn gh sm" style="padding:2px 7px" onclick="go('rec','widdef','${w.id}')" title="تنظیمات ویجت">⚙️</button>
+        <button class="btn gh sm" style="padding:2px 7px" onclick="if(confirm('حذف ویجت؟')){recs['${w.id}'].del=true;recs['${w.id}'].u=Date.now();invalidateByE();try{put(recs['${w.id}']);}catch(e){}render();}">🗑</button></div>
+      <h3 style="justify-content:center;font-size:13px">${esc(w.d.title||'—')}</h3>${body}</div>`;};
+  return `<div class="sec"><h3>📐 داشبردساز من <span style="flex:1"></span>
+    <select class="inp sm" style="width:auto" onchange="view.mdYr=+this.value;render()">${yrs.map(y=>`<option ${y===view.mdYr?'selected':''}>${y}</option>`).join('')}</select>
+    <select class="inp sm" style="width:auto" onchange="view.mdMn=this.value;render()">${['همه',...MYD_MN].map(m=>`<option ${m===view.mdMn?'selected':''}>${m}</option>`).join('')}</select>
+    <button class="btn sm" onclick="mydNewDash()">＋ داشبرد جدید</button>
+    ${cur?`<button class="btn sm" onclick="mydNewWid('${cur.id}')">＋ ویجت</button>`:''}</h3>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      ${dashes.map(d=>`<button class="btn ${d.id===view.mdSel?'':'gh'} sm" onclick="view.mdSel='${d.id}';render()">${esc((d.d.ic||'📐')+' '+(d.d.title||'—'))}</button>`).join('')||'<span style="color:var(--tx2);font-size:12px">هنوز داشبردی نساخته‌ای — با «＋ داشبرد جدید» شروع کن</span>'}
+    </div>
+    ${cur?(wids.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">${wids.map(widBox).join('')}</div>`:
+      `<div class="empty">این داشبرد هنوز ویجتی ندارد — «＋ ویجت» را بزن.<br><span style="font-size:11px;line-height:2">هر ویجت: یک منبع (شاخص ساختارساز، یا جمع/میانگین/شمارش هر فیلد از هر بخش) + یک نوع نمایش (کارت، گیج با هدف، میله‌ای/خطی ماهانه، دایره‌ای با تفکیک، جدول برترین‌ها) + اندازه و ترتیب</span></div>`):''}
+    <div style="font-size:10.5px;color:var(--tx2);margin-top:10px">هر فیلدی از هر فرمی: در ویجت، «نام بخش» و «نام فیلد عددی» را همان‌طور که در فرم می‌بینی بنویس │ برای دایره‌ای/جدول «تفکیک بر اساس فیلد» را هم بده (مثل: سرفصل) │ دوره از بالای صفحه │ شاخص‌های ساختارساز و فرمول‌هایت هم مستقیم قابل انتخاب‌اند</div>
+  </div>`;
+}
+function mydNewDash(){const nm=prompt('نام داشبرد جدید:');if(!nm)return;
+  const id='dash_'+Date.now();recs[id]={id,e:'dashdef',d:{title:nm,ic:'📐'},u:Date.now(),c:Date.now()};
+  invalidateByE();try{put(recs[id]);}catch(e){}view.mdSel=id;render();}
+function mydNewWid(did){const id='wid_'+Date.now();
+  recs[id]={id,e:'widdef',d:{title:'ویجت جدید',dash:[did],wtype:'🔢 کارت عددی',src:'جمع فیلد عددی یک بخش',size:'متوسط',ord:99},u:Date.now(),c:Date.now()};
+  invalidateByE();try{put(recs[id]);}catch(e){}go('rec','widdef',id);}
+window.mydNewDash=mydNewDash;window.mydNewWid=mydNewWid;
+
 function plmFallbackHTML(scope){ // بنر راهنما وقتی داده فاکتور نیست ولی «سود و زیان ماهانه» هست
   const pls=byE('plmonth');if(!pls.length)return '';
   const yrs=[...new Set(pls.map(r=>+r.d.jy||0).filter(Boolean))].sort();
@@ -5544,6 +5699,9 @@ function bizMenuHTML(){
     +ent('settle')+ent('expense')+ent('pbudget')+ent('gateway')+ent('pfsettle'));
   // 📈 داده‌ها و شاخص‌ها
   h+=sec('📈 داده‌ها و شاخص‌ها',ent('plmonth')+ent('kpival')+ent('ctrlval')+ent('mdef'));
+  // 📁 بخش‌های سفارشی که کاربر در این گروه گذاشته
+  const cust=Object.keys(schemaCfg().ents||{}).filter(k=>E[k]&&E[k].grp==='مدیریت کسب و کار').map(ent).join('');
+  if(cust)h+=sec('📁 بخش‌های من',cust);
   return h;
 }
 function nav(){
@@ -5553,7 +5711,8 @@ function nav(){
   h+=`
   ${canView('cal')?`<div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>`:''}
   ${canView('charts')?`<div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`:''}
-  ${canSee('mdef')&&canView('mbuilder')?`<div class="nav-i ${view.type==='mbuilder'?'on':''}" onclick="go('mbuilder')">🧩 ساختارساز شاخص‌ها</div>`:''}`;
+  ${canSee('mdef')&&canView('mbuilder')?`<div class="nav-i ${view.type==='mbuilder'?'on':''}" onclick="go('mbuilder')">🧩 ساختارساز شاخص‌ها</div>`:''}
+  ${canSee('dashdef')&&canView('mydash')?`<div class="nav-i ${view.type==='mydash'?'on':''}" onclick="go('mydash')">📐 داشبردساز من</div>`:''}`;
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
@@ -5651,6 +5810,7 @@ function render(){
     view.type==='ceodash'?'🧭 داشبورد مدیرعامل':
     view.type==='ctrldash'?'🎛 داشبرد کنترلی':
     view.type==='mbuilder'?'🧩 ساختارساز شاخص‌ها':
+    view.type==='mydash'?'📐 داشبردساز من':
     view.type==='pfdash'?'🔄 تسویه درگاه‌ها و پلتفرم‌ها':
     view.type==='epcfdash'?'🎛️ داشبورد EPCF':
     view.type==='cdash'?'🏢 داشبورد ساخت‌وساز':
@@ -5680,7 +5840,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',mbuilder:'mbuilder',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',mbuilder:'mbuilder',mydash:'mydash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -5706,6 +5866,7 @@ function render(){
     else if(view.type==='ceodash')c.innerHTML=ceodashHTML();
     else if(view.type==='ctrldash')c.innerHTML=ctrldashHTML();
     else if(view.type==='mbuilder')c.innerHTML=mbuilderHTML();
+    else if(view.type==='mydash')c.innerHTML=mydashHTML();
     else if(view.type==='pfdash')c.innerHTML=pfdashHTML();
     else if(view.type==='epcfdash')c.innerHTML=epcfdashHTML();
     else if(view.type==='cdash')c.innerHTML=cdashHTML();
@@ -9101,11 +9262,12 @@ function schemaHTML(){
   h+=`<div class="sec"><h3>📁 بخش (دیتابیس) جدید</h3>
   <p style="font-size:12px;color:var(--tx2);margin-bottom:10px">بخش جدید در منو زیر «بخش‌های سفارشی» می‌آید و با یک فیلد «عنوان» شروع می‌شود — بعد از ساخت، از بالا انتخابش کنید و فیلدهایش را اضافه کنید. برای ورود گروهی هم خودکار قالب اکسل دارد.</p>
   <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
-    ${Object.entries(s.ents).map(([k,d])=>`<span class="tag y" style="font-size:11px">${d.ic||'📁'} ${esc(d.n)} <span class="c">${byE(k).length.toLocaleString('fa-IR')}</span> <b style="cursor:pointer;color:var(--bad)" title="حذف بخش" onclick="rmCEnt('${k}')">✕</b></span>`).join('')||'<span style="color:var(--tx2);font-size:12px">هنوز بخشی نساخته‌اید</span>'}
+    ${Object.entries(s.ents).map(([k,d])=>`<span class="tag y" style="font-size:11px">${d.ic||'📁'} ${esc(d.n)} <span class="c">${byE(k).length.toLocaleString('fa-IR')}</span> <b style="cursor:pointer;color:var(--ac)" title="تغییر گروه منو" onclick="mvCEnt('${k}')">📂</b> <b style="cursor:pointer;color:var(--bad)" title="حذف بخش" onclick="rmCEnt('${k}')">✕</b></span>`).join('')||'<span style="color:var(--tx2);font-size:12px">هنوز بخشی نساخته‌اید</span>'}
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;align-items:end">
     <div><label>نام بخش</label><input id="ce_name" placeholder="مثل: انبارها"></div>
     <div><label>آیکن (ایموجی)</label><input id="ce_ic" placeholder="🏬" maxlength="4" style="max-width:90px"></div>
+    <div><label>در کدام گروه منو؟</label><select id="ce_grp">${['بخش‌های سفارشی',...GROUPS].map(g=>`<option>${esc(grpLabel(g)||g)}</option>`).join('')}</select></div>
     <div><button class="btn" onclick="addCEnt()">＋ ساخت بخش</button></div>
   </div></div>`;
   // ✏️ تغییر نام گروه‌های منو
@@ -9186,10 +9348,22 @@ function addCEnt(){
   if(Object.values(E).some(v=>v.n===name)){alert('بخشی با این نام هست');return;}
   const ic=(document.getElementById('ce_ic').value||'📁').trim()||'📁';
   const k='x_'+uid().replace(/-/g,'').slice(0,10);
-  saveSchema(s=>{s.ents[k]={n:name,ic};});
+  const gsel=document.getElementById('ce_grp');
+  const glabel=gsel?gsel.value:'بخش‌های سفارشی';
+  const grp=['بخش‌های سفارشی',...GROUPS].find(g=>(grpLabel(g)||g)===glabel)||'بخش‌های سفارشی';
+  saveSchema(s=>{s.ents[k]={n:name,ic,grp};});
   view.scEnt=k;render();
 }
 window.addCEnt=addCEnt;
+function mvCEnt(k){
+  const gs=['بخش‌های سفارشی',...GROUPS];
+  const cur=(schemaCfg().ents[k]||{}).grp||'بخش‌های سفارشی';
+  const msg='این بخش به کدام گروه برود؟\n'+gs.map((g,i)=>(i+1)+'. '+(grpLabel(g)||g)+(g===cur?' (فعلی)':'')).join('\n');
+  const v=prompt(msg,String(gs.indexOf(cur)+1));if(v==null)return;
+  const gi=parseInt(faNum(String(v)))-1;if(isNaN(gi)||gi<0||gi>=gs.length){alert('عدد نامعتبر');return;}
+  saveSchema(s=>{if(s.ents[k])s.ents[k].grp=gs[gi];});rebuildSchema();render();
+}
+window.mvCEnt=mvCEnt;
 function rmCEnt(k){
   const n=byE(k).length;
   if(!confirm('بخش «'+(E[k]?E[k].n:k)+'» حذف شود؟'+(n?' ('+n+' رکوردش از منو خارج می‌شود ولی در پایگاه داده می‌ماند)':'')))return;
