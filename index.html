@@ -327,6 +327,15 @@ const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',S
 const STATUS=['Not started','In progress','Done'];
 const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
 const PRIO=['بحرانی','بالا','متوسط','پایین'];
+const KPIC=[
+ {k:'sales',n:'فروش و سودآوری',ic:'💰',subs:[['فروش خالص',1],['سود خالص',1],['سود هر سفارش',1]]},
+ {k:'inv',n:'موجودی و خرید',ic:'📦',subs:[['پوشش موجودی',1],['ارزش موجودی راکد',0],['نرخ کسری موجودی پرفروش',0]]},
+ {k:'sup',n:'پشتیبانی مشتریان',ic:'🎧',subs:[['نرخ سفارش موفق',1],['فروش در معرض خطر فنی',0],['زمان رفع خطاهای حیاتی',0]]},
+ {k:'web',n:'محتوا و سایت',ic:'🌐',subs:[['سود از ورود ارگانیک',1],['نرخ تبدیل صفحات سایت',1],['فروش کالاهای محتوای کامل',1]]},
+ {k:'leak',n:'ریزش سود',ic:'🩸',subs:[['سود از دست رفته تخفیف و مرجوعی',0],['هزینه خدمت هر محصول',0],['فروش از دست رفته',0]]},
+ {k:'call',n:'عملکرد تماس',ic:'📞',subs:[['تعداد کل تماس‌ها',1],['تماس‌های پاسخ داده شده',1],['تماس‌های بی‌پاسخ',0],['تماس منجر به فروش',1]]}];
+const KPI_NAMES=KPIC.flatMap(c=>c.subs.map(x=>x[0]));
+const KPI_DIR={};KPIC.forEach(c=>c.subs.forEach(x=>KPI_DIR[x[0]]=x[1]));
 const E={
 hr:{ic:'👥',n:'منابع انسانی',grp:'سازمان',f:[
  {k:'title',n:'نام و نام خانوادگی',t:TXT},{k:'role',n:'سمت',t:TXT},
@@ -1205,6 +1214,19 @@ plmonth:{ic:'📜',n:'سود و زیان ماهانه (عملکرد واقعی)'
  {k:'exoth',n:'سایر هزینه‌ها',t:NUM},
  {k:'tax',n:'مالیات (معمولاً در اسفند)',t:NUM}],
  cols:['title','biz','jy','jm','rev','cogs'],comp:'plmonthBrief'},
+kpival:{ic:'🎯',n:'ثبت KPI فروش (دوره‌ای)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'عنوان (مثل: 1404 مهر - علی - فروش خالص)',t:TXT},
+ {k:'scope',n:'سطح',t:SEL,o:['فرد','تیم','واحد','کسب‌وکار','شرکت','هلدینگ']},
+ {k:'person',n:'فرد (اگر سطح فرد است)',t:REL,r:'hr',s:1},
+ {k:'unit',n:'تیم/واحد (اگر سطح تیم یا واحد است)',t:REL,r:'orgunit',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'jy',n:'سال شمسی',t:NUM},
+ {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'kpi',n:'شاخص',t:SEL,o:KPI_NAMES},
+ {k:'value',n:'مقدار واقعی',t:NUM},
+ {k:'target',n:'هدف دوره',t:NUM}],
+ cols:['title','scope','jy','jm','kpi','value','target']},
 pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -2163,7 +2185,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
@@ -5699,7 +5721,7 @@ function ceodashHTML(){
   const outAge=stock.filter(x=>x.avg>0&&x.cover<7);
   if(outAge.length)alerts.push(['warn',outAge.length.toLocaleString('fa-IR')+' کالای پرفروش زیر ۷ روز پوشش موجودی دارند']);
   if(ox.off>0)alerts.push(['warn','هزینه خارج از بودجه این دوره: '+money(ox.off)]);
-  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['hist','📜 روند تاریخی'],['week','🗞 گزارش هفتگی']];
+  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['hist','📜 روند تاریخی'],['kpi','🎯 KPI فروش'],['week','🗞 گزارش هفتگی']];
   const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:12px"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:17px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">${sub}</div>`:''}</div>`;
   const grid=inner=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px">${inner}</div>`;
   const topTbl=(title,arr,cols)=>`<div class="sec"><h3>${title} <span class="c">${arr.length.toLocaleString('fa-IR')}</span></h3>${arr.length?`<div class="tblwrap"><table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${arr.map(r=>`<tr>${cols.map(c=>`<td style="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">موردی نیست</div>'}</div>`;
@@ -5880,6 +5902,73 @@ function ceodashHTML(){
           if(L.fi>L.np*0.05)tips.push('🟡 هزینه مالی '+abbrN(L.fi)+' معادل '+(L.fi/L.np*100).toFixed(0)+'٪ سود خالص است — بازنگری وام‌ها.');
           return tips.length?tips.map(t=>'<div>'+t+'</div>').join(''):'<div>✅ نشانه خطر برجسته‌ای دیده نشد.</div>';})()}
       </div></div></div>`;
+    }
+  }
+  if(T==='kpi'){
+    const all=byE('kpival');
+    const SC=['هلدینگ','شرکت','کسب‌وکار','واحد','تیم','فرد'];
+    view.kscope=view.kscope||'هلدینگ';
+    // گزینه‌های انتخاب بر اساس سطح
+    const refE={'فرد':'hr','تیم':'orgunit','واحد':'orgunit','کسب‌وکار':'business','شرکت':'company'}[view.kscope];
+    const refK={'فرد':'person','تیم':'unit','واحد':'unit','کسب‌وکار':'biz','شرکت':'company'}[view.kscope];
+    const opts=refE?byE(refE).map(r=>[r.id,r.d.title||'?']):[];
+    if(refE&&!opts.find(o=>o[0]===view.ksel))view.ksel=opts[0]?.[0]||'';
+    // سال‌ها و ماه‌ها
+    const yrs=[...new Set(all.map(r=>+r.d.jy||0).filter(Boolean))].sort();
+    view.kyr=yrs.includes(+view.kyr)?+view.kyr:(yrs[yrs.length-1]||0);
+    const Mn=['همه','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+    view.kmn=view.kmn||'همه';
+    // فیلتر رکوردها
+    const recsF=all.filter(r=>{
+      if(view.kyr&&+r.d.jy!==view.kyr)return false;
+      if(view.kmn!=='همه'&&r.d.jm!==view.kmn)return false;
+      if(view.kscope==='هلدینگ')return true;
+      if(r.d.scope!==view.kscope)return false;
+      return relIds(r,refK).includes(view.ksel);
+    });
+    // تجمیع هر شاخص
+    const agg={};recsF.forEach(r=>{const k=r.d.kpi;if(!k)return;const g=agg[k]||(agg[k]={v:0,t:0});g.v+=+r.d.value||0;g.t+=+r.d.target||0;});
+    const ach=k=>{const g=agg[k];if(!g||!g.t)return null;
+      const p=KPI_DIR[k]?g.v/g.t*100:(g.v>0?g.t/g.v*100:150);return Math.min(150,p);};
+    const gcol=p=>p==null?'var(--tx2)':p>=100?'var(--ok)':p>=70?'#eab308':'var(--bad)';
+    const gauge=(pct,label,sub,click)=>{
+      const p=pct==null?0:Math.min(100,pct);const R=44,C=2*Math.PI*R;
+      return `<div onclick="${click||''}" style="text-align:center;cursor:${click?'pointer':'default'};width:150px">
+        <svg width=120 height=120 viewBox="0 0 120 120">
+          <circle cx=60 cy=60 r=${R} fill=none stroke="var(--bd)" stroke-width=11/>
+          <circle cx=60 cy=60 r=${R} fill=none stroke="${gcol(pct)}" stroke-width=11 stroke-linecap=round
+            stroke-dasharray="${(p/100*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
+          <text x=60 y=57 text-anchor=middle font-size=19 font-weight=800 fill="${gcol(pct)}">${pct==null?'—':Math.round(pct)+'٪'}</text>
+          <text x=60 y=75 text-anchor=middle font-size=9 fill="var(--tx2)">${sub||''}</text>
+        </svg>
+        <div style="font-size:12px;font-weight:700;margin-top:2px">${label}</div></div>`;};
+    // نوار انتخاب
+    h+=`<div class="sec"><h3>🎯 KPI فروش <span style="flex:1"></span>
+      <select class="inp sm" style="width:auto" onchange="view.kscope=this.value;view.ksel='';render()">${SC.map(x=>`<option ${x===view.kscope?'selected':''}>${x}</option>`).join('')}</select>
+      ${refE?`<select class="inp sm" style="width:auto;max-width:180px" onchange="view.ksel=this.value;render()">${opts.map(o=>`<option value="${o[0]}" ${o[0]===view.ksel?'selected':''}>${o[1]}</option>`).join('')}</select>`:''}
+      <select class="inp sm" style="width:auto" onchange="view.kyr=+this.value;render()">${yrs.map(y=>`<option ${y===view.kyr?'selected':''}>${y}</option>`).join('')||'<option>—</option>'}</select>
+      <select class="inp sm" style="width:auto" onchange="view.kmn=this.value;render()">${Mn.map(m=>`<option ${m===view.kmn?'selected':''}>${m}</option>`).join('')}</select>
+      <button class="btn gh sm" onclick="view={type:'list',e:'kpival'};render()">✏️ ثبت مقادیر</button></h3>`;
+    if(!all.length){h+=`<div class="empty">هنوز KPI ثبت نشده — از دکمه «✏️ ثبت مقادیر» یا مرکز ورود اکسل، مقادیر و هدف هر شاخص را وارد کن</div></div>`;}
+    else if(view.kcat){
+      const c=KPIC.find(x=>x.k===view.kcat);
+      h+=`<div style="margin-bottom:8px"><button class="btn gh sm" onclick="view.kcat='';render()">→ بازگشت به همه شاخص‌ها</button></div>
+      <h3 style="font-size:13px;margin:6px 0">${c.ic} ${c.n}</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+      ${c.subs.map(([k,d])=>{const g=agg[k];
+        return gauge(ach(k),k,g?abbrN(g.v)+' / '+abbrN(g.t):'ثبت نشده');}).join('')}
+      </div>
+      <div class="tblwrap" style="margin-top:14px"><table><thead><tr><th>شاخص</th><th>جهت</th><th>واقعی</th><th>هدف</th><th>تحقق</th></tr></thead><tbody>
+      ${c.subs.map(([k,d])=>{const g=agg[k];const p=ach(k);
+        return `<tr><td style="text-align:right">${k}</td><td>${KPI_DIR[k]?'بیشتر بهتر ⬆':'کمتر بهتر ⬇'}</td><td>${g?abbrN(g.v):'—'}</td><td>${g?abbrN(g.t):'—'}</td><td style="color:${gcol(p)};font-weight:800">${p==null?'—':Math.round(p)+'٪'}</td></tr>`;}).join('')}
+      </tbody></table></div></div>`;
+    }else{
+      h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+      ${KPIC.map(c=>{const ps=c.subs.map(([k])=>ach(k)).filter(x=>x!=null);
+        const p=ps.length?ps.reduce((a,x)=>a+x,0)/ps.length:null;
+        return gauge(p,c.ic+' '+c.n,ps.length?ps.length+' شاخص':'ثبت نشده',`view.kcat='${c.k}';render()`);}).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:10px;text-align:center">روی هر گیج کلیک کن تا زیرشاخه‌هایش را ببینی │ درصد هر دسته = میانگین تحقق زیرشاخه‌ها │ سقف نمایش ۱۵۰٪</div></div>`;
     }
   }
   if(T==='week'){
