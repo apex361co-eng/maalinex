@@ -2601,6 +2601,191 @@ function impCommit(){
   alert('📥 ورود انجام شد: '+created.toLocaleString('fa-IR')+' رکورد جدید'+(updated?' و '+updated.toLocaleString('fa-IR')+' به‌روزرسانی':''));
 }
 window.impCommit=impCommit;
+/* ================= 💾 پشتیبان‌گیری و بازیابی کامل سیستم ================= */
+let bakPending=null;
+function bakStampFa(){const d=new Date();const j=g2j(d.getFullYear(),d.getMonth()+1,d.getDate());
+  return j[0]+'-'+String(j[1]).padStart(2,'0')+'-'+String(j[2]).padStart(2,'0')+'_'+d.toTimeString().slice(0,5).replace(':','');}
+async function bakDownload(silent){
+  const payload={_maalinex:1,app:brand().name||'Maalinex',at:new Date().toISOString(),atJ:iso2jstr(new Date().toISOString().slice(0,10)),count:Object.keys(recs).length,recs};
+  const json=JSON.stringify(payload);
+  let content=json,ext='.json';
+  try{if(window.CompressionStream&&json.length>100000){content='MLXZ1'+await _deflate(json);ext='.mlxbak';}}catch(e){}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:'application/octet-stream'}));
+  a.download=(silent?'پشتیبان-اضطراری-قبل-از-بازیابی-':'پشتیبان-Maalinex-')+bakStampFa()+ext;
+  a.click();
+  try{localStorage.setItem('xr_lastbak',String(Date.now()));}catch(e){}
+  if(!silent)render();
+}
+window.bakDownload=bakDownload;
+async function bakFile(inp){
+  const file=inp.files&&inp.files[0];if(!file)return;
+  try{
+    const txt=await file.text();
+    let json=txt;
+    if(txt.startsWith('MLXZ1'))json=await _inflate(txt.slice(5));
+    const p=JSON.parse(json);
+    if(!p||p._maalinex!==1||!p.recs||typeof p.recs!=='object')throw new Error('ساختار فایل معتبر نیست');
+    const bkIds=Object.keys(p.recs);
+    const curIds=Object.keys(recs);
+    const willDelete=curIds.filter(id=>!p.recs[id]&&!(recs[id]&&recs[id].del)).length;
+    const willAdd=bkIds.filter(id=>!recs[id]).length;
+    bakPending={p,fname:file.name,willDelete,willAdd};
+  }catch(e){bakPending=null;alert('⚠️ فایل پشتیبان خوانده نشد: '+(e.message||'نامعتبر'));}
+  inp.value='';render();
+}
+window.bakFile=bakFile;
+async function bakRestore(){
+  if(!bakPending)return;
+  const p=bakPending.p;
+  if(!confirm('⚠️ کل سیستم به وضعیت پشتیبانِ «'+(p.atJ||p.at)+'» برمی‌گردد.\n'
+    +'• '+(+p.count||Object.keys(p.recs).length).toLocaleString('fa-IR')+' رکورد از فایل بازیابی می‌شود\n'
+    +'• '+bakPending.willDelete.toLocaleString('fa-IR')+' رکوردِ بعد از آن تاریخ حذف می‌شود\n'
+    +'این تغییر به سرور هم ارسال می‌شود و همه دستگاه‌ها را دربرمی‌گیرد. ادامه؟'))return;
+  const t=prompt('برای تایید نهایی، کلمه «بازیابی» را بنویسید:');
+  if(t!=='بازیابی'){alert('لغو شد');return;}
+  // 🛟 اول یک پشتیبان اضطراری از وضعیت فعلی دانلود می‌شود
+  try{await bakDownload(true);}catch(e){}
+  const bk=p.recs;const now=Date.now();
+  // رکوردهای فعلی که در پشتیبان نیستند → حذف (تا سیستم «دقیقاً» معادل تاریخ پشتیبان شود)
+  Object.keys(recs).forEach(id=>{
+    if(!bk[id]){const r=recs[id];recs[id]={id,e:r.e,d:r.d||{},del:true,u:now};queue.push(id);}
+  });
+  // همه رکوردهای پشتیبان با زمانِ حالا — تا روی سرور و دستگاه‌های دیگر برنده شوند
+  Object.keys(bk).forEach(id=>{
+    const r=bk[id]||{};
+    recs[id]={id,e:r.e,d:r.d||{},del:!!r.del,u:now};
+    queue.push(id);
+  });
+  bakPending=null;
+  invalidateByE();_saveLocalNow();saveQ();flush();
+  let L=[];try{L=JSON.parse(localStorage.getItem('xr_baklog')||'[]');}catch(e){}
+  L.unshift(iso2jstr(new Date().toISOString().slice(0,10))+' '+new Date().toTimeString().slice(0,5)+' │ ♻️ بازیابی کامل از «'+(p.atJ||'')+'» توسط '+myEmail());
+  try{localStorage.setItem('xr_baklog',JSON.stringify(L.slice(0,20)));}catch(e){}
+  alert('✅ بازیابی انجام شد — سیستم اکنون دقیقاً معادل تاریخ پشتیبان است و در حال ارسال به سرور است.');
+  go('backupdash');
+}
+window.bakRestore=bakRestore;
+/* 🚨 حالت بحران — خروجی «تغییرات من» و ادغام آن در سیستم مرکزی (وقتی اینترنت/سرور قطع است) */
+let deltaPending=null;
+async function deltaExport(mode){
+  const since=mode==='mark'?(+localStorage.getItem('xr_deltamark')||0):Date.now()-(+mode)*86400000;
+  const changed={};let n=0;
+  Object.values(recs).forEach(r=>{if((+r.u||0)>=since){changed[r.id]=r;n++;}});
+  if(!n){alert('از آن زمان تغییری روی این دستگاه ثبت نشده است');return;}
+  const payload={_maalinexDelta:1,at:new Date().toISOString(),atJ:iso2jstr(new Date().toISOString().slice(0,10)),by:myEmail(),count:n,recs:changed};
+  const json=JSON.stringify(payload);
+  let content=json,ext='.json';
+  try{if(window.CompressionStream&&json.length>50000){content='MLXD1'+await _deflate(json);ext='.mlxdelta';}}catch(e){}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:'application/octet-stream'}));
+  a.download='تغییرات-'+(myEmail().split('@')[0]||'user')+'-'+bakStampFa()+ext;
+  a.click();
+  try{localStorage.setItem('xr_deltamark',String(Date.now()));}catch(e){}
+  alert('📤 فایل تغییرات ('+n.toLocaleString('fa-IR')+' رکورد) دانلود شد — آن را با فلش/پیام‌رسان به ادمین برسانید.');
+}
+window.deltaExport=deltaExport;
+async function deltaFile(inp){
+  const file=inp.files&&inp.files[0];if(!file)return;
+  try{
+    const txt=await file.text();
+    let json=txt;if(txt.startsWith('MLXD1'))json=await _inflate(txt.slice(5));
+    const p=JSON.parse(json);
+    if(!p||p._maalinexDelta!==1||!p.recs)throw new Error('ساختار فایل تغییرات معتبر نیست');
+    let newer=0,older=0;
+    Object.values(p.recs).forEach(r=>{const loc=recs[r.id];if(!loc||((+r.u||0)>(+loc.u||0)))newer++;else older++;});
+    deltaPending={p,fname:file.name,newer,older};
+  }catch(e){deltaPending=null;alert('⚠️ فایل خوانده نشد: '+(e.message||'نامعتبر'));}
+  inp.value='';render();
+}
+window.deltaFile=deltaFile;
+function deltaApply(){
+  if(!deltaPending)return;
+  const p=deltaPending.p;
+  if(!confirm('تغییرات «'+(p.by||'?')+'» ('+(+p.count||0).toLocaleString('fa-IR')+' رکورد، '+(p.atJ||'')+') در سیستم ادغام شود؟\nقاعده: هر رکورد فقط اگر جدیدتر از نسخه فعلی باشد اعمال می‌شود.'))return;
+  let applied=0,older=0;const now=Date.now();
+  Object.values(p.recs).forEach(r=>{
+    if(!r||!r.id||!r.e)return;
+    const loc=recs[r.id];
+    if(!loc||((+r.u||0)>(+loc.u||0))){
+      recs[r.id]={id:r.id,e:r.e,d:r.d||{},del:!!r.del,u:+r.u||now};
+      queue.push(r.id);applied++;
+    } else older++;
+  });
+  deltaPending=null;
+  invalidateByE();_saveLocalNow();saveQ();flush();
+  let L=[];try{L=JSON.parse(localStorage.getItem('xr_baklog')||'[]');}catch(e){}
+  L.unshift(iso2jstr(new Date().toISOString().slice(0,10))+' '+new Date().toTimeString().slice(0,5)+' │ 🚨 ادغام تغییرات «'+(p.by||'?')+'»: '+applied.toLocaleString('fa-IR')+' اعمال، '+older.toLocaleString('fa-IR')+' قدیمی‌تر (رد شد)');
+  try{localStorage.setItem('xr_baklog',JSON.stringify(L.slice(0,20)));}catch(e){}
+  alert('✅ ادغام شد: '+applied.toLocaleString('fa-IR')+' رکورد اعمال شد'+(older?'، '+older.toLocaleString('fa-IR')+' مورد چون نسخه فعلی جدیدتر بود دست نخورد':'')+'.\nبا وصل شدن اینترنت، همه به سرور می‌رود.');
+  render();
+}
+window.deltaApply=deltaApply;
+function crisisHTML(){
+  let h=`<div class="sec" style="border-inline-start:3px solid #e5b567"><h3>🚨 حالت بحران — قطعی طولانی اینترنت</h3>
+    <p style="font-size:12.5px;color:var(--tx2);line-height:2.2">اپ بدون اینترنت کامل کار می‌کند و همه تغییرات روی همین دستگاه ذخیره و صف می‌شوند؛ به محض وصل شدن، خودکار با سرور یکی می‌شود. اگر قطعی طولانی شد و می‌خواهید کنترل مرکزی از دست نرود: هر کاربر آخر وقت «فایل تغییرات» خودش را می‌گیرد و با فلش/بلوتوث/پیام‌رسان به ادمین می‌رساند؛ ادمین همه را در سیستم خودش ادغام می‌کند. قاعده ادغام: هر رکورد فقط اگر <b>جدیدتر</b> از نسخه موجود باشد اعمال می‌شود (تداخل‌ها هوشمند حل می‌شود).</p>
+    <div class="tools" style="margin-top:6px">
+      <b style="font-size:12px">📤 خروجی تغییرات من:</b>
+      <button class="btn gh sm" onclick="deltaExport('mark')">از آخرین خروجی</button>
+      <button class="btn gh sm" onclick="deltaExport(1)">۲۴ ساعت اخیر</button>
+      <button class="btn gh sm" onclick="deltaExport(3)">۳ روز اخیر</button>
+      <button class="btn gh sm" onclick="deltaExport(7)">۷ روز اخیر</button>
+    </div>`;
+  if(isAdmin()){
+    h+=`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:10px">
+      <b style="font-size:12px">📥 ادغام فایل تغییرات همکاران (ادمین):</b>
+      <label class="btn gh sm" style="cursor:pointer;margin-inline-start:8px">انتخاب فایل (.mlxdelta یا .json)
+        <input type="file" accept=".mlxdelta,.json" style="display:none" onchange="deltaFile(this)"></label>`;
+    if(deltaPending){
+      const p=deltaPending.p;
+      h+=`<div style="background:var(--bg);border:1px solid #e5b567;border-radius:10px;padding:10px;margin-top:8px;font-size:12px;line-height:2">
+        📄 <b>${esc(deltaPending.fname)}</b> │ از: <b>${esc(p.by||'—')}</b> │ ${esc(p.atJ||'')} │ ${(+p.count||0).toLocaleString('fa-IR')} رکورد<br>
+        <b style="color:var(--ok)">${deltaPending.newer.toLocaleString('fa-IR')}</b> رکورد جدیدتر اعمال می‌شود │ <b style="color:var(--tx2)">${deltaPending.older.toLocaleString('fa-IR')}</b> مورد قدیمی‌تر رد می‌شود
+        <div style="margin-top:6px"><button class="btn sm" onclick="deltaApply()">🔀 ادغام در سیستم</button>
+        <button class="btn gh sm" onclick="deltaPending=null;render()">انصراف</button></div></div>`;
+    }
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+function backupdashHTML(){
+  if(!isAdmin())return crisisHTML(); // کاربر عادی: فقط بخش بحران (خروجی تغییرات خودش)
+  const n=Object.keys(recs).length;
+  const size=(()=>{try{return Math.round(JSON.stringify(recs).length/1024);}catch(e){return 0;}})();
+  const last=+localStorage.getItem('xr_lastbak')||0;
+  const days=last?Math.floor((Date.now()-last)/86400000):null;
+  let log=[];try{log=JSON.parse(localStorage.getItem('xr_baklog')||'[]');}catch(e){}
+  const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:12px"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:17px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">${sub}</div>`:''}</div>`;
+  let h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:8px">
+    ${card('کل رکوردهای سیستم',n.toLocaleString('fa-IR'))}
+    ${card('حجم تقریبی داده',(size>=1024?(size/1024).toFixed(1)+' MB':size+' KB'))}
+    ${card('آخرین پشتیبان‌گیری',last?iso2jstr(new Date(last).toISOString().slice(0,10)):'هرگز!',!last||days>7,days!=null?days.toLocaleString('fa-IR')+' روز پیش':'')}
+  </div>`;
+  if(!last||days>7)h+=`<div class="sec" style="border-inline-start:3px solid var(--bad)"><div style="font-size:12px">🔴 ${!last?'هنوز هیچ پشتیبانی نگرفته‌اید':'بیش از ۷ روز از آخرین پشتیبان گذشته'} — همین حالا یک پشتیبان بگیرید و فایل را جای امن (هارد جدا / فضای ابری) نگه دارید.</div></div>`;
+  h+=crisisHTML();
+  h+=`<div class="sec"><h3>⬇️ پشتیبان‌گیری کامل</h3>
+    <p style="font-size:12.5px;color:var(--tx2);line-height:2.2">با یک کلیک، یک فایل فشرده از <b>کل سیستم</b> (همه بخش‌ها، کاربران، دسترسی‌ها، تنظیمات، کدینگ، فاکتورها و…) دانلود می‌شود. این فایل را با تاریخِ داخل نامش نگه دارید — هر وقت لازم شد سیستم را «دقیقاً» به همان لحظه برمی‌گرداند.</p>
+    <button class="btn" onclick="bakDownload()">💾 دانلود پشتیبان کامل (همین لحظه)</button>
+    <p style="font-size:11px;color:var(--tx2);margin-top:8px">پیشنهاد: هفته‌ای یک‌بار، و قبل از هر ورود اکسل بزرگ یا تغییر مهم.</p></div>`;
+  h+=`<div class="sec" style="border-inline-start:3px solid var(--warn)"><h3>♻️ بازیابی از پشتیبان</h3>
+    <p style="font-size:12.5px;color:var(--tx2);line-height:2.2">اگر داده اشتباه وارد شده یا مشکلی پیش آمده، فایل پشتیبان را انتخاب کنید تا سیستم <b>دقیقاً معادل تاریخ همان فایل</b> شود: رکوردهای آن زمان برمی‌گردند و هرچه بعد از آن ساخته شده حذف می‌شود. تغییر به سرور هم می‌رود و همه دستگاه‌ها یکسان می‌شوند. قبل از اجرا، خودِ سیستم یک «پشتیبان اضطراری» از وضعیت فعلی دانلود می‌کند تا راه برگشت بماند.</p>
+    <label class="btn gh" style="cursor:pointer">📂 انتخاب فایل پشتیبان (.mlxbak یا .json)
+      <input type="file" accept=".mlxbak,.json" style="display:none" onchange="bakFile(this)"></label>`;
+  if(bakPending){
+    const p=bakPending.p;
+    h+=`<div style="background:var(--bg);border:1px solid var(--warn);border-radius:10px;padding:12px;margin-top:10px;font-size:12.5px;line-height:2.2">
+      <b>📄 ${esc(bakPending.fname)}</b><br>
+      تاریخ پشتیبان: <b>${esc(p.atJ||p.at||'—')}</b> │ رکوردهای فایل: <b>${(+p.count||0).toLocaleString('fa-IR')}</b><br>
+      با بازیابی: <b style="color:var(--ok)">${bakPending.willAdd.toLocaleString('fa-IR')}</b> رکورد برمی‌گردد و <b style="color:var(--bad)">${bakPending.willDelete.toLocaleString('fa-IR')}</b> رکوردِ جدیدتر حذف می‌شود.
+      <div style="margin-top:8px"><button class="btn bad" onclick="bakRestore()">♻️ اجرای بازیابی کامل</button>
+      <button class="btn gh sm" onclick="bakPending=null;render()">انصراف</button></div>
+    </div>`;
+  }
+  h+=`</div>`;
+  if(log.length)h+=`<div class="sec"><h3>🗒 تاریخچه بازیابی‌ها</h3><div class="tblwrap"><table><tbody>${log.map(l=>`<tr><td style="text-align:right;font-size:11.5px">${esc(l)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  return h;
+}
 /* ================= 🤖 ورود خودکار اکسل از پوشه (File System Access) ================= */
 let _fsDir=null;
 function _idb(){return new Promise((res,rej)=>{const r=indexedDB.open('xrfs',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
@@ -4962,7 +5147,9 @@ function nav(){
   if(isAdmin())h+=`<div class="nav-i ${view.type==='users'?'on':''}" onclick="go('users')">👤 کاربران و دسترسی</div>
   <div class="nav-i ${view.type==='acl'?'on':''}" onclick="go('acl')" style="${isAdmin()?'':'display:none'}">🛡️ سطوح دسترسی</div>
   <div class="nav-i ${view.type==='schema'?'on':''}" onclick="go('schema')">🧩 فیلدها و بخش‌ها</div>
-  ${isOwnerUser()?`<div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`:''}`;
+  ${isOwnerUser()?`<div class="nav-i ${view.type==='modcfg'?'on':''}" onclick="openModcfg()">🧰 مدیریت محصول</div>`:''}
+  <div class="nav-i ${view.type==='backupdash'?'on':''}" onclick="go('backupdash')">💾 پشتیبان‌گیری و بازیابی</div>`;
+  else if(!isPending())h+=`<div class="nav-i ${view.type==='backupdash'?'on':''}" onclick="go('backupdash')">🚨 حالت بحران (تغییرات من)</div>`;
   if(!isPending())h+=`<div class="nav-i ${view.type==='impcenter'?'on':''}" onclick="go('impcenter')">📥 مرکز ورود اکسل</div>`;
   // 🏢 انتخاب‌گر کسب‌وکار فعالِ سراسری (موقعیت قابل جابجایی: بالا / پایین / مخفی)
   if(bizSelPos()==='top')h+=bizSelectorHTML();
@@ -5057,6 +5244,7 @@ function render(){
     view.type==='portdash'?'🏦 پورتفوی پروژه‌ها':
     view.type==='tokendash'?'🪙 داشبورد توکن':
     view.type==='perfdash'?'🎖️ داشبورد عملکرد':
+    view.type==='backupdash'?'💾 پشتیبان‌گیری و بازیابی':
     view.type==='salesdash'?'🧾 داشبورد فروش':
     view.type==='invnew'?'🧾 صدور فاکتور':
     view.type==='pinvnew'?'🧾 ثبت فاکتور خرید':
@@ -5108,6 +5296,7 @@ function render(){
     else if(view.type==='portdash')c.innerHTML=portdashHTML();
     else if(view.type==='tokendash')c.innerHTML=tokendashHTML();
     else if(view.type==='perfdash')c.innerHTML=perfdashHTML();
+    else if(view.type==='backupdash')c.innerHTML=backupdashHTML();
     else if(view.type==='salesdash')c.innerHTML=salesdashHTML();
     else if(view.type==='invnew')c.innerHTML=invnewHTML();
     else if(view.type==='pinvnew')c.innerHTML=pinvnewHTML();
