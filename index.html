@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.44</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.45</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.44</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.45</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -4939,10 +4939,20 @@ function bizInvVal(biz){return byE('product').filter(p=>!biz||relIds(p,'biz').in
 function bizCashBal(biz){const f=cashFlows(biz,'all');return f.reduce((a,x)=>a+x.in-x.out,0);}
 function bizChqOpen(biz){return byE('cheque').filter(c=>chqOpen(c)&&(!biz||relIds(c,'biz').includes(biz))).reduce((a,c)=>a+(+c.d.amount||0),0);}
 function bizTargetAvg(biz){const ts=byE('saletarget').filter(t=>!biz||relIds(t,'biz').includes(biz));if(!ts.length)return null;const ps=ts.map(t=>targetProgress(t).overall);return Math.round(ps.reduce((a,b)=>a+b,0)/ps.length);}
+function bizUniAgg(b){ // 🔗 تجمیع یکپارچه (اکسل + عملیات) همه سال‌های دارای دیتا
+  const bizIds=b?[b]:[];
+  const yrs=new Set();byE('plmonth').forEach(r=>{if(+r.d.jy)yrs.add(+r.d.jy);});
+  const nj=g2j(new Date().getFullYear(),new Date().getMonth()+1,new Date().getDate());yrs.add(nj[0]);
+  let net=0,gp=0,np=0;
+  [...yrs].forEach(y=>{for(let i=0;i<12;i++){const u=uniMonth(y,i,bizIds);
+    if(u.src==='excel'||u.live){net+=u.net;gp+=u.gp;np+=u.np;}}});
+  return {net,gp,np,margin:net>0?gp/net*100:0};
+}
 const BIZ_METRICS=[
- {k:'sales',n:'💰 فروش کل',fn:b=>money(bizSales(b))},
- {k:'gp',n:'📈 سود ناخالص',fn:b=>money(plCalc(b,'','').gp)},
- {k:'margin',n:'٪ حاشیه سود',fn:b=>{const m=plCalc(b,'','').margin;return m.toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪';}},
+ {k:'sales',n:'💰 فروش کل (یکپارچه)',fn:b=>{const v=bizSales(b),u=bizUniAgg(b);return money(Math.max(v,u.net));}},
+ {k:'gp',n:'📈 سود ناخالص (یکپارچه)',fn:b=>{const v=plCalc(b,'','').gp,u=bizUniAgg(b);return money(v||u.gp);}},
+ {k:'np',n:'💎 سود خالص (یکپارچه)',fn:b=>money(bizUniAgg(b).np),bad:b=>bizUniAgg(b).np<0},
+ {k:'margin',n:'٪ حاشیه سود',fn:b=>{const v=plCalc(b,'','');const m=v.gp?v.margin:bizUniAgg(b).margin;return m.toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪';}},
  {k:'invcount',n:'🧾 تعداد فاکتور',fn:b=>bizInvReal(b).length.toLocaleString('fa-IR')},
  {k:'recv',n:'📥 مانده طلب',fn:b=>money(bizRecv(b)),bad:b=>bizRecv(b)>0},
  {k:'pay',n:'📤 مانده بدهی',fn:b=>money(bizPay(b)),bad:b=>bizPay(b)>0},
@@ -4966,6 +4976,9 @@ function bizMonthly(biz,n){
     const j=g2j(p[0],p[1],p[2]);const key=j[0]+'-'+j[1];if(!(key in idx))return;
     const amt=saleAmt(s);const pid=relIds(s,'product')[0];const bp=pid&&recs[pid]?(recs[pid].d.buy||0):0;
     months[idx[key]].rev+=amt;months[idx[key]].profit+=(amt-(s.d.qty||0)*bp);});
+  // 🔗 ماه‌هایی که «سود و زیان ماهانه» (اکسل) دارند، از همان منبع واحد خوانده می‌شوند
+  months.forEach(mo=>{const u=uniMonth(mo.y,mo.m-1,biz?[biz]:[]);
+    if(u.src==='excel'){mo.rev=u.net;mo.profit=u.gp;}});
   return months;
 }
 const JM_AB=['فرو','ارد','خرد','تیر','مرد','شهر','مهر','آبا','آذر','دی','بهم','اسف'];
@@ -4991,7 +5004,7 @@ function trendSVG(months){
     <path d="${line(revs)}" fill="none" stroke="var(--ac)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
     ${dots}${labels}</svg>`;
 }
-function bizkpiSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizkpi')||'null');if(Array.isArray(s))return s;}catch(e){}return ['sales','gp','margin','recv','pay','cash'];}
+function bizkpiSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizkpi')||'null');if(Array.isArray(s))return s;}catch(e){}return ['sales','gp','np','margin','recv','pay','cash'];}
 function bizkpiToggle(k){let s=bizkpiSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizkpi',JSON.stringify(s));}catch(e){}render();}
 function bizWidSel(){try{const s=JSON.parse(localStorage.getItem('xr_bizwid')||'null');if(Array.isArray(s))return s;}catch(e){}return ['trend','topcust','topprod'];}
 function bizWidToggle(k){let s=bizWidSel();s=s.includes(k)?s.filter(x=>x!==k):s.concat(k);try{localStorage.setItem('xr_bizwid',JSON.stringify(s));}catch(e){}render();}
@@ -5043,7 +5056,7 @@ function uniMonth(jy,mi,bizIds){
     const S=f=>pls.reduce((a,r)=>a+(+r.d[f]||0),0);
     const net=S('rev')-Math.abs(S('ret'))-Math.abs(S('disc'));
     const opex=['exstaff','exadmin','exsell','exfin','exdep','exoth'].reduce((a,k)=>a+S(k),0);
-    return {net,np:net-S('cogs')+S('oinc')-opex-S('tax'),src:'excel'};
+    return {net,gp:net-S('cogs'),np:net-S('cogs')+S('oinc')-opex-S('tax'),src:'excel'};
   }
   const inM=(e,r)=>{const jk=mydJDate((r.d.date||r.d.vdate||''));return jk&&jk[0]===jy&&jk[1]===mi+1;};
   let net=0;
@@ -5051,7 +5064,8 @@ function uniMonth(jy,mi,bizIds){
   byE('sale').forEach(x=>{if(x.d._inv)return;if(!bizF(x)||!inM('sale',x))return;net+=saleAmt(x);});
   let exp=0;
   byE('expense').forEach(x=>{if(!bizF(x)||!inM('expense',x))return;exp+=(+x.d.amount||0);});
-  return {net,np:net?net-exp:(exp?-exp:0),live:net||exp,src:'live'};
+  const npL=net?net-exp:(exp?-exp:0);
+  return {net,gp:npL,np:npL,live:net||exp,src:'live'};
 }
 function uniVal(kind,jy,mIdx,bizIds){ // kind: 'net'|'np'
   if(mIdx>=0){const m=uniMonth(jy,mIdx,bizIds);return (m.src==='excel'||m.live)?m[kind==='net'?'net':'np']:null;}
