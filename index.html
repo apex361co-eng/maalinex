@@ -254,7 +254,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۲۳</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -327,6 +327,15 @@ const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',S
 const STATUS=['Not started','In progress','Done'];
 const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
 const PRIO=['بحرانی','بالا','متوسط','پایین'];
+const KPIC=[
+ {k:'sales',n:'فروش و سودآوری',ic:'💰',subs:[['فروش خالص',1],['سود خالص',1],['سود هر سفارش',1]]},
+ {k:'inv',n:'موجودی و خرید',ic:'📦',subs:[['پوشش موجودی',1],['ارزش موجودی راکد',0],['نرخ کسری موجودی پرفروش',0]]},
+ {k:'sup',n:'پشتیبانی مشتریان',ic:'🎧',subs:[['نرخ سفارش موفق',1],['فروش در معرض خطر فنی',0],['زمان رفع خطاهای حیاتی',0]]},
+ {k:'web',n:'محتوا و سایت',ic:'🌐',subs:[['سود از ورود ارگانیک',1],['نرخ تبدیل صفحات سایت',1],['فروش کالاهای محتوای کامل',1]]},
+ {k:'leak',n:'ریزش سود',ic:'🩸',subs:[['سود از دست رفته تخفیف و مرجوعی',0],['هزینه خدمت هر محصول',0],['فروش از دست رفته',0]]},
+ {k:'call',n:'عملکرد تماس',ic:'📞',subs:[['تعداد کل تماس‌ها',1],['تماس‌های پاسخ داده شده',1],['تماس‌های بی‌پاسخ',0],['تماس منجر به فروش',1]]}];
+const KPI_NAMES=KPIC.flatMap(c=>c.subs.map(x=>x[0]));
+const KPI_DIR={};KPIC.forEach(c=>c.subs.forEach(x=>KPI_DIR[x[0]]=x[1]));
 const E={
 hr:{ic:'👥',n:'منابع انسانی',grp:'سازمان',f:[
  {k:'title',n:'نام و نام خانوادگی',t:TXT},{k:'role',n:'سمت',t:TXT},
@@ -1205,6 +1214,29 @@ plmonth:{ic:'📜',n:'سود و زیان ماهانه (عملکرد واقعی)'
  {k:'exoth',n:'سایر هزینه‌ها',t:NUM},
  {k:'tax',n:'مالیات (معمولاً در اسفند)',t:NUM}],
  cols:['title','biz','jy','jm','rev','cogs'],comp:'plmonthBrief'},
+kpival:{ic:'🎯',n:'ثبت KPI فروش (دوره‌ای)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'عنوان (مثل: 1404 مهر - علی - فروش خالص)',t:TXT},
+ {k:'scope',n:'سطح',t:SEL,o:['فرد','تیم','واحد','کسب‌وکار','شرکت','هلدینگ']},
+ {k:'person',n:'فرد (اگر سطح فرد است)',t:REL,r:'hr',s:1},
+ {k:'unit',n:'تیم/واحد (اگر سطح تیم یا واحد است)',t:REL,r:'orgunit',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'jy',n:'سال شمسی',t:NUM},
+ {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'kpi',n:'شاخص',t:SEL,o:KPI_NAMES},
+ {k:'value',n:'مقدار واقعی',t:NUM},
+ {k:'target',n:'هدف دوره',t:NUM}],
+ cols:['title','scope','jy','jm','kpi','value','target']},
+ctrlval:{ic:'🎛',n:'ثبت شاخص کنترلی (داشبرد کنترلی)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'عنوان (مثل: 1404 مهر - مطالبات معوق)',t:TXT},
+ {k:'code',n:'کد شاخص (مثل: 3-8-6)',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'jy',n:'سال شمسی',t:NUM},
+ {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'value',n:'مقدار واقعی',t:NUM},
+ {k:'target',n:'هدف / سقف مجاز',t:NUM},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','code','jy','jm','value','target']},
 pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -2163,7 +2195,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','ctrldash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
@@ -2307,7 +2339,7 @@ function modAutopostHTML(){
 }
 function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('content').innerHTML=modcfgHTML();}
 window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
-const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
+const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',ctrldash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
  gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
  findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
  epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',agiledash:'توسعه نرم‌افزار',
@@ -5242,7 +5274,8 @@ function bizMenuHTML(){
   // 📊 داشبورد
   h+=sec('📊 داشبورد',
     it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
-    +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash')));
+    +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash'))
+    +it('ctrldash','🎛 داشبرد کنترلی',"go('ctrldash')",(canSee('invoice')||canSee('product'))&&canView('ctrldash')));
   // 📦 کالا و خدمات
   h+=sec('📦 کالا و خدمات',ent('product')+ent('channel'));
   // 💼 فروش
@@ -5370,6 +5403,7 @@ function render(){
     view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
     view.type==='bizkpi'?'📊 داشبورد کسب‌وکار':
     view.type==='ceodash'?'🧭 داشبورد مدیرعامل':
+    view.type==='ctrldash'?'🎛 داشبرد کنترلی':
     view.type==='pfdash'?'🔄 تسویه درگاه‌ها و پلتفرم‌ها':
     view.type==='epcfdash'?'🎛️ داشبورد EPCF':
     view.type==='cdash'?'🏢 داشبورد ساخت‌وساز':
@@ -5399,7 +5433,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -5423,6 +5457,7 @@ function render(){
     else if(view.type==='glnew')c.innerHTML=glnewHTML();
     else if(view.type==='bizkpi')c.innerHTML=bizkpiHTML();
     else if(view.type==='ceodash')c.innerHTML=ceodashHTML();
+    else if(view.type==='ctrldash')c.innerHTML=ctrldashHTML();
     else if(view.type==='pfdash')c.innerHTML=pfdashHTML();
     else if(view.type==='epcfdash')c.innerHTML=epcfdashHTML();
     else if(view.type==='cdash')c.innerHTML=cdashHTML();
@@ -5632,6 +5667,199 @@ function ceoChartsHTML(b,wins,winDesc){
       ${has?ceoBarsSVG(pts,s.pct):'<div class="empty">داده‌ای برای این بازه نیست</div>'}</div>`;}).join('');
   return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:8px">${blocks}</div>`;
 }
+
+/* ===== 🎛 داشبرد کنترلی — گیج‌های خودرویی آبشاری ===== */
+const CTRL_TREE=[
+ {c:'1',n:'شاخص مالی',ic:'💰',kids:[
+  {c:'1-1',n:'فروش',kids:[
+   {c:'1-1-1-1',n:'فروش ریالی',kids:[{c:'1-1-1-1-1',n:'رشد فروش ریالی'}]},
+   {c:'1-1-1-2',n:'فروش تعدادی',kids:[{c:'1-1-1-2-1',n:'رشد تعدادی'}]},
+   {c:'1-1-1-3',n:'عملکرد ماهیانه',kids:[{c:'1-1-1-3-1',n:'بدترین ماه'},{c:'1-1-1-3-2',n:'بهترین ماه'}]}]},
+  {c:'1-2',n:'سودآوری',kids:[
+   {c:'1-2-1',n:'سود خالص',kids:[
+    {c:'1-2-1-1-1',n:'سود قبل از مالیات'},{c:'1-2-1-1-2',n:'حاشیه سود خالص'},{c:'1-2-1-1-3',n:'رشد سود خالص'}]},
+   {c:'1-2-2',n:'سود ناخالص'},
+   {c:'1-2-3',n:'حاشیه سود ناخالص'},
+   {c:'1-2-5',n:'سود عملیاتی تعدیل‌شده',kids:[
+    {c:'1-2-5-1',n:'سود بدون اقلام غیرعملیاتی'},{c:'1-2-5-2',n:'اثر اقلام غیرعملیاتی بر سود'}]}]},
+  {c:'1-3',n:'هزینه‌ها',kids:[
+   {c:'1-3-1',n:'هزینه‌های عملیاتی'},{c:'1-3-2',n:'هزینه‌های غیرعملیاتی (مالی)'},
+   {c:'1-3-3',n:'نسبت هزینه به فروش',d:0},{c:'1-3-4',n:'نسبت هزینه به سود خالص',d:0}]}]},
+ {c:'2',n:'شاخص عملیاتی',ic:'⚙️',kids:[
+  {c:'2-1',n:'بهای تمام‌شده',kids:[{c:'2-1-1',n:'نسبت به فروش',d:0},{c:'2-1-2',n:'روند بهای تمام‌شده',d:0}]},
+  {c:'2-2',n:'حمل و انبارداری',d:0},
+  {c:'2-3',n:'حقوق و دستمزد',d:0},
+  {c:'2-4',n:'کیفیت فروش',kids:[
+   {c:'2-4-1',n:'نرخ برگشت از فروش',d:0},{c:'2-4-2',n:'مبلغ برگشت از فروش',d:0},
+   {c:'2-4-3',n:'نرخ تخفیف',d:0},{c:'2-4-4',n:'مبلغ تخفیف',d:0}]},
+  {c:'2-5',n:'هزینه‌های اصلی عملیات',kids:[
+   {c:'2-5-1',n:'حقوق به سود خالص',d:0},{c:'2-5-2',n:'حمل و انبارداری به سود خالص',d:0},
+   {c:'2-5-3',n:'هزینه سایت به سود ناخالص',d:0},{c:'2-5-4',n:'اجاره به سود خالص',d:0}]},
+  {c:'2-6',n:'خرید',kids:[
+   {c:'2-6-1',n:'سود خرید'},{c:'2-6-2',n:'سود خرید تعدیل‌شده با ارز'},{c:'2-6-3',n:'کیفیت خرید'},
+   {c:'2-6-4',n:'پوشش خرید خارجی',kids:[{c:'2-6-4-1',n:'نسبت خرید ارزی به کل'},{c:'2-6-4-2',n:'پوشش خرید آینده'}]}]}]},
+ {c:'3',n:'هشدار و کنترل',ic:'🚨',kids:[
+  {c:'3-1',n:'ضایعات',kids:[{c:'3-1-1',n:'مبلغ ضایعات',d:0},{c:'3-1-2',n:'نسبت ضایعات به فروش',d:0},{c:'3-1-3',n:'روند ضایعات',d:0}]},
+  {c:'3-2',n:'گارانتی',kids:[{c:'3-2-1',n:'مبلغ گارانتی',d:0},{c:'3-2-2',n:'نسبت گارانتی به فروش',d:0},{c:'3-2-3',n:'روند گارانتی',d:0},{c:'3-2-4',n:'سود و زیان گارانتی'}]},
+  {c:'3-3',n:'هزینه‌های حساس',kids:[
+   {c:'3-3-1-1',n:'پذیرایی به سود ناخالص',d:0},{c:'3-3-1-2',n:'روند هزینه پذیرایی',d:0},{c:'3-3-1-3',n:'رشد غیرعادی هزینه‌ها',d:0}]},
+  {c:'3-4',n:'کالاهای زیان‌ده',d:0},
+  {c:'3-6',n:'ماه‌های هشدار',kids:[{c:'3-6-1',n:'ماه‌های زیان‌ده',d:0},{c:'3-6-2',n:'ماه‌های با سود پایین',d:0},{c:'3-6-3',n:'افت شدید سود',d:0}]},
+  {c:'3-7',n:'اقلام غیرعملیاتی',kids:[{c:'3-7-1',n:'سود تسعیر ارز'},{c:'3-7-2',n:'سهم سود غیرعملیاتی از کل',d:0}]},
+  {c:'3-8',n:'جریان نقدینگی',kids:[
+   {c:'3-8-1',n:'بدهی',d:0},{c:'3-8-2',n:'مطالبات',d:0},{c:'3-8-3',n:'دوره وصول مطالبات',d:0},
+   {c:'3-8-4',n:'دوره پرداخت بدهی'},{c:'3-8-5',n:'رشد تعهدات',d:0},{c:'3-8-6',n:'مطالبات معوق',d:0},
+   {c:'3-8-7',n:'کسری نقدینگی',d:0},
+   {c:'3-8-9',n:'تسهیلات و وام‌ها',kids:[
+    {c:'3-8-9-1',n:'مبلغ وام‌ها',d:0},{c:'3-8-9-2',n:'اقساط هر تسهیلات',d:0},
+    {c:'3-8-9-3',n:'سررسید وام‌ها'},{c:'3-8-9-4',n:'توان پرداخت اقساط'}]}]}]},
+ {c:'4',n:'خزانه',ic:'🏦',kids:[
+  {c:'4-1-1',n:'صندوق ریالی'},
+  {c:'4-1-2',n:'صندوق ارزی',kids:[
+   {c:'4-1-2-1',n:'خرید ارز در دوره'},{c:'4-1-2-2',n:'مصرف ارز در دوره',d:0},
+   {c:'4-1-2-3',n:'سود تسعیر ارز'},{c:'4-1-2-4',n:'سهم تسعیر از سود کل',d:0}]},
+  {c:'4-3',n:'حساب‌های بانکی'}]},
+ {c:'5',n:'انبار',ic:'📦',kids:[
+  {c:'5-1',n:'موجودی انبار',kids:[{c:'5-1-1',n:'موجودی تعدادی'},{c:'5-1-2-1',n:'موجودی ریالی'},{c:'5-1-2-2',n:'موجودی ارزی'}]},
+  {c:'5-2',n:'گردش موجودی',kids:[{c:'5-2-1',n:'نرخ گردش موجودی'},{c:'5-2-2',n:'روزهای خواب کالا',d:0}]},
+  {c:'5-3',n:'کفایت موجودی نسبت به فروش'},
+  {c:'5-4',n:'ریسک کمبود موجودی',kids:[{c:'5-4-1',n:'نرخ کسری کالا',d:0},{c:'5-4-2',n:'دفعات اتمام کالا (Stockout)',d:0}]},
+  {c:'5-5',n:'ریسک تورم موجودی',kids:[{c:'5-5-1',n:'موجودی راکد',d:0},{c:'5-5-2',n:'موجودی کم‌گردش',d:0},{c:'5-5-3',n:'درصد بالاتر از هدف',d:0}]},
+  {c:'5-6',n:'کیفیت موجودی',kids:[{c:'5-6-1',n:'ضایعات انبار',d:0},{c:'5-6-2',n:'ناشی از انبارش',d:0},{c:'5-6-3',n:'آسیب‌دیدگی',d:0},{c:'5-6-4',n:'کسری انبار',d:0}]}]}];
+function ctrlClamp(x){return x==null?null:Math.max(0,Math.min(100,x));}
+function ctrldashHTML(){
+  const Mn=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const pls=byE('plmonth'),cvs=byE('ctrlval');
+  view.cdBiz=view.cdBiz||'';
+  const bizF=r=>!view.cdBiz||relIds(r,'biz').includes(view.cdBiz);
+  const yrs=[...new Set([...pls,...cvs].map(r=>+r.d.jy||0).filter(Boolean))].sort();
+  view.cdYr=yrs.includes(+view.cdYr)?+view.cdYr:(yrs[yrs.length-1]||0);
+  view.cdMn=view.cdMn||'همه';
+  const mIdx=Mn.indexOf(view.cdMn);
+  const inP=r=>+r.d.jy===view.cdYr&&(mIdx<0||r.d.jm===view.cdMn);
+  const inPrev=r=>+r.d.jy===view.cdYr-1&&(mIdx<0||r.d.jm===view.cdMn);
+  const rows=pls.filter(r=>bizF(r)&&inP(r)),prevRows=pls.filter(r=>bizF(r)&&inPrev(r));
+  const S=(arr,f)=>arr.reduce((a,r)=>a+(+r.d[f]||0),0);
+  const P=arr=>{const net=S(arr,'rev')-Math.abs(S(arr,'ret'))-Math.abs(S(arr,'disc'));
+    const gp=net-S(arr,'cogs');const opex=['exstaff','exadmin','exsell','exfin','exdep','exoth'].reduce((a,k)=>a+S(arr,k),0);
+    const oinc=S(arr,'oinc');return {net,gp,opex,oinc,pre:gp+oinc-opex,np:gp+oinc-opex-S(arr,'tax'),
+      cogs:S(arr,'cogs'),ret:Math.abs(S(arr,'ret')),disc:Math.abs(S(arr,'disc')),fin:S(arr,'exfin'),staff:S(arr,'exstaff')};};
+  const C=P(rows),Pv=P(prevRows);
+  // هزینه‌ها به تفکیک سرفصل از موجودیت هزینه (بازه میلادی معادل سال/ماه انتخابی)
+  const expCat=(cats,prev)=>{const y=view.cdYr-(prev?1:0);let f,t;
+    if(mIdx<0){f=_jgIso(y,1,1);t=_jgIso(y,12,29);}else{f=_jgIso(y,mIdx+1,1);t=_jgIso(y,mIdx+1,mIdx<6?31:30);}
+    return byE('expense').filter(r=>bizF(r)&&r.d.date>=f&&r.d.date<=t&&cats.includes(r.d.cat)).reduce((a,r)=>a+(+r.d.amount||0),0);};
+  const gr=(a,b)=>b>0?((a-b)/b*100):null;
+  const pctGrow=g=>g==null?null:ctrlClamp(50+g);
+  const pctRatio=(r,bench)=>r==null?null:ctrlClamp(100-Math.max(0,(r-bench))*(50/bench)); // ratio<=bench→100، دوبرابر بنچ→50
+  const F=abbrN;
+  // موتور محاسبه خودکار — خروجی {v:متن مقدار, p:درصد گیج}
+  const AUTO={
+   '1-1-1-1':()=>({v:F(C.net),p:pctGrow(gr(C.net,Pv.net))}),
+   '1-1-1-1-1':()=>{const g=gr(C.net,Pv.net);return {v:g==null?'—':g.toFixed(1)+'٪',p:pctGrow(g)};},
+   '1-1-1-3':()=>{const ms=rows.map(r=>({m:r.d.jm,np:P([r]).np}));if(!ms.length)return null;
+     return {v:ms.length+' ماه ثبت',p:ctrlClamp(ms.filter(x=>x.np>0).length/ms.length*100)};},
+   '1-1-1-3-1':()=>{const ms=rows.map(r=>({m:r.d.jm,np:P([r]).np})).sort((a,b)=>a.np-b.np);
+     return ms.length?{v:ms[0].m+' │ '+F(ms[0].np),p:ms[0].np>0?100:20}:null;},
+   '1-1-1-3-2':()=>{const ms=rows.map(r=>({m:r.d.jm,np:P([r]).np})).sort((a,b)=>b.np-a.np);
+     return ms.length?{v:ms[0].m+' │ '+F(ms[0].np),p:100}:null;},
+   '1-2-1':()=>({v:F(C.np),p:pctGrow(gr(C.np,Pv.np))}),
+   '1-2-1-1-1':()=>({v:F(C.pre),p:pctGrow(gr(C.pre,Pv.pre))}),
+   '1-2-1-1-2':()=>{const m=C.net>0?C.np/C.net*100:null;return m==null?null:{v:m.toFixed(1)+'٪',p:ctrlClamp(m/5*100)};},
+   '1-2-1-1-3':()=>{const g=gr(C.np,Pv.np);return {v:g==null?'—':g.toFixed(1)+'٪',p:pctGrow(g)};},
+   '1-2-2':()=>({v:F(C.gp),p:pctGrow(gr(C.gp,Pv.gp))}),
+   '1-2-3':()=>{const m=C.net>0?C.gp/C.net*100:null;return m==null?null:{v:m.toFixed(1)+'٪',p:ctrlClamp(m/10*100)};},
+   '1-2-5-1':()=>({v:F(C.np-C.oinc),p:C.np>0?ctrlClamp((C.np-C.oinc)/C.np*100):20}),
+   '1-2-5-2':()=>{const sh=C.np>0?C.oinc/C.np*100:null;return sh==null?null:{v:sh.toFixed(1)+'٪ از سود',p:ctrlClamp(100-sh)};},
+   '1-3-1':()=>({v:F(C.opex-C.fin),p:pctRatio(C.net>0?(C.opex-C.fin)/C.net*100:null,5)}),
+   '1-3-2':()=>({v:F(C.fin),p:pctRatio(C.np>0?C.fin/C.np*100:null,5)}),
+   '1-3-3':()=>{const r=C.net>0?C.opex/C.net*100:null;return r==null?null:{v:r.toFixed(1)+'٪',p:pctRatio(r,5)};},
+   '1-3-4':()=>{const r=C.np>0?C.opex/C.np*100:null;return r==null?null:{v:r.toFixed(0)+'٪',p:pctRatio(r,110)};},
+   '2-1-1':()=>{const r=C.net>0?C.cogs/C.net*100:null;return r==null?null:{v:r.toFixed(1)+'٪',p:pctRatio(r,92)};},
+   '2-1-2':()=>{const a=C.net>0?C.cogs/C.net:null,b=Pv.net>0?Pv.cogs/Pv.net:null;
+     if(a==null||b==null)return null;const d=(a-b)*100;return {v:(d>0?'+':'')+d.toFixed(1)+' واحد',p:ctrlClamp(50-d*10)};},
+   '2-2':()=>{const v=expCat(['حمل و انبارداری','وانت و توزیع']);return {v:F(v),p:pctRatio(C.net>0?v/C.net*100:null,1.5)};},
+   '2-3':()=>{const v=expCat(['حقوق و دستمزد','عیدی و پاداش','سنوات','بیمه (سهم کارفرما/بیکاری/تکمیلی)']);
+     return {v:F(v||C.staff),p:pctRatio(C.net>0?(v||C.staff)/C.net*100:null,2.5)};},
+   '2-4-1':()=>{const r=C.net>0?C.ret/(C.net+C.ret)*100:null;return r==null?null:{v:r.toFixed(2)+'٪',p:pctRatio(r,1)};},
+   '2-4-2':()=>({v:F(C.ret),p:pctRatio(C.net>0?C.ret/C.net*100:null,1)}),
+   '2-4-3':()=>{const r=C.net>0?C.disc/(C.net+C.disc)*100:null;return r==null?null:{v:r.toFixed(2)+'٪',p:pctRatio(r,2)};},
+   '2-4-4':()=>({v:F(C.disc),p:pctRatio(C.net>0?C.disc/C.net*100:null,2)}),
+   '2-5-1':()=>{const v=expCat(['حقوق و دستمزد'])||C.staff;const r=C.np>0?v/C.np*100:null;return r==null?null:{v:r.toFixed(0)+'٪',p:pctRatio(r,45)};},
+   '2-5-2':()=>{const v=expCat(['حمل و انبارداری','وانت و توزیع']);const r=C.np>0?v/C.np*100:null;return r==null?null:{v:r.toFixed(0)+'٪',p:pctRatio(r,20)};},
+   '2-5-3':()=>{const v=expCat(['هزینه سایت و پلتفرم']);const r=C.gp>0?v/C.gp*100:null;return r==null?null:{v:r.toFixed(1)+'٪',p:pctRatio(r,5)};},
+   '2-5-4':()=>{const v=expCat(['اجاره']);const r=C.np>0?v/C.np*100:null;return r==null?null:{v:r.toFixed(0)+'٪',p:pctRatio(r,10)};},
+   '3-1-1':()=>{const v=expCat(['ضایعات']);return {v:F(v),p:pctRatio(C.net>0?v/C.net*100:null,0.2)};},
+   '3-1-2':()=>{const v=expCat(['ضایعات']);const r=C.net>0?v/C.net*100:null;return r==null?null:{v:r.toFixed(2)+'٪',p:pctRatio(r,0.2)};},
+   '3-1-3':()=>{const a=expCat(['ضایعات']),b=expCat(['ضایعات'],1);const g=gr(a,b);return g==null?null:{v:(g>0?'+':'')+g.toFixed(0)+'٪',p:ctrlClamp(50-g/2)};},
+   '3-2-1':()=>{const v=expCat(['گارانتی']);return {v:F(v),p:pctRatio(C.net>0?v/C.net*100:null,0.3)};},
+   '3-2-2':()=>{const v=expCat(['گارانتی']);const r=C.net>0?v/C.net*100:null;return r==null?null:{v:r.toFixed(2)+'٪',p:pctRatio(r,0.3)};},
+   '3-2-3':()=>{const a=expCat(['گارانتی']),b=expCat(['گارانتی'],1);const g=gr(a,b);return g==null?null:{v:(g>0?'+':'')+g.toFixed(0)+'٪',p:ctrlClamp(50-g/2)};},
+   '3-3-1-1':()=>{const v=expCat(['پذیرایی']);const r=C.gp>0?v/C.gp*100:null;return r==null?null:{v:r.toFixed(1)+'٪',p:pctRatio(r,4)};},
+   '3-3-1-2':()=>{const a=expCat(['پذیرایی']),b=expCat(['پذیرایی'],1);const g=gr(a,b);return g==null?null:{v:(g>0?'+':'')+g.toFixed(0)+'٪',p:ctrlClamp(50-g/2)};},
+   '3-3-1-3':()=>{if(!Pv.opex)return null;const g=gr(C.opex,Pv.opex),gs=gr(C.net,Pv.net);
+     if(g==null||gs==null)return null;const d=g-gs;return {v:'هزینه '+g.toFixed(0)+'٪ │ فروش '+gs.toFixed(0)+'٪',p:ctrlClamp(50-d)};},
+   '3-6-1':()=>{const n=rows.filter(r=>P([r]).np<0).length;return {v:n+' ماه',p:n?ctrlClamp(100-n*25):100};},
+   '3-6-2':()=>{const n=rows.filter(r=>{const x=P([r]);return x.np>=0&&x.net>0&&x.np/x.net<0.02;}).length;
+     return {v:n+' ماه',p:ctrlClamp(100-n*15)};},
+   '3-6-3':()=>{const ms=rows.map(r=>({i:Mn.indexOf(r.d.jm),np:P([r]).np})).sort((a,b)=>a.i-b.i);
+     let n=0;for(let i=1;i<ms.length;i++)if(ms[i-1].np>0&&ms[i].np<ms[i-1].np*0.5)n++;
+     return {v:n+' افت شدید',p:ctrlClamp(100-n*20)};},
+   '3-7-1':()=>({v:F(C.oinc),p:ctrlClamp(C.np>0?100-C.oinc/C.np*100:50)}),
+   '3-7-2':()=>{const sh=C.np>0?C.oinc/C.np*100:null;return sh==null?null:{v:sh.toFixed(1)+'٪',p:ctrlClamp(100-sh)};},
+  };
+  // مقدار دستی از ctrlval
+  const man=c=>{const rs=cvs.filter(r=>bizF(r)&&inP(r)&&(r.d.code||'').trim()===c);
+    if(!rs.length)return null;const v=rs.reduce((a,r)=>a+(+r.d.value||0),0),t=rs.reduce((a,r)=>a+(+r.d.target||0),0);
+    return {v:F(v)+(t?' / '+F(t):''),t,raw:v};};
+  const nodeVal=nd=>{
+    if(AUTO[nd.c]){const a=AUTO[nd.c]();if(a)return {...a,src:'auto'};}
+    const m=man(nd.c);
+    if(m){let p=null;if(m.t>0)p=nd.d===0?ctrlClamp(m.t>0&&m.raw>0?m.t/m.raw*100:100):ctrlClamp(m.raw/m.t*100);
+      return {v:m.v,p,src:'دستی'};}
+    if(nd.kids){const ps=nd.kids.map(k=>nodeVal(k).p).filter(x=>x!=null);
+      return {v:nd.kids.length+' زیرشاخص',p:ps.length?ps.reduce((a,x)=>a+x,0)/ps.length:null,src:'تجمیع'};}
+    return {v:'ثبت نشده',p:null,src:''};};
+  // گیج خودرویی: نیم‌دایره با پهنه قرمز/زرد/سبز و عقربه
+  const gcol=p=>p==null?'var(--tx2)':p>=70?'var(--ok)':p>=40?'#eab308':'var(--bad)';
+  const arc=(a1,a2,r,col)=>{const rad=a=>[(75+r*Math.cos(Math.PI*(1-a/100))),(70-r*Math.sin(Math.PI*(1-a/100)))];
+    const [x1,y1]=rad(a1),[x2,y2]=rad(a2);
+    return `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 ${a2-a1>50?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="10" stroke-linecap="round"/>`;};
+  const gauge=(nd,vv,click)=>{
+    const p=vv.p;const ang=p==null?0:p;
+    const nx=75+38*Math.cos(Math.PI*(1-ang/100)),ny=70-38*Math.sin(Math.PI*(1-ang/100));
+    return `<div onclick="${click||''}" style="cursor:${click?'pointer':'default'};width:158px;text-align:center;background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:8px 4px 6px">
+      <svg width=150 height=84 viewBox="0 0 150 84">
+        ${arc(2,38,52,'color-mix(in srgb,var(--bad) 55%,transparent)')}${arc(42,68,52,'color-mix(in srgb,#eab308 55%,transparent)')}${arc(72,98,52,'color-mix(in srgb,var(--ok) 55%,transparent)')}
+        ${p!=null?`<line x1=75 y1=70 x2=${nx.toFixed(1)} y2=${ny.toFixed(1)} stroke="${gcol(p)}" stroke-width=3.5 stroke-linecap=round/>`:''}
+        <circle cx=75 cy=70 r=5 fill="${gcol(p)}"/>
+        <text x=75 y=52 text-anchor=middle font-size=15 font-weight=800 fill="${gcol(p)}">${p==null?'—':Math.round(p)}</text>
+      </svg>
+      <div style="font-size:11.5px;font-weight:700;line-height:1.6">${nd.ic?nd.ic+' ':''}${nd.n}</div>
+      <div style="font-size:11px;color:var(--tx2)">${vv.v}${vv.src&&vv.src!=='auto'?' <span style="opacity:.6">('+vv.src+')</span>':''}</div>
+      ${nd.kids?`<div style="font-size:9px;color:var(--tx2);opacity:.7">▼ ${nd.kids.length} زیرشاخص</div>`:''}
+    </div>`;};
+  // ناوبری آبشاری
+  view.cdPath=view.cdPath||[];
+  let lvl=CTRL_TREE,crumb=[['🎛 داشبرد کنترلی',-1]],cur=null;
+  view.cdPath.forEach((c,i)=>{const nd=lvl.find(x=>x.c===c);if(nd&&nd.kids){cur=nd;crumb.push([nd.n,i]);lvl=nd.kids;}});
+  const bizOpts=byE('business').map(r=>`<option value="${r.id}" ${r.id===view.cdBiz?'selected':''}>${r.d.title}</option>`).join('');
+  let h=`<div class="sec"><h3>🎛 داشبرد کنترلی <span style="flex:1"></span>
+    <select class="inp sm" style="width:auto" onchange="view.cdBiz=this.value;render()"><option value="">همه کسب‌وکارها</option>${bizOpts}</select>
+    <select class="inp sm" style="width:auto" onchange="view.cdYr=+this.value;render()">${yrs.map(y=>`<option ${y===view.cdYr?'selected':''}>${y}</option>`).join('')||'<option>—</option>'}</select>
+    <select class="inp sm" style="width:auto" onchange="view.cdMn=this.value;render()">${['همه',...Mn].map(m=>`<option ${m===view.cdMn?'selected':''}>${m}</option>`).join('')}</select>
+    <button class="btn gh sm" onclick="view={type:'list',e:'ctrlval'};render()">✏️ ثبت شاخص دستی</button></h3>
+    <div style="font-size:11px;margin-bottom:10px">${crumb.map(([n,i],j)=>`<span style="cursor:pointer;color:${j===crumb.length-1?'var(--tx)':'var(--ac)'}" onclick="view.cdPath=view.cdPath.slice(0,${i+1});render()">${n}</span>`).join(' <span style="opacity:.5">←</span> ')}</div>
+    ${!pls.length&&!cvs.length?`<div class="empty">داده‌ای نیست — «سود و زیان ماهانه» را وارد کن (فایل اکسل آماده) یا شاخص‌های دستی را ثبت کن</div>`:
+    `<div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">
+      ${lvl.map(nd=>{const vv=nodeVal(nd);
+        return gauge(nd,vv,nd.kids?`view.cdPath=[...view.cdPath,'${nd.c}'];render()`:'');}).join('')}
+    </div>
+    <div style="font-size:10.5px;color:var(--tx2);margin-top:12px;text-align:center">عقربه = امتیاز سلامت ۰ تا ۱۰۰ │ سبز ≥۷۰ زرد ۴۰–۷۰ قرمز <۴۰ │ امتیاز والد = میانگین زیرشاخه‌ها │ شاخص بدون محاسبه خودکار را با کد از «✏️ ثبت شاخص دستی» وارد کن (کد روی همین کارت‌ها مبناست)</div>`}
+  </div>`;
+  return h;
+}
+
 function ceodashHTML(){
   const b=gBiz();const t0=_isoToday();
   if(!view.ct)view.ct='prof';
@@ -5699,7 +5927,7 @@ function ceodashHTML(){
   const outAge=stock.filter(x=>x.avg>0&&x.cover<7);
   if(outAge.length)alerts.push(['warn',outAge.length.toLocaleString('fa-IR')+' کالای پرفروش زیر ۷ روز پوشش موجودی دارند']);
   if(ox.off>0)alerts.push(['warn','هزینه خارج از بودجه این دوره: '+money(ox.off)]);
-  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['hist','📜 روند تاریخی'],['week','🗞 گزارش هفتگی']];
+  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['hist','📜 روند تاریخی'],['kpi','🎯 KPI فروش'],['week','🗞 گزارش هفتگی']];
   const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:12px"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:17px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">${sub}</div>`:''}</div>`;
   const grid=inner=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px">${inner}</div>`;
   const topTbl=(title,arr,cols)=>`<div class="sec"><h3>${title} <span class="c">${arr.length.toLocaleString('fa-IR')}</span></h3>${arr.length?`<div class="tblwrap"><table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${arr.map(r=>`<tr>${cols.map(c=>`<td style="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">موردی نیست</div>'}</div>`;
@@ -5880,6 +6108,73 @@ function ceodashHTML(){
           if(L.fi>L.np*0.05)tips.push('🟡 هزینه مالی '+abbrN(L.fi)+' معادل '+(L.fi/L.np*100).toFixed(0)+'٪ سود خالص است — بازنگری وام‌ها.');
           return tips.length?tips.map(t=>'<div>'+t+'</div>').join(''):'<div>✅ نشانه خطر برجسته‌ای دیده نشد.</div>';})()}
       </div></div></div>`;
+    }
+  }
+  if(T==='kpi'){
+    const all=byE('kpival');
+    const SC=['هلدینگ','شرکت','کسب‌وکار','واحد','تیم','فرد'];
+    view.kscope=view.kscope||'هلدینگ';
+    // گزینه‌های انتخاب بر اساس سطح
+    const refE={'فرد':'hr','تیم':'orgunit','واحد':'orgunit','کسب‌وکار':'business','شرکت':'company'}[view.kscope];
+    const refK={'فرد':'person','تیم':'unit','واحد':'unit','کسب‌وکار':'biz','شرکت':'company'}[view.kscope];
+    const opts=refE?byE(refE).map(r=>[r.id,r.d.title||'?']):[];
+    if(refE&&!opts.find(o=>o[0]===view.ksel))view.ksel=opts[0]?.[0]||'';
+    // سال‌ها و ماه‌ها
+    const yrs=[...new Set(all.map(r=>+r.d.jy||0).filter(Boolean))].sort();
+    view.kyr=yrs.includes(+view.kyr)?+view.kyr:(yrs[yrs.length-1]||0);
+    const Mn=['همه','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+    view.kmn=view.kmn||'همه';
+    // فیلتر رکوردها
+    const recsF=all.filter(r=>{
+      if(view.kyr&&+r.d.jy!==view.kyr)return false;
+      if(view.kmn!=='همه'&&r.d.jm!==view.kmn)return false;
+      if(view.kscope==='هلدینگ')return true;
+      if(r.d.scope!==view.kscope)return false;
+      return relIds(r,refK).includes(view.ksel);
+    });
+    // تجمیع هر شاخص
+    const agg={};recsF.forEach(r=>{const k=r.d.kpi;if(!k)return;const g=agg[k]||(agg[k]={v:0,t:0});g.v+=+r.d.value||0;g.t+=+r.d.target||0;});
+    const ach=k=>{const g=agg[k];if(!g||!g.t)return null;
+      const p=KPI_DIR[k]?g.v/g.t*100:(g.v>0?g.t/g.v*100:150);return Math.min(150,p);};
+    const gcol=p=>p==null?'var(--tx2)':p>=100?'var(--ok)':p>=70?'#eab308':'var(--bad)';
+    const gauge=(pct,label,sub,click)=>{
+      const p=pct==null?0:Math.min(100,pct);const R=44,C=2*Math.PI*R;
+      return `<div onclick="${click||''}" style="text-align:center;cursor:${click?'pointer':'default'};width:150px">
+        <svg width=120 height=120 viewBox="0 0 120 120">
+          <circle cx=60 cy=60 r=${R} fill=none stroke="var(--bd)" stroke-width=11/>
+          <circle cx=60 cy=60 r=${R} fill=none stroke="${gcol(pct)}" stroke-width=11 stroke-linecap=round
+            stroke-dasharray="${(p/100*C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
+          <text x=60 y=57 text-anchor=middle font-size=19 font-weight=800 fill="${gcol(pct)}">${pct==null?'—':Math.round(pct)+'٪'}</text>
+          <text x=60 y=75 text-anchor=middle font-size=9 fill="var(--tx2)">${sub||''}</text>
+        </svg>
+        <div style="font-size:12px;font-weight:700;margin-top:2px">${label}</div></div>`;};
+    // نوار انتخاب
+    h+=`<div class="sec"><h3>🎯 KPI فروش <span style="flex:1"></span>
+      <select class="inp sm" style="width:auto" onchange="view.kscope=this.value;view.ksel='';render()">${SC.map(x=>`<option ${x===view.kscope?'selected':''}>${x}</option>`).join('')}</select>
+      ${refE?`<select class="inp sm" style="width:auto;max-width:180px" onchange="view.ksel=this.value;render()">${opts.map(o=>`<option value="${o[0]}" ${o[0]===view.ksel?'selected':''}>${o[1]}</option>`).join('')}</select>`:''}
+      <select class="inp sm" style="width:auto" onchange="view.kyr=+this.value;render()">${yrs.map(y=>`<option ${y===view.kyr?'selected':''}>${y}</option>`).join('')||'<option>—</option>'}</select>
+      <select class="inp sm" style="width:auto" onchange="view.kmn=this.value;render()">${Mn.map(m=>`<option ${m===view.kmn?'selected':''}>${m}</option>`).join('')}</select>
+      <button class="btn gh sm" onclick="view={type:'list',e:'kpival'};render()">✏️ ثبت مقادیر</button></h3>`;
+    if(!all.length){h+=`<div class="empty">هنوز KPI ثبت نشده — از دکمه «✏️ ثبت مقادیر» یا مرکز ورود اکسل، مقادیر و هدف هر شاخص را وارد کن</div></div>`;}
+    else if(view.kcat){
+      const c=KPIC.find(x=>x.k===view.kcat);
+      h+=`<div style="margin-bottom:8px"><button class="btn gh sm" onclick="view.kcat='';render()">→ بازگشت به همه شاخص‌ها</button></div>
+      <h3 style="font-size:13px;margin:6px 0">${c.ic} ${c.n}</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+      ${c.subs.map(([k,d])=>{const g=agg[k];
+        return gauge(ach(k),k,g?abbrN(g.v)+' / '+abbrN(g.t):'ثبت نشده');}).join('')}
+      </div>
+      <div class="tblwrap" style="margin-top:14px"><table><thead><tr><th>شاخص</th><th>جهت</th><th>واقعی</th><th>هدف</th><th>تحقق</th></tr></thead><tbody>
+      ${c.subs.map(([k,d])=>{const g=agg[k];const p=ach(k);
+        return `<tr><td style="text-align:right">${k}</td><td>${KPI_DIR[k]?'بیشتر بهتر ⬆':'کمتر بهتر ⬇'}</td><td>${g?abbrN(g.v):'—'}</td><td>${g?abbrN(g.t):'—'}</td><td style="color:${gcol(p)};font-weight:800">${p==null?'—':Math.round(p)+'٪'}</td></tr>`;}).join('')}
+      </tbody></table></div></div>`;
+    }else{
+      h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+      ${KPIC.map(c=>{const ps=c.subs.map(([k])=>ach(k)).filter(x=>x!=null);
+        const p=ps.length?ps.reduce((a,x)=>a+x,0)/ps.length:null;
+        return gauge(p,c.ic+' '+c.n,ps.length?ps.length+' شاخص':'ثبت نشده',`view.kcat='${c.k}';render()`);}).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:10px;text-align:center">روی هر گیج کلیک کن تا زیرشاخه‌هایش را ببینی │ درصد هر دسته = میانگین تحقق زیرشاخه‌ها │ سقف نمایش ۱۵۰٪</div></div>`;
     }
   }
   if(T==='week'){
