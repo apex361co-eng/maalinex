@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.38</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.39</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.38</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.39</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1322,6 +1322,7 @@ mval:{ic:'✍️',n:'ثبت مقدار شاخص من (دوره‌ای)',grp:'م�
 dashdef:{ic:'📐',n:'داشبردهای من',grp:'مدیریت کسب و کار',sub:1,f:[
  {k:'title',n:'نام داشبرد',t:TXT},
  {k:'ic',n:'آیکن (ایموجی)',t:TXT},
+ {k:'grp',n:'محل نمایش در منو',t:SEL,o:['فقط داشبردساز','سازمان','مدیریت کسب و کار','مالی و حقوقی','حسابداری','مالی تخصصی (IFRS)','سرمایه‌گذاری و ثروت','فرآیندها (ISO)','EPCF','ساخت و ساز','توکن‌سازی','توسعه نرم‌افزار','استراتژی و تعالی','حاکمیت','رشد شخصی']},
  {k:'note',n:'توضیح',t:LNG}],cols:['title']},
 widdef:{ic:'🧱',n:'ویجت داشبرد',grp:'مدیریت کسب و کار',sub:1,f:[
  {k:'title',n:'عنوان ویجت',t:TXT},
@@ -5153,7 +5154,11 @@ function mydashHTML(){
   const mIdx=MYD_MN.indexOf(view.mdMn);
   if(!dashes.find(d=>d.id===view.mdSel))view.mdSel=dashes[0]?.id||'';
   const cur=recs[view.mdSel];
-  const wids=cur?byE('widdef').filter(w=>relIds(w,'dash').includes(cur.id)).sort((a,b)=>(+a.d.ord||99)-(+b.d.ord||99)):[];
+  let wids=cur?byE('widdef').filter(w=>relIds(w,'dash').includes(cur.id)).sort((a,b)=>(+a.d.ord||99)-(+b.d.ord||99)):[];
+  const hideKey='xr_mydhide_'+(cur?cur.id:'');
+  let myHide=[];try{myHide=JSON.parse(localStorage.getItem(hideKey)||'[]');}catch(e){}
+  const allWids=wids;
+  if(!view.mdCust)wids=wids.filter(w=>!myHide.includes(w.id));
   const gcol=p=>p==null?'var(--tx2)':p>=70?'#16c784':p>=40?'#f5a623':'#ff3b30';
   const widBox=w=>{
     const sz=w.d.size==='بزرگ'?'span 2':'span 1';
@@ -5176,8 +5181,13 @@ function mydashHTML(){
       else if(t.startsWith('📋')){const g=mydGroups(w,view.mdYr,mIdx);
         body=(g&&g.length)?`<div class="tblwrap" style="max-height:220px;overflow:auto"><table><tbody>${g.slice(0,10).map(([k,v],i)=>`<tr><td style="text-align:right">${i+1}. ${esc(k.slice(0,30))}</td><td style="font-weight:700">${abbrN(v)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">داده یا تفکیک نیست</div>';}
     }catch(e){body='<div class="empty">خطا در محاسبه</div>';}
-    return `<div class="sec" style="grid-column:${sz};text-align:center;position:relative">
+    return `<div class="sec" style="grid-column:${sz};text-align:center;position:relative;${view.mdCust&&myHide.includes(w.id)?'opacity:.35':''}">
       <div style="position:absolute;top:8px;inset-inline-start:8px;display:flex;gap:4px">
+        ${view.mdCust?`
+        <button class="btn gh sm" style="padding:2px 7px" onclick="mydMove('${w.id}',-1)" title="جلوتر">▲</button>
+        <button class="btn gh sm" style="padding:2px 7px" onclick="mydMove('${w.id}',1)" title="عقب‌تر">▼</button>
+        <button class="btn gh sm" style="padding:2px 7px" onclick="mydSize('${w.id}')" title="تغییر اندازه">⤢</button>
+        <button class="btn ${myHide.includes(w.id)?'':'gh'} sm" style="padding:2px 7px" onclick="mydHide('${cur.id}','${w.id}')" title="${myHide.includes(w.id)?'نمایش برای من':'مخفی برای من'}">${myHide.includes(w.id)?'🙈':'👁'}</button>`:''}
         <button class="btn gh sm" style="padding:2px 7px" onclick="mydEditWid('${w.id}')" title="تنظیمات ویجت">⚙️</button>
         <button class="btn gh sm" style="padding:2px 7px" onclick="if(confirm('حذف ویجت؟')){recs['${w.id}'].del=true;recs['${w.id}'].u=Date.now();invalidateByE();try{put(recs['${w.id}']);}catch(e){}render();}">🗑</button></div>
       <h3 style="justify-content:center;font-size:13px">${esc(w.d.title||'—')}</h3>${body}</div>`;};
@@ -5185,11 +5195,16 @@ function mydashHTML(){
     <select class="inp sm" style="width:auto" onchange="view.mdYr=+this.value;render()">${yrs.map(y=>`<option ${y===view.mdYr?'selected':''}>${y}</option>`).join('')}</select>
     <select class="inp sm" style="width:auto" onchange="view.mdMn=this.value;render()">${['همه',...MYD_MN].map(m=>`<option ${m===view.mdMn?'selected':''}>${m}</option>`).join('')}</select>
     <button class="btn sm" onclick="mydNewDash()">＋ داشبرد جدید</button>
-    ${cur?`<button class="btn sm" onclick="mydNewWid('${cur.id}')">＋ ویجت</button>`:''}</h3>
+    ${cur?`<button class="btn sm" onclick="mydNewWid('${cur.id}')">＋ ویجت</button>
+    <button class="btn gh sm" onclick="mydRenDash('${cur.id}')" title="تغییر نام/آیکن">✏️</button>
+    <button class="btn gh sm" onclick="mydGrpDash('${cur.id}')" title="محل نمایش در منو">📂</button>
+    <button class="btn ${view.mdCust?'':'gh'} sm" onclick="view.mdCust=!view.mdCust;render()" title="شخصی‌سازی نمایش">🎛 شخصی‌سازی</button>
+    <button class="btn gh sm" onclick="mydDelDash('${cur.id}')" title="حذف کل داشبرد" style="color:var(--bad)">🗑 حذف داشبرد</button>`:''}</h3>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
       ${dashes.map(d=>`<button class="btn ${d.id===view.mdSel?'':'gh'} sm" onclick="view.mdSel='${d.id}';render()">${esc((d.d.ic||'📐')+' '+(d.d.title||'—'))}</button>`).join('')||'<span style="color:var(--tx2);font-size:12px">هنوز داشبردی نساخته‌ای — با «＋ داشبرد جدید» شروع کن</span>'}
     </div>
     ${view.mdEdit&&mydDraft?mydBuilderHTML():''}
+    ${view.mdCust?`<div style="font-size:11px;color:var(--ac);margin-bottom:8px">🎛 حالت شخصی‌سازی: ▲▼ ترتیب │ ⤢ اندازه │ 👁/🙈 مخفی‌کردن فقط برای خودت (برای بقیه می‌ماند) │ دوباره روی «شخصی‌سازی» بزن تا تمام شود</div>`:''}
     ${cur?(wids.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">${wids.map(widBox).join('')}</div>`:
       `<div class="empty">این داشبرد هنوز ویجتی ندارد — «＋ ویجت» را بزن.<br><span style="font-size:11px;line-height:2">هر ویجت: یک منبع (شاخص ساختارساز، یا جمع/میانگین/شمارش هر فیلد از هر بخش) + یک نوع نمایش (کارت، گیج با هدف، میله‌ای/خطی ماهانه، دایره‌ای با تفکیک، جدول برترین‌ها) + اندازه و ترتیب</span></div>`):''}
     <div style="font-size:10.5px;color:var(--tx2);margin-top:10px">هر فیلدی از هر فرمی: در ویجت، «نام بخش» و «نام فیلد عددی» را همان‌طور که در فرم می‌بینی بنویس │ برای دایره‌ای/جدول «تفکیک بر اساس فیلد» را هم بده (مثل: سرفصل) │ دوره از بالای صفحه │ شاخص‌های ساختارساز و فرمول‌هایت هم مستقیم قابل انتخاب‌اند</div>
@@ -5258,7 +5273,42 @@ function mydBuilderHTML(){
       ${d.id?`<button class="btn gh" onclick="view.mdEdit=0;mydDraft=null;render()">انصراف</button>`:''}
     </div></div>`;
 }
+function mydRenDash(id){const r=recs[id];if(!r)return;
+  const nm=prompt('نام داشبرد:',r.d.title||'');if(nm==null)return;
+  const ic=prompt('آیکن (ایموجی):',r.d.ic||'📐');if(ic==null)return;
+  r.d.title=nm.trim()||r.d.title;r.d.ic=ic.trim()||'📐';r.u=Date.now();
+  invalidateByE();try{put(r);}catch(e){}render();}
+function mydGrpDash(id){const r=recs[id];if(!r)return;
+  const gs=['فقط داشبردساز','سازمان','مدیریت کسب و کار','مالی و حقوقی','حسابداری','مالی تخصصی (IFRS)','سرمایه‌گذاری و ثروت','فرآیندها (ISO)','EPCF','ساخت و ساز','توکن‌سازی','توسعه نرم‌افزار','استراتژی و تعالی','حاکمیت','رشد شخصی'];
+  const cur=r.d.grp||'فقط داشبردساز';
+  const v=prompt('این داشبرد در کدام بخش منو نمایش داده شود؟\n'+gs.map((g,i)=>(i+1)+'. '+g+(g===cur?' (فعلی)':'')).join('\n'),String(gs.indexOf(cur)+1));
+  if(v==null)return;const gi=parseInt(faNum(String(v)))-1;
+  if(isNaN(gi)||gi<0||gi>=gs.length){alert('عدد نامعتبر');return;}
+  r.d.grp=gs[gi]==='فقط داشبردساز'?'':gs[gi];r.u=Date.now();
+  invalidateByE();try{put(r);}catch(e){}render();}
+function mydDelDash(id){
+  const ws=byE('widdef').filter(w=>relIds(w,'dash').includes(id));
+  if(!confirm('کل داشبرد «'+nameOf(id)+'» با '+ws.length+' ویجتش حذف شود؟'))return;
+  ws.forEach(w=>{w.del=true;w.u=Date.now();try{put(w);}catch(e){}});
+  const r=recs[id];if(r){r.del=true;r.u=Date.now();try{put(r);}catch(e){}}
+  view.mdSel='';invalidateByE();render();}
+function mydMove(id,dir){
+  const w=recs[id];if(!w)return;const did=relIds(w,'dash')[0];
+  const list=byE('widdef').filter(x=>relIds(x,'dash').includes(did)).sort((a,b)=>(+a.d.ord||99)-(+b.d.ord||99));
+  list.forEach((x,i)=>{x.d.ord=i+1;});
+  const i=list.findIndex(x=>x.id===id);const j=i+dir;
+  if(j<0||j>=list.length)return;
+  const t=list[i].d.ord;list[i].d.ord=list[j].d.ord;list[j].d.ord=t;
+  [list[i],list[j]].forEach(x=>{x.u=Date.now();try{put(x);}catch(e){}});
+  invalidateByE();render();}
+function mydSize(id){const w=recs[id];if(!w)return;
+  const o=['کوچک','متوسط','بزرگ'];w.d.size=o[(o.indexOf(w.d.size||'متوسط')+1)%3];
+  w.u=Date.now();try{put(w);}catch(e){}invalidateByE();render();}
+function mydHide(did,wid){const k='xr_mydhide_'+did;let h=[];try{h=JSON.parse(localStorage.getItem(k)||'[]');}catch(e){}
+  h=h.includes(wid)?h.filter(x=>x!==wid):[...h,wid];
+  try{localStorage.setItem(k,JSON.stringify(h));}catch(e){}render();}
 window.mydNewDash=mydNewDash;window.mydNewWid=mydNewWid;window.mydEditWid=mydEditWid;window.mydSet=mydSet;window.mydSaveWid=mydSaveWid;window.mydFxAdd=mydFxAdd;
+window.mydRenDash=mydRenDash;window.mydGrpDash=mydGrpDash;window.mydDelDash=mydDelDash;window.mydMove=mydMove;window.mydSize=mydSize;window.mydHide=mydHide;
 
 function plmFallbackHTML(scope){ // بنر راهنما وقتی داده فاکتور نیست ولی «سود و زیان ماهانه» هست
   const pls=byE('plmonth');if(!pls.length)return '';
@@ -5771,7 +5821,8 @@ function bizMenuHTML(){
   h+=sec('📊 داشبورد',
     it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
     +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash'))
-    +it('ctrldash','🎛 داشبرد کنترلی',"go('ctrldash')",(canSee('invoice')||canSee('product'))&&canView('ctrldash')));
+    +it('ctrldash','🎛 داشبرد کنترلی',"go('ctrldash')",(canSee('invoice')||canSee('product'))&&canView('ctrldash'))
+    +byE('dashdef').filter(d=>d.d.grp==='مدیریت کسب و کار').map(d=>`<div class="nav-i ${view.type==='mydash'&&view.mdSel===d.id?'on':''}" onclick="view={type:'mydash',mdSel:'${d.id}'};render()">${esc((d.d.ic||'📐')+' '+(d.d.title||'—'))}</div>`).join(''));
   // 📦 کالا و خدمات
   h+=sec('📦 کالا و خدمات',ent('product')+ent('channel'));
   // 💼 فروش
@@ -5849,6 +5900,9 @@ function nav(){
     navSubSort(g,ents).forEach(([k,v])=>{
       items+=`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${v.ic} ${v.n}<span class="c">${visE(k).length}</span></div>`;
     });
+    // 📐 داشبردهای ساخته‌شده کاربر که در این گروه گذاشته شده‌اند
+    byE('dashdef').filter(d=>d.d.grp===g).forEach(d=>{
+      items+=`<div class="nav-i ${view.type==='mydash'&&view.mdSel===d.id?'on':''}" onclick="view={type:'mydash',mdSel:'${d.id}'};render()">${esc((d.d.ic||'📐')+' '+(d.d.title||'—'))}</div>`;});
     if(!items)return; // گروه خالی (بدون دسترسی) اصلاً نمایش داده نشود
     const col=navIsCol(g);
     const gcount=g==='مدیریت کسب و کار'?Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&canSee(k)).length:ents.length;
