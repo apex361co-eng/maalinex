@@ -336,6 +336,7 @@ hr:{ic:'👥',n:'منابع انسانی',grp:'سازمان',f:[
  {k:'hire',n:'تاریخ استخدام',t:DAT},{k:'quota',n:'سهمیه مرخصی سالانه',t:NUM},
  {k:'manager',n:'مدیر مستقیم',t:REL,r:'hr',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'biz',n:'کسب‌وکارهای محل خدمت',t:REL,r:'business'},
  {k:'company',n:'شرکت محل خدمت',t:REL,r:'company'}],
  cols:['title','role','unit','wstatus','company']},
 company:{ic:'🏢',n:'شرکت‌ها',grp:'سازمان',f:[
@@ -939,7 +940,7 @@ vline:{sub:1,ic:'➕',n:'آرتیکل‌های سند',grp:'حسابداری',f:
  {k:'project',n:'پروژه (تفصیلی)',t:REL,r:'project',s:1},
  {k:'person',n:'طرف حساب (تفصیلی)',t:REL,r:'hr',s:1}],
  cols:['acct','debit','credit','voucher'],comp:'vlineBrief'},
-item:{ic:'📦',n:'کالاها و محصولات',grp:'حسابداری',f:[
+item:{sub:1,ic:'📦',n:'کالاها و محصولات (کدینگ حسابداری — قدیمی)',grp:'حسابداری',f:[
  {k:'title',n:'نام کالا',t:TXT},
  {k:'code',n:'کد کالا',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -954,7 +955,7 @@ item:{ic:'📦',n:'کالاها و محصولات',grp:'حسابداری',f:[
  {k:'minq',n:'نقطه سفارش (حداقل موجودی)',t:NUM},
  {k:'note',n:'توضیح',t:TXT}],
  cols:['code','title','cat','unit','sell'],comp:'itemBrief'},
-stockmv:{ic:'🔄',n:'حرکت‌های انبار',grp:'حسابداری',f:[
+stockmv:{sub:1,ic:'🔄',n:'حرکت‌های انبار (قدیمی)',grp:'حسابداری',f:[
  {k:'title',n:'شرح (شماره حواله/رسید)',t:TXT},
  {k:'item',n:'کالا',t:REL,r:'item',s:1},
  {k:'kind',n:'نوع',t:SEL,o:['ورود (رسید)','خروج (حواله)']},
@@ -3912,17 +3913,36 @@ function arapdashHTML(){
   ${tbl(apRows,r=>({id:r.s.id,n:r.s.d.title||'—'}),'📤 مانده بدهی به تامین‌کنندگان','پرداخت به تامین‌کننده')}
   ${!arRows.length&&!apRows.length?'<div class="empty">همه‌ی حساب‌ها تسویه است 🎉</div>':''}`;
 }
+function pinvPickSupp(name){
+  name=(name||'').trim();
+  if(!name){pinvSetHead('supplier','');return;}
+  const c=byE('crm').find(x=>(x.d.title||'').trim()===name);
+  if(c)pinvSetHead('supplier',c.id);
+  else{alert('تامین‌کننده «'+name+'» پیدا نشد — از لیست پیشنهادی انتخاب کن یا اول در CRM بسازش');render();}
+}
+window.pinvPickSupp=pinvPickSupp;
+function pinvPickProd(i,name){
+  name=(name||'').trim();
+  if(!name){pinvSetLine(i,'product','');return;}
+  const p2=byE('product').find(x=>(x.d.title||'').trim()===name);
+  if(p2)pinvSetLine(i,'product',p2.id);
+  else{alert('کالای «'+name+'» پیدا نشد');render();}
+}
+window.pinvPickProd=pinvPickProd;
 function pinvnewHTML(){
   if(!pinvDraft)pinvNewDraft();
-  const prods=byE('product').filter(p=>!pinvDraft.biz||relIds(p,'biz').includes(pinvDraft.biz));
+  const prods=byE('product').filter(p=>{const b=relIds(p,'biz');return !pinvDraft.biz||!b.length||b.includes(pinvDraft.biz);});
   const t=pinvTotalsDraft();
-  const prodOpt=sel=>`<option value="">— کالا/خدمت —</option>`+prods.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.d.title||'—')}${p.d.buy?' · '+fmtN(p.d.buy):''}</option>`).join('');
   const lbl='style="font-size:11px;color:var(--tx2)"';
   const supp=byE('crm').filter(x=>['تامین‌کننده','پیمانکار','شریک تجاری'].includes(x.d.rel)||!x.d.rel);
+  const suppName=pinvDraft.supplier&&recs[pinvDraft.supplier]?recs[pinvDraft.supplier].d.title:'';
+  const pName=id=>id&&recs[id]?recs[id].d.title:'';
   let h=`<div class="sec"><h3>🧾 ثبت فاکتور خرید</h3>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:8px">
     <div><label ${lbl}>کسب‌وکار</label><select onchange="pinvSetHead('biz',this.value)"><option value="">—</option>${byE('business').map(x=>`<option value="${x.id}" ${x.id===pinvDraft.biz?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
-    <div><label ${lbl}>تامین‌کننده</label><select onchange="pinvSetHead('supplier',this.value)"><option value="">—</option>${supp.map(x=>`<option value="${x.id}" ${x.id===pinvDraft.supplier?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
+    <div><label ${lbl}>تامین‌کننده 🔍</label><input list="dl_pinvsupp" value="${esc(suppName)}" placeholder="بنویس تا جستجو شود…" onchange="pinvPickSupp(this.value)">
+      <datalist id="dl_pinvsupp">${supp.map(x=>`<option value="${esc(x.d.title||'')}">`).join('')}</datalist>
+      <datalist id="dl_pinvprod">${prods.map(x=>`<option value="${esc(x.d.title||'')}">`).join('')}</datalist></div>
     <div><label ${lbl}>شماره/شرح</label><input value="${esc(pinvDraft.desc)}" oninput="pinvDraft.desc=this.value" placeholder="خودکار"></div>
     <div><label ${lbl}>تاریخ</label><input value="${esc(pinvDraft.vdate||'')}" oninput="pinvDraft.vdate=this.value" placeholder="۱۴۰۴/۰۴/۲۵"></div>
     <div><label ${lbl}>سررسید</label><input value="${esc(pinvDraft.due||'')}" oninput="pinvDraft.due=this.value" placeholder="اختیاری"></div>
@@ -3930,7 +3950,7 @@ function pinvnewHTML(){
   <div class="tblwrap"><table><thead><tr><th>#</th><th>کالا/خدمت</th><th>تعداد</th><th>قیمت واحد</th><th>تخفیف ردیف</th><th>مبلغ</th><th></th></tr></thead><tbody>`;
   pinvDraft.lines.forEach((l,i)=>{const amt=Math.max(0,(+l.qty||0)*(+l.price||0)-(+l.ldisc||0));
     h+=`<tr><td>${(i+1).toLocaleString('fa-IR')}</td>
-      <td><select onchange="pinvSetLine(${i},'product',this.value)" style="min-width:170px">${prodOpt(l.product)}</select></td>
+      <td><input list="dl_pinvprod" value="${esc(pName(l.product))}" placeholder="🔍 کالا…" onchange="pinvPickProd(${i},this.value)" style="min-width:170px"></td>
       <td><input inputmode="numeric" value="${l.qty||''}" oninput="pinvSetLine(${i},'qty',this.value)" style="max-width:70px;text-align:center" placeholder="۱"></td>
       <td><input inputmode="numeric" value="${l.price||''}" oninput="pinvSetLine(${i},'price',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
       <td><input inputmode="numeric" value="${l.ldisc||''}" oninput="pinvSetLine(${i},'ldisc',this.value)" style="max-width:100px;text-align:left" placeholder="۰"></td>
@@ -4143,19 +4163,41 @@ function invSave(status){
   invDraft=null;go('rec','invoice',iid);
 }
 window.invAddLine=invAddLine;window.invDelLine=invDelLine;window.invSetLine=invSetLine;window.invSetHead=invSetHead;window.invSave=invSave;
+function invPickCust(name){
+  name=(name||'').trim();
+  if(!name){invSetHead('customer','');return;}
+  const c=byE('customer').find(x=>(x.d.title||'').trim()===name);
+  if(c)invSetHead('customer',c.id);
+  else{alert('مشتری «'+name+'» پیدا نشد — از لیست پیشنهادی انتخاب کن یا اول در «مشتریان کسب‌وکار» بسازش');render();}
+}
+window.invPickCust=invPickCust;
+function invPickProd(i,name){
+  name=(name||'').trim();
+  if(!name){invSetLine(i,'product','');return;}
+  const p=byE('product').find(x=>(x.d.title||'').trim()===name);
+  if(p)invSetLine(i,'product',p.id);
+  else{alert('کالای «'+name+'» پیدا نشد — از لیست پیشنهادی انتخاب کن');render();}
+}
+window.invPickProd=invPickProd;
 function invnewHTML(){
   if(!invDraft)invNewDraft();
-  const prods=byE('product').filter(p=>!invDraft.biz||relIds(p,'biz').includes(invDraft.biz));
-  const custs=byE('customer').filter(c=>!invDraft.biz||relIds(c,'biz').includes(invDraft.biz));
+  const prods=byE('product').filter(p=>{const b=relIds(p,'biz');return !invDraft.biz||!b.length||b.includes(invDraft.biz);});
+  const custs=byE('customer').filter(c=>{const b=relIds(c,'biz');return !invDraft.biz||!b.length||b.includes(invDraft.biz);});
+  const sellers=byE('hr').filter(hh=>{const b=relIds(hh,'biz');return !invDraft.biz||!b.length||b.includes(invDraft.biz);});
   const t=invTotalsDraft();
-  const prodOpt=sel=>`<option value="">— کالا/خدمت —</option>`+prods.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.d.title||'—')}${p.d.sell?' · '+fmtN(p.d.sell):''}</option>`).join('');
+  const orguOf=hh=>{const u=relIds(hh,'orgu')[0];return u&&recs[u]?recs[u].d.title:'';};
+  const custName=invDraft.customer&&recs[invDraft.customer]?recs[invDraft.customer].d.title:'';
+  const prodName=id=>id&&recs[id]?recs[id].d.title:'';
   const lbl='style="font-size:11px;color:var(--tx2)"';
   let h=`<div class="sec"><h3>🧾 صدور فاکتور / پیش‌فاکتور</h3>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:8px">
     <div><label ${lbl}>نوع سند</label><select onchange="invSetHead('kind',this.value)">${['فاکتور فروش','پیش‌فاکتور'].map(k=>`<option ${k===invDraft.kind?'selected':''}>${k}</option>`).join('')}</select></div>
     <div><label ${lbl}>کسب‌وکار</label><select onchange="invSetHead('biz',this.value)"><option value="">—</option>${byE('business').map(x=>`<option value="${x.id}" ${x.id===invDraft.biz?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
-    <div><label ${lbl}>مشتری</label><select onchange="invSetHead('customer',this.value)"><option value="">—</option>${custs.map(x=>`<option value="${x.id}" ${x.id===invDraft.customer?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
-    <div><label ${lbl}>فروشنده</label><select onchange="invSetHead('seller',this.value)"><option value="">—</option>${byE('hr').map(x=>`<option value="${x.id}" ${x.id===invDraft.seller?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select></div>
+    <div><label ${lbl}>مشتری 🔍</label><input list="dl_invcust" value="${esc(custName)}" placeholder="بنویس تا جستجو شود…" onchange="invPickCust(this.value)">
+      <datalist id="dl_invcust">${custs.map(x=>`<option value="${esc(x.d.title||'')}">`).join('')}</datalist>
+      <datalist id="dl_invprod">${prods.map(x=>`<option value="${esc(x.d.title||'')}">`).join('')}</datalist></div>
+    <div><label ${lbl}>فروشنده (برای تارگت)</label><select onchange="invSetHead('seller',this.value)"><option value="">—</option>${sellers.map(x=>{const u=orguOf(x);return `<option value="${x.id}" ${x.id===invDraft.seller?'selected':''}>${esc(x.d.title)}${u?' · '+esc(u):''}</option>`;}).join('')}</select>
+      ${invDraft.seller&&recs[invDraft.seller]?`<div style="font-size:10px;color:var(--tx2);margin-top:2px">واحد: ${esc(orguOf(recs[invDraft.seller])||'— (در پرونده HR تعیین کن)')}</div>`:''}</div>
     <div><label ${lbl}>شماره/شرح</label><input value="${esc(invDraft.desc)}" oninput="invDraft.desc=this.value" placeholder="خودکار"></div>
     <div><label ${lbl}>تاریخ صدور</label><input value="${esc(invDraft.vdate||'')}" oninput="invDraft.vdate=this.value" placeholder="۱۴۰۴/۰۴/۲۵"></div>
     <div><label ${lbl}>سررسید</label><input value="${esc(invDraft.due||'')}" oninput="invDraft.due=this.value" placeholder="اختیاری"></div>
@@ -4164,7 +4206,7 @@ function invnewHTML(){
   invDraft.lines.forEach((l,i)=>{const amt=Math.max(0,(+l.qty||0)*(+l.price||0)-(+l.ldisc||0));
     h+=`<tr>
       <td>${(i+1).toLocaleString('fa-IR')}</td>
-      <td><select onchange="invSetLine(${i},'product',this.value)" style="min-width:170px">${prodOpt(l.product)}</select></td>
+      <td><input list="dl_invprod" value="${esc(prodName(l.product))}" placeholder="🔍 کالا/خدمت…" onchange="invPickProd(${i},this.value)" style="min-width:170px"></td>
       <td><input inputmode="numeric" value="${l.qty||''}" oninput="invSetLine(${i},'qty',this.value)" style="max-width:70px;text-align:center" placeholder="۱"></td>
       <td><input inputmode="numeric" value="${l.price||''}" oninput="invSetLine(${i},'price',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
       <td><input inputmode="numeric" value="${l.ldisc||''}" oninput="invSetLine(${i},'ldisc',this.value)" style="max-width:100px;text-align:left" placeholder="۰"></td>
@@ -8899,13 +8941,21 @@ function drawModal(){
 }
 function relPicker(f){
   const sel=relIds(cur,f.k);
-  const opts=byE(f.r).filter(o=>o.id!==cur.id) // جلوگیری از ارجاع رکورد به خودش (حلقه)
+  let opts=byE(f.r).filter(o=>o.id!==cur.id) // جلوگیری از ارجاع رکورد به خودش (حلقه)
     .sort((a,b)=>(a.d.title||'').localeCompare(b.d.title||'','fa'));
+  // 🏢 فیلتر کسب‌وکار فعال: فقط رکوردهای همان کسب‌وکار (+ بدون کسب‌وکار) — انتخاب‌شده‌های قبلی همیشه می‌مانند
+  let bizFiltered=false;
+  const _tbf=(E[f.r].f||[]).find(x=>x.t===REL&&x.r==='business');
+  if(_tbf&&gBiz()){
+    const n0=opts.length;
+    opts=opts.filter(o=>{const b=relIds(o,_tbf.k);return sel.includes(o.id)||!b.length||b.includes(gBiz());});
+    bizFiltered=opts.length<n0;
+  }
   const canNew=can('c',f.r);
   return `<div class="relbox" onclick="toggleRelList(event,'${f.k}')">${sel.map(id=>`<span class="tag b">${esc(nameOf(id))}</span>`).join('')||'<span style="color:var(--tx2);font-size:12px">انتخاب کنید…</span>'}</div>
   <div class="rellist" id="rl_${f.k}" style="display:none">
     <div style="display:flex;gap:5px;padding:6px;position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line)">
-      <input id="rq_${f.k}" placeholder="جستجو${canNew?' یا نام مورد جدید':''}…" oninput="filtRel('${f.k}')" onclick="event.stopPropagation()" style="padding:5px 8px;font-size:12px">
+      <input id="rq_${f.k}" placeholder="جستجو${canNew?' یا نام مورد جدید':''}…${bizFiltered?' (فیلتر: کسب‌وکار فعال)':''}" oninput="filtRel('${f.k}')" onclick="event.stopPropagation()" style="padding:5px 8px;font-size:12px">
       ${canNew?`<button class="btn sm" style="white-space:nowrap" onclick="event.stopPropagation();newRel('${f.k}')">＋ ساخت جدید</button>`:''}
     </div>
     <div id="ro_${f.k}">${opts.map(o=>`<div class="${sel.includes(o.id)?'sel':''}" data-t="${esc((o.d.title||'').toLowerCase())}" onclick="toggleRel('${f.k}','${o.id}',${f.s?1:0})">${esc(o.d.title||'—')}</div>`).join('')||'<div style="color:var(--tx2);padding:7px 10px;font-size:12px">موردی وجود ندارد — نام را بنویسید و «＋ ساخت جدید» بزنید</div>'}</div>
