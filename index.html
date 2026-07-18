@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.46</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.47</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.46</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.47</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -2478,7 +2478,7 @@ function modAutopostHTML(){
 }
 function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('content').innerHTML=modcfgHTML();}
 window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
-const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',ctrldash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
+const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',ctrldash:'مدیریت کسب و کار',quickadd:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
  gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
  findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
  epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',agiledash:'توسعه نرم‌افزار',
@@ -3752,6 +3752,15 @@ function opsAutoPost(r){
       const vid=_prjVoucher('فاکتور فروش — '+(r.d.title||''),r.d.date||{s:today()},{_inv:r.id});
       _vl(vid,recvA,tot,0,'طلب از مشتری '+(relIds(r,'customer')[0]?nameOf(relIds(r,'customer')[0]):''));
       _vl(vid,revA,0,tot,'درآمد فروش');
+      r.d._vid=vid;r.u=Date.now();put(r,true);
+    }
+    if(r.e==='sale'&&!r.d._inv&&!r.d._vid){
+      const amt=saleAmt(r);if(amt<=0)return;
+      const cashA=r.d.kind==='اعتباری'?opsAcct('102','حساب‌های دریافتنی','بدهکار'):opsAcct('101','نقد و بانک','بدهکار');
+      const revA=opsAcct('401','درآمد فروش','بستانکار');
+      const vid=_prjVoucher('فروش — '+(r.d.title||''),r.d.date||{s:today()},{_sale:r.id});
+      _vl(vid,cashA,amt,0,'فروش نقدی');
+      _vl(vid,revA,0,amt,'درآمد فروش');
       r.d._vid=vid;r.u=Date.now();put(r,true);
     }
     if(r.e==='settle'&&!r.d._vid){
@@ -5962,12 +5971,138 @@ function bizSelectorHTML(){
 }
 window.setGBiz=setGBiz;window.setBizSelPos=setBizSelPos;
 /* 🏢 منوی یکپارچه‌ی «مدیریت کسب و کار» — همه‌ی ابزارهای کسب‌وکار زیر یک منو با زیربخش‌ها */
+/* ⚡ مرکز ثبت سریع — بهینه‌ترین ورود اطلاعات روزمره کسب‌وکار (یک صفحه، بدون رفت‌وبرگشت منو) */
+let qd=null, qlog=[];
+const QOPS=[
+ {k:'sale',ic:'🛒',n:'فروش',need:'invoice'},
+ {k:'expense',ic:'🧾',n:'هزینه',need:'expense'},
+ {k:'receive',ic:'📥',n:'دریافت از مشتری',need:'settle'},
+ {k:'pay',ic:'📤',n:'پرداخت به تامین‌کننده',need:'settle'},
+];
+function qkNum(v){return +faNum(String(v??'')).replace(/[,٬\s]/g,'')||0;}
+function qkReset(op){qd={op:op||(qd&&qd.op)||'sale',prod:'',prodId:'',qty:'1',price:'',cust:'',custId:'',supp:'',suppId:'',cat:'اجاره',amount:'',method:'نقد',title:'',date:iso2jstr(today())};}
+function qkSetOp(op){qkReset(op);render();}
+function qkField(k,v){if(qd)qd[k]=v;}
+function qkPickProd(v){qd.prod=v;const p=byE('product').find(x=>(x.d.title||'').trim()===v.trim());qd.prodId=p?p.id:'';
+  if(p&&!qkNum(qd.price)){const q=document.getElementById('qk_price');if(q){q.value=p.d.sell||'';qd.price=String(p.d.sell||'');}}render();}
+function qkPickCust(v){qd.cust=v;const c=byE('customer').find(x=>(x.d.title||'').trim()===v.trim());qd.custId=c?c.id:'';}
+function qkPickSupp(v){qd.supp=v;const c=byE('crm').find(x=>(x.d.title||'').trim()===v.trim());qd.suppId=c?c.id:'';}
+function qkAttachDomain(d,e){
+  if(gBiz()&&recs[gBiz()]){const bf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='business');if(bf&&!(d[bf.k]&&d[bf.k].length))d[bf.k]=[gBiz()];}
+  if(gCo()&&recs[gCo()]){const cf=(E[e].f||[]).find(f=>f.t===REL&&f.r==='company');if(cf&&!(d[cf.k]&&cf.k&&!(d[cf.k]&&d[cf.k].length)))d[cf.k]=[gCo()];}
+}
+function qkCommit(d,e){
+  qkAttachDomain(d,e);
+  const id=uid();const rec={id,e,d:Object.assign({_by:myEmail()},d),u:Date.now(),c:Date.now()};
+  put(rec);try{opsAutoPost(rec);}catch(err){}try{epcfAutoPost(rec);}catch(err){}
+  qlog.unshift({ic:QOPS.find(o=>o.k===qd.op).ic,t:d.title,v:rec.d._amt||0,id,e});qlog=qlog.slice(0,20);
+  return rec;
+}
+function qkSave(){
+  if(!qd)return;
+  const isoDate=parseJDate(qd.date,'')||today();
+  if(qd.op==='sale'){
+    if(!qd.prodId){alert('کالا را از فهرست انتخاب کن (بنویس تا جستجو شود)');return;}
+    const qty=qkNum(qd.qty)||1, price=qkNum(qd.price);
+    if(price<=0){alert('قیمت واحد را وارد کن');return;}
+    const amt=qty*price;
+    const d={title:(qd.prod||'فروش')+' × '+qty.toLocaleString('fa-IR'),product:[qd.prodId],qty,price,date:{s:isoDate},kind:'نقدی',settled:true,_amt:amt};
+    if(qd.custId)d.customer=[qd.custId];
+    qkCommit(d,'sale');
+  } else if(qd.op==='expense'){
+    const amt=qkNum(qd.amount);if(amt<=0){alert('مبلغ هزینه را وارد کن');return;}
+    const d={title:qd.title||qd.cat,cat:qd.cat,amount:amt,date:{s:isoDate},_amt:amt};
+    qkCommit(d,'expense');
+  } else if(qd.op==='receive'){
+    const amt=qkNum(qd.amount);if(amt<=0){alert('مبلغ دریافت را وارد کن');return;}
+    const d={title:(qd.title||'دریافت')+(qd.cust?' — '+qd.cust:''),kind:'دریافت از مشتری',amount:amt,method:qd.method,date:{s:isoDate},_amt:amt};
+    if(qd.custId)d.customer=[qd.custId];
+    qkCommit(d,'settle');
+  } else if(qd.op==='pay'){
+    const amt=qkNum(qd.amount);if(amt<=0){alert('مبلغ پرداخت را وارد کن');return;}
+    const d={title:(qd.title||'پرداخت')+(qd.supp?' — '+qd.supp:''),kind:'پرداخت به تامین‌کننده',amount:amt,method:qd.method,date:{s:isoDate},_amt:amt};
+    if(qd.suppId)d.supplier=[qd.suppId];
+    qkCommit(d,'settle');
+  }
+  const op=qd.op;qkReset(op);render();
+  const fst=document.getElementById('qk_first');if(fst)fst.focus();
+}
+function quickaddHTML(){
+  if(!qd)qkReset('sale');
+  const bl=byE('business'),cl=byE('company');
+  const bar=`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">${QOPS.map(o=>
+    `<button class="btn ${o.k===qd.op?'':'gh'}" onclick="qkSetOp('${o.k}')" style="font-size:14px;padding:9px 16px">${o.ic} ${o.n}</button>`).join('')}</div>`;
+  const dom=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--tx2)">
+    <span>🏢 شرکت:</span><select class="inp sm" style="width:auto" onchange="setGCo(this.value)"><option value="">همه</option>${cl.map(c=>`<option value="${c.id}" ${c.id===gCo()?'selected':''}>${esc(c.d.title)}</option>`).join('')}</select>
+    <span>🧢 کسب‌وکار:</span><select class="inp sm" style="width:auto" onchange="setGBiz(this.value)"><option value="">همه</option>${bl.map(b=>`<option value="${b.id}" ${b.id===gBiz()?'selected':''}>${esc(b.d.title)}</option>`).join('')}</select>
+    <span style="opacity:.7">— ثبت‌ها خودکار به این‌ها وصل می‌شوند</span></div>`;
+  const L=(t)=>`<label style="font-size:11.5px;color:var(--tx2);display:block;margin-bottom:3px">${t}</label>`;
+  const dateRow=`<div>${L('تاریخ')}<div style="display:flex;gap:5px"><input id="qk_date" dir="ltr" value="${esc(qd.date)}" oninput="qkField('date',this.value)" style="flex:1"><button class="btn gh sm" onclick="openJcal('qk_date')">📅</button></div></div>`;
+  let form='';
+  if(qd.op==='sale'){
+    form=`<div style="display:grid;grid-template-columns:2fr 80px 1fr;gap:10px">
+      <div>${L('کالا / خدمت 🔍')}<input id="qk_first" list="qk_prods" value="${esc(qd.prod)}" placeholder="بنویس تا جستجو شود…" onchange="qkPickProd(this.value)">
+        <datalist id="qk_prods">${byE('product').map(p=>`<option value="${esc(p.d.title||'')}">`).join('')}</datalist></div>
+      <div>${L('تعداد')}<input inputmode="numeric" value="${esc(qd.qty)}" oninput="qkField('qty',this.value)" style="text-align:center"></div>
+      <div>${L('قیمت واحد (تومان)')}<input id="qk_price" inputmode="numeric" value="${esc(qd.price)}" oninput="qkField('price',this.value)" dir="ltr"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div>${L('مشتری (اختیاری) 🔍')}<input list="qk_custs" value="${esc(qd.cust)}" placeholder="بنویس تا جستجو شود…" onchange="qkPickCust(this.value)">
+        <datalist id="qk_custs">${byE('customer').map(c=>`<option value="${esc(c.d.title||'')}">`).join('')}</datalist></div>
+      ${dateRow}
+    </div>`;
+  } else if(qd.op==='expense'){
+    const cats=(E.expense.f.find(f=>f.k==='cat')||{}).o||[];
+    form=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>${L('سرفصل هزینه')}<select id="qk_first" onchange="qkField('cat',this.value)">${cats.map(c=>`<option ${c===qd.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+      <div>${L('مبلغ (تومان)')}<input inputmode="numeric" value="${esc(qd.amount)}" oninput="qkField('amount',this.value)" dir="ltr"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div>${L('شرح (اختیاری)')}<input value="${esc(qd.title)}" oninput="qkField('title',this.value)" placeholder="مثل: اجاره تیرماه"></div>
+      ${dateRow}
+    </div>`;
+  } else if(qd.op==='receive'){
+    form=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+      <div>${L('مشتری 🔍')}<input id="qk_first" list="qk_custs2" value="${esc(qd.cust)}" placeholder="بنویس تا جستجو شود…" onchange="qkPickCust(this.value)">
+        <datalist id="qk_custs2">${byE('customer').map(c=>`<option value="${esc(c.d.title||'')}">`).join('')}</datalist></div>
+      <div>${L('مبلغ (تومان)')}<input inputmode="numeric" value="${esc(qd.amount)}" oninput="qkField('amount',this.value)" dir="ltr"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div>${L('روش')}<select onchange="qkField('method',this.value)">${['نقد','کارت','انتقال بانکی','چک'].map(m=>`<option ${m===qd.method?'selected':''}>${m}</option>`).join('')}</select></div>
+      ${dateRow}
+    </div>`;
+  } else if(qd.op==='pay'){
+    form=`<div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+      <div>${L('تامین‌کننده 🔍')}<input id="qk_first" list="qk_supps" value="${esc(qd.supp)}" placeholder="بنویس تا جستجو شود…" onchange="qkPickSupp(this.value)">
+        <datalist id="qk_supps">${byE('crm').map(c=>`<option value="${esc(c.d.title||'')}">`).join('')}</datalist></div>
+      <div>${L('مبلغ (تومان)')}<input inputmode="numeric" value="${esc(qd.amount)}" oninput="qkField('amount',this.value)" dir="ltr"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div>${L('روش')}<select onchange="qkField('method',this.value)">${['نقد','کارت','انتقال بانکی','چک'].map(m=>`<option ${m===qd.method?'selected':''}>${m}</option>`).join('')}</select></div>
+      ${dateRow}
+    </div>`;
+  }
+  const logHTML=qlog.length?`<div class="sec"><h3>🧾 ثبت‌های این جلسه <span style="flex:1"></span><span style="font-size:11px;color:var(--tx2)">${qlog.length.toLocaleString('fa-IR')} مورد</span></h3>
+    <div class="tblwrap" style="max-height:260px;overflow:auto"><table><tbody>${qlog.map(x=>`<tr><td style="text-align:right">${x.ic} ${esc(x.t||'—')}</td><td style="font-weight:700">${x.v?money(x.v):''}</td><td style="width:36px"><button class="btn gh sm" style="padding:2px 6px" onclick="go('rec','${x.e}','${x.id}')" title="ویرایش">✏️</button></td></tr>`).join('')}</tbody></table></div></div>`:'';
+  return `<div class="sec">
+    <h3>⚡ مرکز ثبت سریع</h3>
+    <div style="font-size:11.5px;color:var(--tx2);line-height:1.9;margin-bottom:10px">سریع‌ترین راه ثبت رویدادهای روزمره — نوع را انتخاب کن، چند خانه را پر کن و «ثبت» بزن. هر ثبت خودکار سند حسابداری می‌خورد و به داشبردها می‌رود؛ فرم برای مورد بعدی خالی می‌شود. برای فاکتور چندقلمی از «🧾 صدور فاکتور فروش» استفاده کن.</div>
+    ${bar}${dom}${form}
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn" onclick="qkSave()" style="font-size:15px;padding:11px 30px">✅ ثبت و ادامه</button>
+      ${qd.op==='sale'?`<button class="btn gh" onclick="invDraft=null;go('invnew')">🧾 فاکتور چندقلمی…</button>`:''}
+    </div>
+  </div>${logHTML}`;
+}
+window.qkSetOp=qkSetOp;window.qkField=qkField;window.qkPickProd=qkPickProd;window.qkPickCust=qkPickCust;window.qkPickSupp=qkPickSupp;window.qkSave=qkSave;
 function bizMenuHTML(){
   const ent=k=>canSee(k)?`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${E[k].ic} ${E[k].n}<span class="c">${visE(k).length}</span></div>`:'';
   const it=(type,label,onclick,cond)=>cond?`<div class="nav-i ${view.type===type?'on':''}" onclick="${onclick}">${label}</div>`:'';
   const sec=(title,body)=>body?`<div class="nav-sub">${title}</div>${body}`:'';
   let h='';
   // 📊 داشبورد
+  h+=sec('⚡ ثبت سریع',
+    it('quickadd','⚡ مرکز ثبت سریع',"go('quickadd')",canSee('invoice')||canSee('sale')||canSee('expense')||canSee('settle')));
   h+=sec('📊 داشبورد',
     it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
     +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash'))
@@ -6116,6 +6251,7 @@ function render(){
     view.type==='ctrldash'?'🎛 داشبرد کنترلی':
     view.type==='mbuilder'?'🧩 ساختارساز شاخص‌ها':
     view.type==='mydash'?'📐 داشبردساز من':
+    view.type==='quickadd'?'⚡ مرکز ثبت سریع':
     view.type==='pfdash'?'🔄 تسویه درگاه‌ها و پلتفرم‌ها':
     view.type==='epcfdash'?'🎛️ داشبورد EPCF':
     view.type==='cdash'?'🏢 داشبورد ساخت‌وساز':
@@ -6145,7 +6281,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',mbuilder:'mbuilder',mydash:'mydash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',mbuilder:'mbuilder',mydash:'mydash',quickadd:'quickadd',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -6172,6 +6308,7 @@ function render(){
     else if(view.type==='ctrldash')c.innerHTML=ctrldashHTML();
     else if(view.type==='mbuilder')c.innerHTML=mbuilderHTML();
     else if(view.type==='mydash')c.innerHTML=mydashHTML();
+    else if(view.type==='quickadd')c.innerHTML=quickaddHTML();
     else if(view.type==='pfdash')c.innerHTML=pfdashHTML();
     else if(view.type==='epcfdash')c.innerHTML=epcfdashHTML();
     else if(view.type==='cdash')c.innerHTML=cdashHTML();
