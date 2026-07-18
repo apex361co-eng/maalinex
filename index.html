@@ -1155,7 +1155,7 @@ efqm:{ic:'🏅',n:'ارزیابی EFQM 2025',grp:'استراتژی و تعالی
 expense:{ic:'🧾',n:'هزینه‌های عملیاتی',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'شرح هزینه',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
- {k:'cat',n:'سرفصل',t:SEL,o:['حقوق و دستمزد','اجاره','تبلیغات و مارکتینگ','حمل و ارسال','بسته‌بندی','کارمزد درگاه/مارکت‌پلیس','نرم‌افزار و اشتراک','پذیرایی','مرجوعی و خسارت','اداری و متفرقه','مالی (بهره/کارمزد بانکی)']},
+ {k:'cat',n:'سرفصل',t:SEL,o:['حقوق و دستمزد','عیدی و پاداش','سنوات','بیمه (سهم کارفرما/بیکاری/تکمیلی)','پورسانت فروش','ایاب و ذهاب','آموزش کارکنان','سایر هزینه‌های کارکنان','اجاره','پذیرایی','تعمیر و نگهداری','آب و برق','ملزومات و نوشت‌افزار','پست و تلفن','اداری و متفرقه','حمل و انبارداری','وانت و توزیع','تبلیغات و مارکتینگ','هزینه سایت و پلتفرم','گارانتی','هدایا','سفر و ماموریت','ضایعات','تخفیف و رندینگ','بسته‌بندی','کارمزد درگاه/مارکت‌پلیس','نرم‌افزار و اشتراک','مرجوعی و خسارت','استهلاک','مالی (بهره/کارمزد بانکی)','جریمه دیرکرد']},
  {k:'amount',n:'مبلغ (تومان)',t:NUM},
  {k:'date',n:'تاریخ',t:DAT},
  {k:'eproject',n:'پروژه EPCF (در صورت مربوط بودن)',t:REL,r:'eproject',s:1},
@@ -1187,6 +1187,24 @@ pfsettle:{ic:'🔄',n:'تسویه پلتفرم‌ها',grp:'مدیریت کسب 
  {k:'status',n:'وضعیت',t:STA,o:['در انتظار واریز','واریز شده','اختلاف دارد']},
  {k:'note',n:'توضیح مغایرت',t:LNG}],
  cols:['title','gateway','gross','paid','paydate','status'],comp:'pfBrief'},
+plmonth:{ic:'📜',n:'سود و زیان ماهانه (عملکرد واقعی)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'عنوان (مثل: 1404 فروردین)',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'jy',n:'سال شمسی',t:NUM},
+ {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'rev',n:'فروش',t:NUM},
+ {k:'ret',n:'برگشت از فروش',t:NUM},
+ {k:'disc',n:'تخفیفات فروش',t:NUM},
+ {k:'oinc',n:'سایر درآمدها (حمل، سپرده، تسعیر و…)',t:NUM},
+ {k:'cogs',n:'بهای تمام‌شده (کالا + خدمات)',t:NUM},
+ {k:'exstaff',n:'هزینه کارکنان (حقوق/بیمه/عیدی/پورسانت/آموزش)',t:NUM},
+ {k:'exadmin',n:'هزینه اداری و عمومی (اجاره/پذیرایی/ملزومات/…)',t:NUM},
+ {k:'exsell',n:'هزینه فروش و توزیع (حمل/تبلیغات/گارانتی/سایت/…)',t:NUM},
+ {k:'exfin',n:'هزینه مالی (سود وام/کارمزد/جریمه)',t:NUM},
+ {k:'exdep',n:'استهلاک',t:NUM},
+ {k:'exoth',n:'سایر هزینه‌ها',t:NUM},
+ {k:'tax',n:'مالیات (معمولاً در اسفند)',t:NUM}],
+ cols:['title','biz','jy','jm','rev','cogs'],comp:'plmonthBrief'},
 pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -2145,7 +2163,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','gateway','pfsettle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
@@ -4582,6 +4600,13 @@ function pfCalc(r){
 }
 function pfBrief(r){const c=pfCalc(r);const mism=Math.abs(c.diff)>1&&r.d.status!=='واریز شده'?false:Math.abs(c.diff)>1;
   return {label:'واریزی │ انتظار │ مغایرت',v:abbrN(c.paid)+' │ '+abbrN(c.expected)+' │ '+(c.diff===0?'✓ صفر':(c.diff>0?'+':'')+abbrN(c.diff)),bad:Math.abs(c.diff)>1};}
+function plmonthBrief(r){
+  const net=(+r.d.rev||0)-Math.abs(+r.d.ret||0)-Math.abs(+r.d.disc||0);
+  const gp=net-(+r.d.cogs||0);
+  const opex=(+r.d.exstaff||0)+(+r.d.exadmin||0)+(+r.d.exsell||0)+(+r.d.exfin||0)+(+r.d.exdep||0)+(+r.d.exoth||0);
+  const np=gp+(+r.d.oinc||0)-opex-(+r.d.tax||0);
+  return {label:'فروش خالص │ ناخالص٪ │ سود خالص',v:abbrN(net)+' │ '+(net>0?(gp/net*100).toFixed(1)+'٪':'—')+' │ '+abbrN(np),bad:np<0};}
+window.plmonthBrief=plmonthBrief;
 window.pfBrief=pfBrief;
 window.itemBrief=itemBrief;window.mvBrief=mvBrief;window.chqBrief=chqBrief;window.payBrief=payBrief;
 /* 💳 تابلوی چک‌ها + وصول/پرداخت متصل به چرخه‌ی نقد */
@@ -5674,7 +5699,7 @@ function ceodashHTML(){
   const outAge=stock.filter(x=>x.avg>0&&x.cover<7);
   if(outAge.length)alerts.push(['warn',outAge.length.toLocaleString('fa-IR')+' کالای پرفروش زیر ۷ روز پوشش موجودی دارند']);
   if(ox.off>0)alerts.push(['warn','هزینه خارج از بودجه این دوره: '+money(ox.off)]);
-  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['week','🗞 گزارش هفتگی']];
+  const TABS=[['prof','📈 سودآوری'],['stock','📦 انبار و سرمایه'],['cost','🧾 هزینه‌ها'],['buy','🛒 تصمیم خرید'],['hist','📜 روند تاریخی'],['week','🗞 گزارش هفتگی']];
   const card=(t,v,bad,sub)=>`<div class="sec" style="text-align:center;padding:12px"><div style="font-size:11px;color:var(--tx2)">${t}</div><div style="font-size:17px;font-weight:800;margin-top:4px;color:${bad?'var(--bad)':'var(--tx)'}">${v}</div>${sub?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">${sub}</div>`:''}</div>`;
   const grid=inner=>`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:4px">${inner}</div>`;
   const topTbl=(title,arr,cols)=>`<div class="sec"><h3>${title} <span class="c">${arr.length.toLocaleString('fa-IR')}</span></h3>${arr.length?`<div class="tblwrap"><table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${arr.map(r=>`<tr>${cols.map(c=>`<td style="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<div style="color:var(--tx2);font-size:12px;padding:6px">موردی نیست</div>'}</div>`;
@@ -5798,6 +5823,64 @@ function ceodashHTML(){
     const pn=x=>esc(x.p.d.title||'—');
     h+=topTbl('🛒 اولویت خرید (پرفروش │ پوشش کم │ حاشیه سالم) + تعداد پیشنهادی',buyPrior,[['کالا',pn,'text-align:right'],['روز پوشش',x=>x.cover.toFixed(1)],['حاشیه',x=>x.marg==null?'—':x.marg+'٪'],['تعداد پیشنهادی (۱۴ روز)',x=>`<b>${x.need.toLocaleString('fa-IR')}</b>`],['بودجه لازم',x=>money(x.cost)]]);
     h+=topTbl('⛔ ممنوع‌الخرید (موجودی زیاد یا زیان‌ده)',buyBan.slice(0,15),[['کالا',pn,'text-align:right'],['موجودی',x=>x.st.toLocaleString('fa-IR')],['روز پوشش',x=>x.cover>=9999?'∞':x.cover.toFixed(0)],['حاشیه',x=>x.marg==null?'—':`<b style="color:${x.marg<0?'var(--bad)':'var(--tx)'}">${x.marg}٪</b>`],['ارزش خوابیده',x=>money(x.val)]]);
+  }
+  if(T==='hist'){
+    // 📜 روند تاریخی از رکوردهای «سود و زیان ماهانه»
+    const pms=byE('plmonth').filter(r=>!b||relIds(r,'biz').includes(b));
+    if(!pms.length){h+=`<div class="empty">هنوز «📜 سود و زیان ماهانه» ثبت نشده — از مرکز ورود اکسل قالبش را بگیر یا فایل آماده‌ای که تحویل گرفته‌ای را بارگذاری کن</div>`;}
+    else{
+      const M=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+      const calc=r=>{const net=(+r.d.rev||0)-Math.abs(+r.d.ret||0)-Math.abs(+r.d.disc||0);const gp=net-(+r.d.cogs||0);
+        const opex=(+r.d.exstaff||0)+(+r.d.exadmin||0)+(+r.d.exsell||0)+(+r.d.exfin||0)+(+r.d.exdep||0)+(+r.d.exoth||0);
+        return {net,gp,opex,oinc:+r.d.oinc||0,np:gp+(+r.d.oinc||0)-opex-(+r.d.tax||0),
+          st:+r.d.exstaff||0,ad:+r.d.exadmin||0,se:+r.d.exsell||0,fi:+r.d.exfin||0,de:+r.d.exdep||0,ot:+r.d.exoth||0};};
+      // تجمیع سالانه
+      const years={};pms.forEach(r=>{const y=+r.d.jy||0;if(!y)return;const c=calc(r);
+        const g=years[y]||(years[y]={net:0,gp:0,opex:0,np:0,st:0,ad:0,se:0,fi:0,de:0,ot:0,n:0});
+        ['net','gp','opex','np','st','ad','se','fi','de','ot'].forEach(k=>g[k]+=c[k]);g.n++;});
+      const ys=Object.keys(years).map(Number).sort();
+      const last=ys[ys.length-1],prev=ys[ys.length-2];
+      const L=years[last],Pv=prev?years[prev]:null;
+      const gr=(a,bb)=>bb>0?((a-bb)/bb*100).toLocaleString('fa-IR',{maximumFractionDigits:1})+'٪':'—';
+      if(!view.hy||!years[view.hy])view.hy=last;
+      h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:4px">
+        ${card('فروش خالص '+_faY(last),abbrN(L.net),false,Pv?'رشد: '+gr(L.net,Pv.net):'')}
+        ${card('حاشیه ناخالص '+_faY(last),L.net>0?(L.gp/L.net*100).toFixed(1)+'٪':'—',L.net>0&&L.gp/L.net<0.1,Pv&&Pv.net>0?'سال قبل: '+(Pv.gp/Pv.net*100).toFixed(1)+'٪':'')}
+        ${card('سود خالص '+_faY(last),abbrN(L.np),L.np<0,Pv?'رشد: '+gr(L.np,Pv.np):'')}
+        ${card('حاشیه خالص',L.net>0?(L.np/L.net*100).toFixed(1)+'٪':'—',L.net>0&&L.np/L.net<0.03)}
+        ${card('نسبت هزینه عملیاتی به فروش',L.net>0?(L.opex/L.net*100).toFixed(1)+'٪':'—',L.net>0&&L.opex/L.net>0.08)}
+      </div>`;
+      // نمودار سالانه: فروش و سود خالص
+      const yPts=ys.map(y=>({label:_faY(y),v:years[y].net}));
+      const nPts=ys.map(y=>({label:_faY(y),v:years[y].np}));
+      h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px">
+        <div class="sec"><h3 style="font-size:13px">📊 فروش خالص سالانه</h3>${ceoBarsSVG(yPts,false)}</div>
+        <div class="sec"><h3 style="font-size:13px">📊 سود خالص سالانه</h3>${ceoBarsSVG(nPts,false)}</div>
+      </div>`;
+      // روند ماهانه سال انتخابی
+      const yr=+view.hy;
+      const mPts=M.map((mn,i)=>{const r=pms.find(x=>+x.d.jy===yr&&x.d.jm===mn);return {label:mn.slice(0,3),v:r?calc(r).net:0};});
+      h+=`<div class="sec"><h3>📈 فروش ماهانه
+        <select onchange="view.hy=this.value;render()" style="max-width:100px;margin-inline-start:10px">${ys.map(y=>`<option value="${y}" ${y===yr?'selected':''}>${_faY(y)}</option>`).join('')}</select></h3>
+        ${ceoBarsSVG(mPts,false)}</div>`;
+      // ساختار هزینه سال آخر + هشدارهای رشد
+      const EXC=[['st','کارکنان'],['se','فروش و توزیع'],['ad','اداری و عمومی'],['fi','مالی'],['de','استهلاک'],['ot','سایر']];
+      h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px">
+      <div class="sec"><h3>🧾 ساختار هزینه ${_faY(last)}</h3><div class="tblwrap"><table><thead><tr><th>گروه</th><th>مبلغ</th><th>٪ فروش</th>${Pv?'<th>رشد YoY</th>':''}</tr></thead><tbody>
+        ${EXC.map(([k,n])=>L[k]?`<tr><td style="text-align:right">${n}</td><td>${abbrN(L[k])}</td>
+          <td>${L.net>0?(L[k]/L.net*100).toFixed(1)+'٪':'—'}</td>
+          ${Pv?`<td><b style="color:${Pv[k]>0&&L[k]/Pv[k]>2?'var(--bad)':'var(--tx)'}">${gr(L[k],Pv[k])}</b></td>`:''}</tr>`:'').join('')}
+        <tr style="font-weight:800"><td style="text-align:right">جمع هزینه عملیاتی</td><td>${abbrN(L.opex)}</td><td>${L.net>0?(L.opex/L.net*100).toFixed(1)+'٪':'—'}</td>${Pv?`<td>${gr(L.opex,Pv.opex)}</td>`:''}</tr>
+      </tbody></table></div></div>
+      <div class="sec"><h3>💡 نکات مدیریتی خودکار</h3><div style="font-size:12px;line-height:2.3">
+        ${(()=>{const tips=[];
+          if(L.net>0&&L.gp/L.net<0.1)tips.push('🟡 حاشیه ناخالص '+(L.gp/L.net*100).toFixed(1)+'٪ است — در خرده‌فروشی دیجیتال طبیعی ولی حساس؛ هر ۱٪ تخفیف اضافه، حدود '+abbrN(L.net*0.01)+' از سود می‌بَرد.');
+          if(Pv){EXC.forEach(([k,n])=>{if(Pv[k]>0&&L[k]/Pv[k]>2&&L[k]>L.net*0.005)tips.push('🔴 هزینه «'+n+'» نسبت به سال قبل '+((L[k]/Pv[k]-1)*100).toFixed(0)+'٪ رشد کرده ('+abbrN(L[k])+') — بررسی شود.');});}
+          if(Pv&&Pv.net>0&&L.net/Pv.net-1<(Pv.net/(years[ys[ys.length-3]]?.net||Pv.net)-1))tips.push('🟡 شتاب رشد فروش نسبت به سال قبل کم شده است.');
+          if(L.fi>L.np*0.05)tips.push('🟡 هزینه مالی '+abbrN(L.fi)+' معادل '+(L.fi/L.np*100).toFixed(0)+'٪ سود خالص است — بازنگری وام‌ها.');
+          return tips.length?tips.map(t=>'<div>'+t+'</div>').join(''):'<div>✅ نشانه خطر برجسته‌ای دیده نشد.</div>';})()}
+      </div></div></div>`;
+    }
   }
   if(T==='week'){
     const needBudget=buyPrior.reduce((a,x)=>a+x.cost,0);
