@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.34</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۳۳</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.34</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1758,6 +1758,19 @@ function calcVal(e,f,d,depth){
   let fx=String(f.fx);
   fx=fx.replace(/\[([^\]]+)\]/g,(_,nm)=>{
     nm=nm.trim();
+    if(nm.includes('.')){ // 🔗 مسیر رابطه‌ای: [فروشنده.سهمیه] — از رکوردِ مرتبط می‌خواند
+      const [rn,fn]=nm.split('.').map(x=>x.trim());
+      const rf=(E[e]&&E[e].f||[]).find(x=>(x.n===rn||x.k===rn)&&x.t===REL);
+      if(!rf)return '(0/0)';
+      const ids=Array.isArray(d[rf.k])?d[rf.k]:(d[rf.k]?[d[rf.k]]:[]);
+      let tot=0,any=false;
+      ids.forEach(id=>{const rr=recs[id];if(!rr||rr.del)return;
+        const tf2=(E[rf.r]&&E[rf.r].f||[]).find(x=>x.n===fn||x.k===fn);if(!tf2)return;
+        let v2;if(tf2.t==='calc')v2=calcVal(rf.r,tf2,rr.d,depth+1);
+        else{const raw2=faNum(String(rr.d[tf2.k]??'')).replace(/[,٬\s]/g,'');v2=raw2===''?null:+raw2;}
+        if(v2!=null&&!isNaN(v2)){tot+=v2;any=true;}});
+      return any?'('+tot+')':'(0)';
+    }
     const tf=(E[e]&&E[e].f||[]).find(x=>x.n===nm||x.k===nm);
     if(!tf)return '(0/0)'; // فیلد ناشناخته → نتیجه نامعتبر
     if(tf.t==='calc'){const v=calcVal(e,tf,d,depth+1);return v==null?'(0/0)':'('+v+')';}
@@ -5747,6 +5760,13 @@ function cellHTML(r,f){
   if(f.t===DAT)return fmtD(v);
   if(f.t===NUM)return fmtN(v);
   if(f.t==='calc'){const cv=calcVal(r.e,f,r.d);return cv==null?'—':`<b style="color:#ecd98f">${fmtN(cv)}</b>`;}
+  if(f.t==='look'){const rf=(E[r.e].f||[]).find(x=>x.k===f.rel);if(!rf)return '—';
+    const ids=relIds(r,rf.k);if(!ids.length)return '—';
+    const tf2=(E[rf.r].f||[]).find(x=>x.k===f.src);if(!tf2)return '—';
+    return ids.map(id=>{const rr=recs[id];if(!rr||rr.del)return '';
+      if(tf2.t==='calc'){const v=calcVal(rf.r,tf2,rr.d);return v==null?'—':fmtN(v);}
+      if(tf2.t===REL)return relIds(rr,tf2.k).map(nameOf).join('، ')||'—';
+      return esc(String(rr.d[tf2.k]??'—'));}).filter(Boolean).join('، ')||'—';}
   return esc(v||'—');
 }
 function pbarHTML(p){p=Math.round(p);const col=p>=80?'var(--ok)':p>=40?'var(--ac)':'var(--warn)';
@@ -5767,6 +5787,12 @@ function fieldRaw(r,f){ // مقدار خام برای مرتب‌سازی/گرو
   if(f.t===CHK)return v?'بله':'خیر';
   if(f.t===NUM)return v==null||v===''?null:+v;
   if(f.t==='calc')return calcVal(r.e,f,r.d);
+  if(f.t==='look'){const rf=(E[r.e].f||[]).find(x=>x.k===f.rel);if(!rf)return null;
+    const id=relIds(r,rf.k)[0];if(!id||!recs[id])return null;
+    const tf2=(E[rf.r].f||[]).find(x=>x.k===f.src);if(!tf2)return null;
+    if(tf2.t==='calc')return calcVal(rf.r,tf2,recs[id].d);
+    if(tf2.t===REL)return relIds(recs[id],tf2.k).map(nameOf).join('، ');
+    return recs[id].d[tf2.k];}
   return v==null?'':String(v);
 }
 function distinctVals(rows,f){
@@ -9043,7 +9069,7 @@ function bscmapHTML(){
 }
 
 /* ================= 🧩 صفحه فیلدها و بخش‌های سفارشی (ادمین) ================= */
-const CF_TYPES=[[TXT,'متن کوتاه'],[LNG,'متن بلند'],[NUM,'عدد'],[DAT,'تاریخ (شمسی + ساعت)'],[SEL,'انتخابی (یک گزینه)'],[MUL,'چندانتخابی'],[CHK,'چک‌باکس (بله/خیر)'],[URLF,'لینک'],[REL,'رابطه با بخش دیگر'],['calc','🧮 فرمول (محاسباتی)']];
+const CF_TYPES=[[TXT,'متن کوتاه'],[LNG,'متن بلند'],[NUM,'عدد'],[DAT,'تاریخ (شمسی + ساعت)'],[SEL,'انتخابی (یک گزینه)'],[MUL,'چندانتخابی'],[CHK,'چک‌باکس (بله/خیر)'],[URLF,'لینک'],[REL,'رابطه با بخش دیگر'],['calc','🧮 فرمول (محاسباتی)'],['look','👁 خواندن از رابطه (Lookup)']];
 function schemaHTML(){
   if(!isAdmin())return `<div class="empty">فقط ادمین</div>`;
   const s=schemaCfg();
@@ -9099,13 +9125,27 @@ function render_cfx(){
   } else if(t.value==='calc'){
     const ek=view.scEnt;
     const nums=(E[ek]&&E[ek].f||[]).filter(f=>f.t===NUM||f.t==='calc').map(f=>'['+f.n+']');
-    x1.innerHTML=`<label>فرمول — نام فیلدها را در [ ] بنویسید</label><input id="cf_fx" dir="ltr" placeholder="([سود خالص] / [فروش]) * 100">`;
-    x2.innerHTML=`<div style="font-size:10px;color:var(--tx2);line-height:1.9">عملگرها: + − × ÷ ( )<br>فیلدهای عددی این بخش: ${nums.map(esc).join(' ')||'—'}</div>`;
+    const rels=(E[ek]&&E[ek].f||[]).filter(f=>f.t===REL).map(f=>'['+f.n+'.نام‌فیلد]');
+    x1.innerHTML=`<label>فرمول — نام فیلدها در [ ]؛ از رابطه هم می‌شود: [فروشنده.سهمیه]</label><input id="cf_fx" dir="ltr" placeholder="([سود خالص] / [فروش]) * 100">`;
+    x2.innerHTML=`<div style="font-size:10px;color:var(--tx2);line-height:1.9">عملگرها: + − × ÷ ( )<br>فیلدهای عددی این بخش: ${nums.map(esc).join(' ')||'—'}<br>رابطه‌های این بخش: ${rels.map(esc).join(' ')||'—'}</div>`;
+  } else if(t.value==='look'){
+    const ek=view.scEnt;
+    const rels=(E[ek]&&E[ek].f||[]).filter(f=>f.t===REL);
+    if(!rels.length){x1.innerHTML='<div style="font-size:11px;color:var(--bad)">این بخش فیلد رابطه‌ای ندارد — اول یک فیلد «رابطه» بسازید</div>';x2.innerHTML='';return;}
+    x1.innerHTML=`<label>از کدام رابطه بخواند؟</label><select id="cf_lrel" onchange="render_cfx2()">${rels.map(f=>`<option value="${f.k}">${esc(f.n)} ← ${E[f.r]?esc(E[f.r].n):f.r}</option>`).join('')}</select>`;
+    x2.innerHTML='<div id="cf_lsrcbox"></div>';setTimeout(render_cfx2,0);
   } else if(t.value===REL){
     x1.innerHTML=`<label>رابطه با بخش</label><select id="cf_rel">${Object.entries(E).map(([k,v])=>`<option value="${k}">${v.ic} ${esc(v.n)}</option>`).join('')}</select>`;
     x2.innerHTML=`<label>تعداد</label><select id="cf_single"><option value="1">تک‌انتخابی</option><option value="">چندانتخابی</option></select>`;
   } else {x1.innerHTML='';x2.innerHTML='';}
 }
+function render_cfx2(){
+  const ek=view.scEnt,sel=document.getElementById('cf_lrel');const box=document.getElementById('cf_lsrcbox');
+  if(!sel||!box)return;
+  const rf=(E[ek].f||[]).find(x=>x.k===sel.value);if(!rf||!E[rf.r]){box.innerHTML='';return;}
+  box.innerHTML=`<label>کدام فیلد از «${esc(E[rf.r].n)}»؟</label><select id="cf_lsrc">${E[rf.r].f.map(f=>`<option value="${f.k}">${esc(f.n)}</option>`).join('')}</select>`;
+}
+window.render_cfx2=render_cfx2;
 window.render_cfx=render_cfx;
 function addCField(){
   const ek=view.scEnt, name=(document.getElementById('cf_name').value||'').trim();
@@ -9119,6 +9159,9 @@ function addCField(){
     f.o=os;
   }
   if(t===REL){f.r=document.getElementById('cf_rel').value;if(document.getElementById('cf_single').value)f.s=1;}
+  if(t==='look'){const lr=document.getElementById('cf_lrel'),ls=document.getElementById('cf_lsrc');
+    if(!lr||!ls){alert('رابطه و فیلد مقصد را انتخاب کنید');return;}
+    f.rel=lr.value;f.src=ls.value;}
   if(t==='calc'){
     const fx=(document.getElementById('cf_fx').value||'').trim();
     if(!fx){alert('فرمول را بنویسید — مثل: ([سود خالص]/[فروش])*100');return;}
