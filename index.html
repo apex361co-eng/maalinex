@@ -254,7 +254,7 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۲۸</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b> <span style="opacity:.55;font-size:10px">│ نسخه ۱۳۰</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1295,6 +1295,27 @@ ctrlval:{ic:'🎛',n:'ثبت شاخص کنترلی (داشبرد کنترلی)',
  {k:'target',n:'هدف / سقف مجاز',t:NUM},
  {k:'note',n:'توضیح',t:LNG}],
  cols:['title','code','jy','jm','value','target']},
+mdef:{ic:'🧩',n:'ساختار شاخص‌های من',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'نام شاخص (مثل: حقوق واحد فروش)',t:TXT},
+ {k:'parent',n:'زیرمجموعه‌ی (والد)',t:REL,r:'mdef',s:1},
+ {k:'src',n:'منبع مقدار',t:SEL,o:['دستی (ثبت دوره‌ای)','جمع فرزندان','فرمول','هزینه‌ها — سرفصل','سود و زیان ماهانه — فیلد','فاکتورها — فروش خالص','دریافت/پرداخت‌ها — خالص']},
+ {k:'param',n:'پارامتر منبع (نام سرفصل هزینه یا نام فیلد سود و زیان)',t:TXT},
+ {k:'formula',n:'فرمول (مثل: [فروش کل] - [هزینه کل])',t:TXT},
+ {k:'biz',n:'محدود به کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'unit',n:'لینک به واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'person',n:'لینک به فرد',t:REL,r:'hr',s:1},
+ {k:'dir',n:'جهت شاخص',t:SEL,o:['بیشتر بهتر','کمتر بهتر']},
+ {k:'target',n:'هدف دوره (اختیاری)',t:NUM},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','parent','src','target'],comp:'mdefBrief'},
+mval:{ic:'✍️',n:'ثبت مقدار شاخص من (دوره‌ای)',grp:'مدیریت کسب و کار',sub:1,f:[
+ {k:'title',n:'عنوان (مثل: 1404 مهر - حقوق واحد فروش)',t:TXT},
+ {k:'mdef',n:'شاخص',t:REL,r:'mdef',s:1},
+ {k:'jy',n:'سال شمسی',t:NUM},
+ {k:'jm',n:'ماه',t:SEL,o:['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند']},
+ {k:'value',n:'مقدار',t:NUM},
+ {k:'target',n:'هدف (اختیاری)',t:NUM}],
+ cols:['title','mdef','jy','jm','value']},
 pbudget:{ic:'🎛️',n:'بودجه دوره (خرید/هزینه)',grp:'مدیریت کسب و کار',f:[
  {k:'title',n:'عنوان (مثل: بودجه خرید هفته اول مرداد)',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
@@ -2253,7 +2274,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
- {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','ctrldash','pfdash']},
+ {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','ctrldash','mbuilder','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash','perfdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
@@ -2397,7 +2418,7 @@ function modAutopostHTML(){
 }
 function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('content').innerHTML=modcfgHTML();}
 window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
-const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',ctrldash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
+const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',ctrldash:'مدیریت کسب و کار',mbuilder:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
  gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
  findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
  epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',agiledash:'توسعه نرم‌افزار',
@@ -4871,6 +4892,111 @@ const BIZ_WIDGETS=[
    return `<div class="sec"><h3>🧾 آخرین فاکتورها</h3>${iv.map(v=>`<div style="display:flex;padding:4px 0;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer" onclick="go('rec','invoice','${v.id}')"><span style="flex:1">${esc(v.d.title||'—')}</span><span style="color:var(--tx2)">${esc(iso2jstr(ds(v.d.date))||'—')}</span><b style="margin-inline-start:8px">${money(invCalc(v).total)}</b></div>`).join('')}</div>`;}}
 ];
 
+
+/* ===== 🧩 موتور شاخص‌های سفارشی کاربر ===== */
+const PLM_FLD={'فروش':'rev','برگشت از فروش':'ret','تخفیفات فروش':'disc','سایر درآمدها':'oinc','بهای تمام‌شده':'cogs','هزینه کارکنان':'exstaff','هزینه اداری':'exadmin','هزینه فروش و توزیع':'exsell','هزینه مالی':'exfin','استهلاک':'exdep','سایر هزینه‌ها':'exoth','مالیات':'tax','فروش خالص':'_net','سود خالص':'_np','سود ناخالص':'_gp'};
+function myKids(id){return byE('mdef').filter(x=>relIds(x,'parent').includes(id));}
+function myPeriodRange(jy,mIdx){ // بازه میلادی دوره
+  if(mIdx<0)return [_jgIso(jy,1,1),_jgIso(jy,12,29)];
+  return [_jgIso(jy,mIdx+1,1),mIdx===11?_jgIso(jy,12,29):_isoAdd(_jgIso(jy,mIdx+2,1),-1)];}
+function myVal(node,jy,mIdx,depth){
+  depth=depth||0;if(depth>10)return null;
+  const d=node.d,src=d.src||'دستی (ثبت دوره‌ای)';
+  const bizIds=relIds(node,'biz');
+  const bizF=r=>{if(!bizIds.length)return true;const f=(E[r.e].f||[]).find(x=>x.t===REL&&x.r==='business');return f?relIds(r,f.k).some(id=>bizIds.includes(id)):true;};
+  const inP=r=>+r.d.jy===jy&&(mIdx<0||r.d.jm===['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'][mIdx]);
+  if(src==='جمع فرزندان'){const ks=myKids(node.id);if(!ks.length)return null;
+    let t=0,any=false;ks.forEach(k=>{const v=myVal(k,jy,mIdx,depth+1);if(v!=null){t+=v;any=true;}});return any?t:null;}
+  if(src==='فرمول'){let f=String(d.formula||'');if(!f.trim())return null;let bad=false;
+    f=f.replace(/\[([^\]]+)\]/g,(m,nm)=>{const n2=byE('mdef').find(x=>(x.d.title||'').trim()===nm.trim());
+      if(!n2){bad=true;return '0';}const v=myVal(n2,jy,mIdx,depth+1);return v==null?'0':String(v);});
+    if(bad&&!/[0-9]/.test(f))return null;
+    if(!/^[0-9+\-*/().\s]+$/.test(f))return null;
+    try{const v=Function('"use strict";return ('+f+')')();return isFinite(v)?v:null;}catch(e){return null;}}
+  if(src==='هزینه‌ها — سرفصل'){const [f,t]=myPeriodRange(jy,mIdx);const cat=(d.param||'').trim();
+    const rows=byE('expense').filter(r=>bizF(r)&&r.d.date>=f&&r.d.date<=t&&(!cat||r.d.cat===cat));
+    return rows.length?rows.reduce((a,r)=>a+(+r.d.amount||0),0):null;}
+  if(src==='سود و زیان ماهانه — فیلد'){const rows=byE('plmonth').filter(r=>bizF(r)&&inP(r));if(!rows.length)return null;
+    const key=PLM_FLD[Object.keys(PLM_FLD).sort((a,b)=>b.length-a.length).find(k=>(d.param||'').includes(k))||'']||null;
+    const S=f2=>rows.reduce((a,r)=>a+(+r.d[f2]||0),0);
+    if(key==='_net')return S('rev')-Math.abs(S('ret'))-Math.abs(S('disc'));
+    if(key==='_gp')return S('rev')-Math.abs(S('ret'))-Math.abs(S('disc'))-S('cogs');
+    if(key==='_np')return S('rev')-Math.abs(S('ret'))-Math.abs(S('disc'))-S('cogs')+S('oinc')-['exstaff','exadmin','exsell','exfin','exdep','exoth'].reduce((a,k)=>a+S(k),0)-S('tax');
+    return key?S(key):null;}
+  if(src==='فاکتورها — فروش خالص'){const [f,t]=myPeriodRange(jy,mIdx);
+    const invs=byE('invoice').filter(r=>bizF(r)&&(r.d.date||'')>=f&&(r.d.date||'')<=t);
+    return invs.length?invs.reduce((a,r)=>a+(+r.d.total||0),0):null;}
+  if(src==='دریافت/پرداخت‌ها — خالص'){const [f,t]=myPeriodRange(jy,mIdx);
+    const ss=byE('settle').filter(r=>bizF(r)&&(r.d.date||'')>=f&&(r.d.date||'')<=t);
+    return ss.length?ss.reduce((a,r)=>a+(+r.d.amount||0)*(r.d.kind==='پرداخت'?-1:1),0):null;}
+  // دستی
+  const vs=byE('mval').filter(r=>relIds(r,'mdef').includes(node.id)&&inP(r));
+  return vs.length?vs.reduce((a,r)=>a+(+r.d.value||0),0):null;}
+function myTarget(node,jy,mIdx){
+  const inP=r=>+r.d.jy===jy&&(mIdx<0||r.d.jm===['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'][mIdx]);
+  const vs=byE('mval').filter(r=>relIds(r,'mdef').includes(node.id)&&inP(r)&&+r.d.target);
+  if(vs.length)return vs.reduce((a,r)=>a+(+r.d.target||0),0);
+  return +node.d.target||null;}
+function mdefBrief(r){const y=new Date();const j=g2j(y.getFullYear(),y.getMonth()+1,y.getDate());
+  const v=myVal(r,j[0],-1);return {label:'مقدار امسال',v:v==null?'ثبت نشده':abbrN(v),bad:false};}
+window.mdefBrief=mdefBrief;
+/* 🧩 صفحه ساختارساز */
+function mbuilderHTML(){
+  const Mn=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const all=byE('mdef');
+  const yrsSet=new Set();byE('mval').forEach(r=>yrsSet.add(+r.d.jy||0));byE('plmonth').forEach(r=>yrsSet.add(+r.d.jy||0));
+  const yrs=[...yrsSet].filter(Boolean).sort();
+  const nowJ=g2j(new Date().getFullYear(),new Date().getMonth()+1,new Date().getDate());
+  view.myYr=yrs.includes(+view.myYr)?+view.myYr:(yrs[yrs.length-1]||nowJ[0]);
+  view.myMn=view.myMn||'همه';
+  const mIdx=Mn.indexOf(view.myMn);
+  const roots=all.filter(x=>!relIds(x,'parent').length);
+  const row=(nd,depth)=>{
+    const v=myVal(nd,view.myYr,mIdx),t=myTarget(nd,view.myYr,mIdx);
+    const lower=nd.d.dir==='کمتر بهتر';
+    const pct=(v!=null&&t)?Math.round(lower?(v>0?t/v*100:100):v/t*100):null;
+    const col=pct==null?'var(--tx2)':pct>=100?'var(--ok)':pct>=70?'#f5a623':'var(--bad)';
+    const links=[relIds(nd,'biz')[0],relIds(nd,'unit')[0],relIds(nd,'person')[0]].filter(Boolean).map(id=>nameOf(id)).join('، ');
+    let h2=`<tr>
+      <td style="text-align:right;padding-inline-start:${10+depth*22}px">${depth?'└ ':''}<b>${esc(nd.d.title||'—')}</b>
+        <span style="font-size:10px;color:var(--tx2)"> │ ${esc((nd.d.src||'دستی').split(' (')[0].split(' —')[0])}${links?' │ 🔗 '+esc(links):''}</span></td>
+      <td>${v==null?'<span style="color:var(--tx2)">—</span>':abbrN(v)}</td>
+      <td>${t?abbrN(t):'—'}</td>
+      <td style="color:${col};font-weight:800">${pct==null?'—':pct+'٪'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn gh sm" onclick="mAddChild('${nd.id}')" title="افزودن زیرشاخص">＋ زیرشاخص</button>
+        <button class="btn gh sm" onclick="mQuickVal('${nd.id}')" title="ثبت مقدار این دوره">✍️</button>
+        <button class="btn gh sm" onclick="go('rec','mdef','${nd.id}')" title="ویرایش تعریف">⚙️</button></td></tr>`;
+    myKids(nd.id).forEach(k=>h2+=row(k,depth+1));
+    return h2;};
+  return `<div class="sec"><h3>🧩 ساختارساز شاخص‌های من <span style="flex:1"></span>
+    <select class="inp sm" style="width:auto" onchange="view.myYr=+this.value;render()">${(yrs.length?yrs:[nowJ[0]]).map(y=>`<option ${y===view.myYr?'selected':''}>${y}</option>`).join('')}</select>
+    <select class="inp sm" style="width:auto" onchange="view.myMn=this.value;render()">${['همه',...Mn].map(m=>`<option ${m===view.myMn?'selected':''}>${m}</option>`).join('')}</select>
+    <button class="btn sm" onclick="mAddChild('')">＋ شاخص جدید</button></h3>
+    <div style="font-size:11.5px;color:var(--tx2);line-height:2.1;margin-bottom:8px">
+      اینجا ساختار دلخواهت را می‌سازی: زیر هر شاخص، زیرشاخص باز کن (مثل «حقوق و دستمزد» ← «واحد فروش» ← «افراد»)، هر شاخص را به کسب‌وکار/واحد/فرد لینک کن، منبعش را انتخاب کن (دستی، جمع فرزندان، فرمول با [نام شاخص]، سرفصل هزینه‌ها، فیلد سود و زیان ماهانه، فاکتورها) و هدف بگذار. همه این شاخص‌ها به صورت گیج در <span style="color:var(--ac);cursor:pointer" onclick="go('ctrldash')">داشبرد کنترلی ← «شاخص‌های من»</span> هم دیده می‌شوند. مقادیر دستی را می‌توانی گروهی با اکسل از مرکز ورود («ثبت مقدار شاخص من») وارد کنی.</div>
+    ${roots.length?`<div class="tblwrap"><table><thead><tr><th style="text-align:right">شاخص</th><th>مقدار دوره</th><th>هدف</th><th>تحقق</th><th></th></tr></thead><tbody>
+      ${roots.map(r0=>row(r0,0)).join('')}</tbody></table></div>`:
+    `<div class="empty">هنوز شاخصی نساخته‌ای — با «＋ شاخص جدید» شروع کن.<br><span style="font-size:11px">مثال: شاخص «حقوق و دستمزد» با منبع «هزینه‌ها — سرفصل» و پارامتر «حقوق و دستمزد»؛ بعد زیرش «واحد فروش» و «واحد اداری» با منبع دستی.</span></div>`}
+  </div>`;
+}
+function mAddChild(pid){
+  const d={};if(pid)d.parent=[pid];
+  const id='mdef_'+Date.now()+'_'+Math.floor(Math.random()*1e4);
+  recs[id]={id,e:'mdef',d:{title:'',src:'دستی (ثبت دوره‌ای)',...d},u:Date.now(),c:Date.now()};
+  invalidateByE();try{put(recs[id]);}catch(e){}
+  go('rec','mdef',id);}
+function mQuickVal(mid){
+  const Mn=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const nowJ=g2j(new Date().getFullYear(),new Date().getMonth()+1,new Date().getDate());
+  const jy=view.myYr||nowJ[0];const jm=view.myMn&&view.myMn!=='همه'?view.myMn:Mn[nowJ[1]-1];
+  const v=prompt('مقدار «'+nameOf(mid)+'» برای '+jy+' '+jm+':');if(v==null)return;
+  const n=+faNum(String(v)).replace(/[,٬\s]/g,'');if(isNaN(n)){alert('عدد نامعتبر');return;}
+  const id='mval_'+Date.now();
+  recs[id]={id,e:'mval',d:{title:jy+' '+jm+' - '+nameOf(mid),mdef:[mid],jy,jm,value:n},u:Date.now(),c:Date.now()};
+  invalidateByE();try{put(recs[id]);}catch(e){}render();}
+window.mAddChild=mAddChild;window.mQuickVal=mQuickVal;
+
 function plmFallbackHTML(scope){ // بنر راهنما وقتی داده فاکتور نیست ولی «سود و زیان ماهانه» هست
   const pls=byE('plmonth');if(!pls.length)return '';
   const yrs=[...new Set(pls.map(r=>+r.d.jy||0).filter(Boolean))].sort();
@@ -5373,7 +5499,8 @@ function bizMenuHTML(){
   h+=sec('📊 داشبورد',
     it('bizkpi','📊 داشبورد کسب‌وکار',"go('bizkpi')",(canSee('invoice')||canSee('product')||canSee('purchinv')))
     +it('ceodash','🧭 داشبورد مدیرعامل',"go('ceodash')",(canSee('invoice')||canSee('product'))&&canView('ceodash'))
-    +it('ctrldash','🎛 داشبرد کنترلی',"go('ctrldash')",(canSee('invoice')||canSee('product'))&&canView('ctrldash')));
+    +it('ctrldash','🎛 داشبرد کنترلی',"go('ctrldash')",(canSee('invoice')||canSee('product'))&&canView('ctrldash'))
+    +it('mbuilder','🧩 ساختارساز شاخص‌ها',"go('mbuilder')",canSee('mdef')&&canView('mbuilder')));
   // 📦 کالا و خدمات
   h+=sec('📦 کالا و خدمات',ent('product')+ent('channel'));
   // 💼 فروش
@@ -5382,6 +5509,8 @@ function bizMenuHTML(){
     +it('salesdash','📈 داشبورد فروش',"go('salesdash')",canSee('invoice')&&canView('salesdash'))
     +it('plreport','💰 سود و زیان فروش',"go('plreport')",canSee('invoice')&&canView('plreport'))
     +ent('invoice')+ent('sale'));
+  // 🛍️ مشتریان
+  h+=sec('🛍️ مشتریان',ent('customer'));
   // 🚚 خرید و تامین
   h+=sec('🚚 خرید و تامین',
     it('pinvnew','🧾 ثبت فاکتور خرید',"pinvDraft=null;go('pinvnew')",canSee('purchinv')&&can('c','purchinv')&&canView('pinvnew'))
@@ -5397,6 +5526,8 @@ function bizMenuHTML(){
     +it('cashdash','💰 دفتر صندوق/بانک',"go('cashdash')",canSee('settle')&&canView('cashdash'))
     +it('pfdash','🔄 تسویه درگاه‌ها/پلتفرم‌ها',"go('pfdash')",canSee('pfsettle')&&canView('pfdash'))
     +ent('settle')+ent('expense')+ent('pbudget')+ent('gateway')+ent('pfsettle'));
+  // 📈 داده‌ها و شاخص‌ها
+  h+=sec('📈 داده‌ها و شاخص‌ها',ent('plmonth')+ent('kpival')+ent('ctrlval')+ent('mdef'));
   return h;
 }
 function nav(){
@@ -5502,6 +5633,7 @@ function render(){
     view.type==='bizkpi'?'📊 داشبورد کسب‌وکار':
     view.type==='ceodash'?'🧭 داشبورد مدیرعامل':
     view.type==='ctrldash'?'🎛 داشبرد کنترلی':
+    view.type==='mbuilder'?'🧩 ساختارساز شاخص‌ها':
     view.type==='pfdash'?'🔄 تسویه درگاه‌ها و پلتفرم‌ها':
     view.type==='epcfdash'?'🎛️ داشبورد EPCF':
     view.type==='cdash'?'🏢 داشبورد ساخت‌وساز':
@@ -5531,7 +5663,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',invdash:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',ctrldash:'ctrldash',mbuilder:'mbuilder',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -5556,6 +5688,7 @@ function render(){
     else if(view.type==='bizkpi')c.innerHTML=bizkpiHTML();
     else if(view.type==='ceodash')c.innerHTML=ceodashHTML();
     else if(view.type==='ctrldash')c.innerHTML=ctrldashHTML();
+    else if(view.type==='mbuilder')c.innerHTML=mbuilderHTML();
     else if(view.type==='pfdash')c.innerHTML=pfdashHTML();
     else if(view.type==='epcfdash')c.innerHTML=epcfdashHTML();
     else if(view.type==='cdash')c.innerHTML=cdashHTML();
@@ -5854,6 +5987,13 @@ function ctrldashHTML(){
     if(!rs.length)return null;const v=rs.reduce((a,r)=>a+(+r.d.value||0),0),t=rs.reduce((a,r)=>a+(+r.d.target||0),0);
     return {v:F(v)+(t?' / '+F(t):''),t,raw:v};};
   const nodeVal=nd=>{
+    if(nd._nd){ // 🧩 شاخص سفارشی کاربر
+      const v=myVal(nd._nd,view.cdYr,mIdx),t=myTarget(nd._nd,view.cdYr,mIdx);
+      if(v==null&&nd.kids){const ps=nd.kids.map(k=>nodeVal(k).p).filter(x=>x!=null);
+        return {v:nd.kids.length+' زیرشاخص',p:ps.length?ps.reduce((a,x)=>a+x,0)/ps.length:null,src:'تجمیع'};}
+      if(v==null)return {v:'ثبت نشده',p:null,src:''};
+      const p=t?(nd.d===0?ctrlClamp(v>0?t/v*100:100):ctrlClamp(v/t*100)):null;
+      return {v:abbrN(v)+(t?' │ هدف: '+abbrN(t):''),p,src:'من'};}
     const a=AUTO[nd.c]?AUTO[nd.c]():null;
     const m=man(nd.c);
     if(a){
@@ -5900,7 +6040,11 @@ function ctrldashHTML(){
     </div>`;};
   // ناوبری آبشاری
   view.cdPath=view.cdPath||[];
-  let lvl=CTRL_TREE,crumb=[['🎛 داشبرد کنترلی',-1]],cur=null;
+  const myTree=id=>byE('mdef').filter(x=>id?relIds(x,'parent').includes(id):!relIds(x,'parent').length)
+    .map(x=>{const ks=myTree(x.id);return {c:'my_'+x.id,n:x.d.title||'—',_nd:x,d:x.d.dir==='کمتر بهتر'?0:1,kids:ks.length?ks:undefined};});
+  const myRoots=myTree('');
+  const ROOT=myRoots.length?[...CTRL_TREE,{c:'my',n:'شاخص‌های من',ic:'🧩',kids:myRoots}]:CTRL_TREE;
+  let lvl=ROOT,crumb=[['🎛 داشبرد کنترلی',-1]],cur=null;
   view.cdPath.forEach((c,i)=>{const nd=lvl.find(x=>x.c===c);if(nd&&nd.kids){cur=nd;crumb.push([nd.n,i]);lvl=nd.kids;}});
   const bizOpts=byE('business').map(r=>`<option value="${r.id}" ${r.id===view.cdBiz?'selected':''}>${r.d.title}</option>`).join('');
   let h=`<div class="sec"><h3>🎛 داشبرد کنترلی <span style="flex:1"></span>
