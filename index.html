@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.51</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.52</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.51</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.52</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1053,6 +1053,17 @@ position:{ic:'👜',n:'سبد دارایی و مدیریت ثروت',grp:'سرم
  {k:'bdate',n:'تاریخ خرید',t:DAT},
  {k:'note',n:'توضیح',t:TXT}],
  cols:['title','kind','value','risk'],comp:'posBrief'},
+cfastudy:{ic:'🎓',n:'پیشرفت مطالعه CFA',grp:'سرمایه‌گذاری و ثروت',f:[
+ {k:'title',n:'عنوان (خودکار: سطح — مبحث)',t:TXT},
+ {k:'kind',n:'نوع رکورد',t:SEL,o:['پیشرفت مطالعه','آزمون آزمایشی']},
+ {k:'level',n:'سطح',t:SEL,o:['سطح ۱','سطح ۲','سطح ۳']},
+ {k:'topic',n:'مبحث (Topic)',t:TXT},
+ {k:'pct',n:'درصد پیشرفت مطالعه (۰ تا ۱۰۰)',t:NUM},
+ {k:'score',n:'نمره آزمون آزمایشی ٪ (برای نوع آزمون)',t:NUM},
+ {k:'sdate',n:'تاریخ',t:DAT},
+ {k:'person',n:'داوطلب (اختیاری)',t:REL,r:'hr',s:1},
+ {k:'note',n:'یادداشت',t:LNG}],
+ cols:['title','kind','level','pct','score'],comp:'cfaBrief'},
 /* ---------- حسابداری (دفتر کل، اسناد، بهای تمام‌شده) ---------- */
 acct:{ic:'🔢',n:'کدینگ حساب‌ها (کل حساب‌ها)',grp:'حسابداری',f:[
  {k:'code',n:'کد حساب',t:TXT},
@@ -2442,7 +2453,7 @@ const MODULES=[
  {id:'M08',n:'مالی و حقوقی',ents:['hrcontract','bizcontract','bank','tx','budget','leave']},
  {id:'M09',n:'حسابداری کامل و انبار',ents:['acct','voucher','vline','item','stockmv','cheque','payroll','costctr'],views:['gldash','glnew','chqdash']},
  {id:'M11',n:'صورت‌های مالی و تلفیق (IFRS)',ents:['finis','finbs','fincf'],views:['findash']},
- {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position'],views:['invdash']},
+ {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef','waste'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','mbuilder','mydash','pfdash']},
@@ -10778,89 +10789,250 @@ function procmapHTML(){
   return h;
 }
 /* ================= 💎 داشبورد سرمایه‌گذاری و خدمات مالی ================= */
+/* ===== 💎 سرمایه‌گذاری و ثروت — ابزار حرفه‌ای + آکادمی CFA (سه سطح، منطبق بر ساختار رسمی مؤسسه CFA) ===== */
+function cfaBrief(r){return {label:'سطح │ مبحث │ مقدار',v:esc(r.d.level||'—')+' │ '+esc(r.d.topic||'—')+' │ '+(r.d.kind==='آزمون آزمایشی'?('نمره '+(+r.d.score||0).toLocaleString('fa-IR')+'٪'):((+r.d.pct||0).toLocaleString('fa-IR')+'٪')),bad:false};}
+window.cfaBrief=cfaBrief;
+/* 📚 ساختار رسمی برنامه CFA — مباحث، وزن آزمون و سرفصل‌های مطالعه هر سطح (curriculum 2025/2026) */
+const CFA_CUR={
+ 'سطح ۱':{desc:'دانش پایه و ابزارهای سرمایه‌گذاری — ۱۸۰ سؤال چهارگزینه‌ای در دو جلسه',topics:[
+  {t:'اخلاق و استانداردهای حرفه‌ای',en:'Ethical & Professional Standards',w:'۱۵–۲۰٪',mid:17.5,ms:['کد اخلاق و استانداردهای رفتار حرفه‌ای','راهنمای کاربردی استانداردهای I تا VII','استانداردهای جهانی عملکرد سرمایه‌گذاری (GIPS)','اخلاق در عمل و چارچوب تصمیم اخلاقی']},
+  {t:'روش‌های کمی',en:'Quantitative Methods',w:'۶–۹٪',mid:7.5,ms:['ارزش زمانی پول و بازده‌ها','آمار توصیفی و توزیع‌های احتمال','نمونه‌گیری و آزمون فرضیه','رگرسیون خطی ساده','داده‌های حجیم و یادگیری ماشین (مقدماتی)']},
+  {t:'اقتصاد',en:'Economics',w:'۶–۹٪',mid:7.5,ms:['عرضه و تقاضا و ساختارهای بازار','چرخه‌های تجاری، تورم و بیکاری','سیاست پولی و مالی','تجارت بین‌الملل و جریان سرمایه','نرخ ارز (مقدماتی)','اقتصاد جغرافیایی']},
+  {t:'تحلیل صورت‌های مالی',en:'Financial Statement Analysis',w:'۱۱–۱۴٪',mid:12.5,ms:['صورت سود و زیان، ترازنامه و جریان نقد','موجودی کالا و دارایی‌های بلندمدت','مالیات بر درآمد و بدهی‌های غیرجاری','تکنیک‌های تحلیل مالی و نسبت‌ها','کیفیت گزارشگری مالی','مقدمه‌ای بر تحلیل شرکت‌ها']},
+  {t:'ناشران شرکتی',en:'Corporate Issuers',w:'۶–۹٪',mid:7.5,ms:['حاکمیت شرکتی و ذینفعان','ساختار سرمایه و اهرم','مدیریت سرمایه در گردش','بودجه‌بندی سرمایه‌ای و هزینه سرمایه','مدل‌های کسب‌وکار']},
+  {t:'سرمایه‌گذاری در سهام',en:'Equity Investments',w:'۱۱–۱۴٪',mid:12.5,ms:['ساختار و سازوکار بازارها','شاخص‌های بازار و کارایی بازار','تحلیل صنعت و شرکت','ارزش‌گذاری: DDM، جریان نقد و ضرایب قیمتی']},
+  {t:'درآمد ثابت',en:'Fixed Income',w:'۱۱–۱۴٪',mid:12.5,ms:['ویژگی‌ها و انواع اوراق بدهی','قیمت‌گذاری اوراق و منحنی بازده','دیرش، تحدب و ریسک نرخ بهره','تحلیل اعتباری','اوراق بهادارسازی‌شده (ABS/MBS)']},
+  {t:'مشتقه‌ها',en:'Derivatives',w:'۵–۸٪',mid:6.5,ms:['فوروارد، فیوچرز، سواپ و آپشن','قیمت‌گذاری بدون آربیتراژ','ارزش‌گذاری آپشن (مقدماتی)','کاربردهای پوشش ریسک']},
+  {t:'سرمایه‌گذاری‌های جایگزین',en:'Alternative Investments',w:'۷–۱۰٪',mid:8.5,ms:['سهام خصوصی و بدهی خصوصی','املاک و زیرساخت','صندوق‌های پوششی و کالاها','دارایی‌های دیجیتال']},
+  {t:'مدیریت پرتفوی',en:'Portfolio Management',w:'۸–۱۲٪',mid:10,ms:['ریسک و بازده و مرز کارا','CAPM و مدل‌های عاملی','بیانیه سیاست سرمایه‌گذاری (IPS)','مالی رفتاری (مقدماتی)','فین‌تک در مدیریت سرمایه‌گذاری']},
+ ]},
+ 'سطح ۲':{desc:'تحلیل و ارزش‌گذاری دارایی‌ها — ۲۲ وینیت (مطالعه موردی) با ۸۸ سؤال',topics:[
+  {t:'اخلاق و استانداردهای حرفه‌ای',en:'Ethical & Professional Standards',w:'۱۰–۱۵٪',mid:12.5,ms:['کاربرد استانداردها در موقعیت‌های پیچیده','Soft Dollar و مسئولیت امانی','رویه‌های پژوهش و تعارض منافع']},
+  {t:'روش‌های کمی',en:'Quantitative Methods',w:'۵–۱۰٪',mid:7.5,ms:['رگرسیون چندمتغیره و مفروضاتش','تحلیل سری‌های زمانی','یادگیری ماشین و پروژه‌های داده‌محور']},
+  {t:'اقتصاد',en:'Economics',w:'۵–۱۰٪',mid:7.5,ms:['برابری نرخ ارز و مدل‌های تعیین نرخ','رشد اقتصادی و بهره‌وری','مقررات‌گذاری و اثر آن بر بازارها']},
+  {t:'تحلیل صورت‌های مالی',en:'Financial Statement Analysis',w:'۱۰–۱۵٪',mid:12.5,ms:['سرمایه‌گذاری بین‌شرکتی و تلفیق','مزایای کارکنان و بازنشستگی','تسعیر عملیات خارجی','مؤسسات مالی','کیفیت گزارشگری و تکنیک‌های تحلیلی یکپارچه']},
+  {t:'ناشران شرکتی',en:'Corporate Issuers',w:'۵–۱۰٪',mid:7.5,ms:['سیاست تقسیم سود و بازخرید سهام','بازسازی شرکتی و M&A','ESG در تحلیل شرکتی','هزینه سرمایه پیشرفته']},
+  {t:'سرمایه‌گذاری در سهام',en:'Equity Investments',w:'۱۰–۱۵٪',mid:12.5,ms:['DDM و مدل‌های چندمرحله‌ای','FCFF و FCFE','ارزش‌گذاری ضرایب و سود باقیمانده','ارزش‌گذاری شرکت خصوصی']},
+  {t:'درآمد ثابت',en:'Fixed Income',w:'۱۰–۱۵٪',mid:12.5,ms:['ساختار زمانی نرخ بهره و مدل‌های منحنی','اوراق با اختیار (درخت دوجمله‌ای)','مدل‌های ریسک اعتباری و CDS','تحلیل اوراق ساختاریافته']},
+  {t:'مشتقه‌ها',en:'Derivatives',w:'۵–۱۰٪',mid:7.5,ms:['قیمت‌گذاری فوروارد/فیوچرز/سواپ','بلک-شولز و یونانی‌ها','استراتژی‌های آپشن']},
+  {t:'سرمایه‌گذاری‌های جایگزین',en:'Alternative Investments',w:'۵–۱۰٪',mid:7.5,ms:['ارزش‌گذاری املاک درآمدزا و REIT','ارزش‌گذاری سهام خصوصی','کالاها و قراردادهای آتی کالا']},
+  {t:'مدیریت پرتفوی',en:'Portfolio Management',w:'۱۰–۱۵٪',mid:12.5,ms:['مدل‌های چندعاملی و ریسک فعال','اقتصادسنجی بازار سرمایه','سنجش ریسک (VaR) و مدیریت آن','مالی رفتاری در تصمیم‌ها','معاملات الگوریتمی']},
+ ]},
+ 'سطح ۳':{desc:'مدیریت پرتفوی و برنامه‌ریزی ثروت — ساختاردهی (Essay) + آیتم‌ست؛ هسته مشترک + یک مسیر تخصصی',topics:[
+  {t:'اخلاق و استانداردهای حرفه‌ای',en:'Ethical & Professional Standards',w:'۱۰–۱۵٪',mid:12.5,ms:['کاربرد استانداردها در مدیریت دارایی','Asset Manager Code','GIPS برای مدیران دارایی']},
+  {t:'تخصیص دارایی',en:'Asset Allocation',w:'۱۵–۲۰٪',mid:17.5,ms:['انتظارات بازار سرمایه (CME)','تخصیص استراتژیک و تاکتیکی','تخصیص با محدودیت‌های واقعی','رویکردهای مبتنی بر بدهی (LDI)']},
+  {t:'ساخت پرتفوی',en:'Portfolio Construction',w:'۱۵–۲۰٪',mid:17.5,ms:['استراتژی‌های سهام فعال/غیرفعال','استراتژی‌های درآمد ثابت (دیرش/اعتبار)','پرتفوی چنددارایی و ریسک‌محور','اجرای معاملات و هزینه‌ها']},
+  {t:'مشتقه‌ها و مدیریت ریسک',en:'Derivatives & Risk Management',w:'۱۰–۱۵٪',mid:12.5,ms:['پوشش ریسک ارز','کاربرد سواپ/فیوچرز/آپشن در پرتفوی','مدیریت ریسک سازمانی']},
+  {t:'سنجش عملکرد',en:'Performance Measurement',w:'۵–۱۰٪',mid:7.5,ms:['تحلیل بازده (Attribution)','ارزیابی مدیر و Appraisal','GIPS پیشرفته']},
+  {t:'مسیر تخصصی (یکی از سه)',en:'Specialized Pathway',w:'۳۰–۳۵٪',mid:32.5,ms:['🧭 مدیریت پرتفوی: شاخص‌سازی، فعال کمی، ETF و اوراق آلفا','🏛️ ثروت خصوصی: برنامه‌ریزی مالی شخصی، مالیات، ارث و انتقال ثروت','🏗️ بازارهای خصوصی: PE/VC، بدهی خصوصی، املاک و زیرساخت']},
+ ]}};
+/* 🎯 پیشرفت مطالعه: آخرین رکورد هر (سطح، مبحث) */
+function cfaProg(level,topic){const rs=byE('cfastudy').filter(r=>r.d.kind!=='آزمون آزمایشی'&&r.d.level===level&&r.d.topic===topic).sort((a,b)=>b.u-a.u);return rs.length?Math.max(0,Math.min(100,+rs[0].d.pct||0)):0;}
+function cfaSetProg(level,topic){
+  if(!can('c','cfastudy')){alert('اجازه ثبت ندارید');return;}
+  const cur=cfaProg(level,topic);const nxt=cur>=100?0:cur+25;
+  put({id:uid(),e:'cfastudy',d:{title:level+' — '+topic,kind:'پیشرفت مطالعه',level,topic,pct:nxt,sdate:{s:today()},_by:myEmail()},u:Date.now()});
+}
+window.cfaSetProg=cfaSetProg;
+function cfaReadiness(level){const L=CFA_CUR[level];if(!L)return 0;let tw=0,got=0;L.topics.forEach(tp=>{tw+=tp.mid;got+=tp.mid*cfaProg(level,tp.t)/100;});return tw?Math.round(got/tw*100):0;}
+/* 🧮 ماشین‌حساب‌های مالی (TVM / NPV-IRR) */
+function calcNum(id){const el=document.getElementById(id);return el?(+faNum(String(el.value||'')).replace(/[,٬\s]/g,'')||0):0;}
+function tvmCalc(){
+  const pv=calcNum('tvm_pv'),pmt=calcNum('tvm_pmt'),r=calcNum('tvm_r')/100,n=calcNum('tvm_n');
+  const fv=pv*Math.pow(1+r,n)+(r?pmt*((Math.pow(1+r,n)-1)/r):pmt*n);
+  const pvOfFv=calcNum('tvm_fv')?calcNum('tvm_fv')/Math.pow(1+r,n):0;
+  const out=document.getElementById('tvm_out');if(!out)return;
+  out.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">ارزش آتی (FV) سرمایه + اقساط</div><div style="font-size:16px;font-weight:800;color:#ecd98f">${money(Math.round(fv))}</div></div>
+    ${calcNum('tvm_fv')?`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">ارزش فعلی مبلغ هدف</div><div style="font-size:16px;font-weight:800">${money(Math.round(pvOfFv))}</div></div>`:''}
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">کل واریزی</div><div style="font-size:16px;font-weight:800">${money(Math.round(pv+pmt*n))}</div></div>
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">سود مرکب</div><div style="font-size:16px;font-weight:800;color:var(--ok)">${money(Math.round(fv-pv-pmt*n))}</div></div></div>`;
+}
+window.tvmCalc=tvmCalc;
+function npvIrrCalc(){
+  const inv=calcNum('ni_inv'),r=calcNum('ni_r')/100;
+  const cfs=String((document.getElementById('ni_cfs')||{}).value||'').split(/[،,]/).map(s=>+faNum(s.trim()).replace(/[٬\s]/g,'')||0).filter((v,i,a)=>!(v===0&&i===a.length-1));
+  let npv=-inv;cfs.forEach((c,i)=>npv+=c/Math.pow(1+r,i+1));
+  // IRR دوبخشی
+  let irr=null;let lo=-0.99,hi=10;const f=x=>{let s=-inv;cfs.forEach((c,i)=>s+=c/Math.pow(1+x,i+1));return s;};
+  if(f(lo)*f(hi)<0){for(let k=0;k<80;k++){const m2=(lo+hi)/2;(f(lo)*f(m2)<=0)?hi=m2:lo=m2;}irr=Math.round((lo+hi)/2*1000)/10;}
+  let pi=inv?((npv+inv)/inv):null;
+  // بازگشت سرمایه ساده
+  let cum=-inv,pb=null;for(let i2=0;i2<cfs.length;i2++){const prev=cum;cum+=cfs[i2];if(prev<0&&cum>=0){pb=Math.round((i2+ (cum===0?1:(-prev/cfs[i2])))*10)/10;break;}}
+  const out=document.getElementById('ni_out');if(!out)return;
+  out.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">NPV</div><div style="font-size:16px;font-weight:800;color:${npv>=0?'var(--ok)':'var(--bad)'}">${money(Math.round(npv))}</div></div>
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">IRR</div><div style="font-size:16px;font-weight:800">${irr==null?'—':irr.toLocaleString('fa-IR')+'٪'}</div></div>
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">PI</div><div style="font-size:16px;font-weight:800">${pi==null?'—':(Math.round(pi*100)/100).toLocaleString('fa-IR')}</div></div>
+    <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">بازگشت سرمایه</div><div style="font-size:16px;font-weight:800">${pb==null?'برنمی‌گردد':pb.toLocaleString('fa-IR')+' سال'}</div></div></div>
+    <div style="font-size:10.5px;color:var(--tx2);margin-top:6px">${npv>=0?'✅ با این نرخ تنزیل، طرح ارزش‌آفرین است (NPV مثبت).':'🚫 با این نرخ تنزیل، طرح توجیه ندارد.'}</div>`;
+}
+window.npvIrrCalc=npvIrrCalc;
 function invdashHTML(){
   const vals=byE('valuation'),feas=byE('feasproj'),poss=byE('position');
+  if(!view.ivTab)view.ivTab='port';
+  const TB=[['port','👜 پورتفوی و تخصیص دارایی'],['tools','💎 ارزش‌گذاری و طرح‌ها'],['calc','🧮 ماشین‌حساب مالی'],['cfa','🎓 آکادمی CFA']];
   let h=`<div class="tools">
-    ${can('c','valuation')?`<button class="btn sm" onclick="openRec('valuation')">＋ ارزش‌گذاری</button>`:''}
-    ${can('c','feasproj')?`<button class="btn sm" onclick="openRec('feasproj')">＋ طرح توجیهی</button>`:''}
-    ${can('c','position')?`<button class="btn sm" onclick="openRec('position')">＋ دارایی سبد</button>`:''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${TB.map(([k,n])=>`<button class="btn ${view.ivTab===k?'':'gh'} sm" onclick="view.ivTab='${k}';render()">${n}</button>`).join('')}</div>
+    <span style="flex:1"></span>
+    ${can('c','valuation')?`<button class="btn gh sm" onclick="openRec('valuation')">＋ ارزش‌گذاری</button>`:''}
+    ${can('c','feasproj')?`<button class="btn gh sm" onclick="openRec('feasproj')">＋ طرح توجیهی</button>`:''}
+    ${can('c','position')?`<button class="btn gh sm" onclick="openRec('position')">＋ دارایی سبد</button>`:''}
   </div>`;
-  // 👜 مدیریت ثروت — کارت‌ها
+  const T=view.ivTab;
   const wealth=poss.reduce((a,p)=>a+(+p.d.value||0),0);
-  const costT=poss.reduce((a,p)=>a+(+p.d.cost||0),0);
-  const wRet=wealth?Math.round(poss.reduce((a,p)=>a+(+p.d.value||0)*(+p.d.expret||0),0)/wealth*10)/10:null;
-  const feasC=feas.map(f=>({f,c:feasCalc(f.d)})).filter(x=>x.c);
-  const npvPos=feasC.filter(x=>x.c.npv>0).length;
-  const bestIrr=feasC.reduce((a,x)=>x.c.irr!=null&&(a==null||x.c.irr>a)?x.c.irr:a,null);
-  const undervalued=vals.map(v=>dcfCalc(v.d)).filter(c=>c&&c.up!=null&&c.up>0).length;
-  h+=`<div class="cards">
-    ${card('👜 کل ثروت (ارزش روز)',abbrN(wealth),null,"go('list','position')")}
-    ${card('سود/زیان سبد',abbrN(wealth-costT),(wealth-costT)<0?'var(--bad)':'var(--ok)')}
-    ${card('بازده انتظاری وزنی سبد',wRet==null?'—':wRet.toLocaleString('fa-IR')+'٪')}
-    ${card('💎 سهم‌های زیر ارزش ذاتی',undervalued+' از '+vals.length,null,"go('list','valuation')")}
-    ${card('📐 طرح‌های توجیه‌پذیر (NPV+)',npvPos+' از '+feasC.length,null,"go('list','feasproj')")}
-    ${card('بهترین IRR طرح‌ها',bestIrr==null?'—':bestIrr.toLocaleString('fa-IR')+'٪')}
-  </div>`;
-  // 💎 ارزش‌گذاری‌ها
-  if(vals.length){
-    h+=`<div class="sec"><h3>💎 ارزش‌گذاری سهام و شرکت‌ها — DCF و ضرایب</h3>
-    <div class="tblwrap"><table><thead><tr><th>سهم / شرکت</th><th>قیمت</th><th>ارزش ذاتی DCF</th><th>نرخ تنزیل</th><th>سهم ارزش پایانی</th><th>ضرایب (P/E │ P/B │ P/S)</th><th>حاشیه تا ارزش ذاتی</th></tr></thead><tbody>`;
-    vals.forEach(v=>{
-      const c=dcfCalc(v.d),m=multCalc(v.d);
-      const mtxt=m.length?m.map(([n,x])=>n+': '+money(Math.round(x))).join(' │ '):'—';
-      const upC=c&&c.up!=null?(c.up>0?'var(--ok)':'var(--bad)'):'var(--tx2)';
-      h+=`<tr onclick="go('rec','valuation','${v.id}')">
-        <td>${esc(v.d.title||'—')}</td><td>${v.d.price?money(+v.d.price):'—'}</td>
-        <td style="color:#ecd98f">${c?(c.vps!=null?money(Math.round(c.vps)):abbrN(Math.round(c.eq))):'ورودی ناقص'}</td>
-        <td>${c?Math.round(c.r*1000)/10+'٪':'—'}</td>
-        <td>${c&&c.tvShare!=null?c.tvShare.toLocaleString('fa-IR')+'٪':'—'}</td>
-        <td style="font-size:11px">${mtxt}</td>
-        <td style="color:${upC};font-weight:700">${c&&c.up!=null?(c.up>0?'+':'')+c.up.toLocaleString('fa-IR')+'٪':'—'}</td></tr>`;
-    });
-    h+=`</tbody></table></div>
-    <p style="font-size:10.5px;color:var(--tx2)">حاشیه مثبت یعنی قیمت بازار پایین‌تر از ارزش ذاتی است (حاشیه ایمنی). اگر «نرخ تنزیل» خالی باشد از CAPM (نرخ بدون ریسک + β × صرف ریسک بازار) محاسبه می‌شود. سهم بالای ۷۵٪ ارزش پایانی یعنی حساسیت زیاد به مفروضات رشد پایدار.</p></div>`;
+  if(T==='port'){
+    const costT=poss.reduce((a,p)=>a+(+p.d.cost||0),0);
+    const wRet=wealth?Math.round(poss.reduce((a,p)=>a+(+p.d.value||0)*(+p.d.expret||0),0)/wealth*10)/10:null;
+    const hiRisk=poss.filter(p=>['زیاد','خیلی زیاد'].includes(p.d.risk)).reduce((a,p)=>a+(+p.d.value||0),0);
+    h+=`<div class="cards">
+      ${card('👜 کل ثروت (ارزش روز)',abbrN(wealth),null,"go('list','position')")}
+      ${card('سود/زیان سبد',abbrN(wealth-costT),(wealth-costT)<0?'var(--bad)':'var(--ok)')}
+      ${card('بازده انتظاری وزنی سبد',wRet==null?'—':wRet.toLocaleString('fa-IR')+'٪')}
+      ${card('سهم دارایی‌های پرریسک',wealth?Math.round(hiRisk/wealth*100).toLocaleString('fa-IR')+'٪':'—',wealth&&hiRisk/wealth>0.5?'var(--bad)':null)}
+    </div>`;
+    if(poss.length){
+      const kinds={};poss.forEach(p=>{const k=p.d.kind||'سایر';kinds[k]=(kinds[k]||0)+(+p.d.value||0);});
+      const cols=[CH.yellow,CH.aqua,CH.violet,CH.blue,CH.red,CH.muted,'#8ec6ea','#9a9dee','#48cdb0'];
+      const items=Object.entries(kinds).sort((a,b)=>b[1]-a[1]).map(([l,v],i)=>({l:l+' ('+abbrN(v)+')',v:Math.max(1,Math.round(v)),c:cols[i%cols.length]}));
+      h+=`<div class="chartgrid">
+        <div class="sec"><h3>👜 ترکیب سبد دارایی (ارزش روز)</h3>${donutSVG(items)}</div>
+        <div class="sec"><h3>🎯 توازن مجدد — وزن فعلی در برابر وزن هدف</h3>
+        <div class="tblwrap"><table><thead><tr><th>دارایی</th><th>وزن فعلی</th><th>وزن هدف</th><th>اقدام</th></tr></thead><tbody>
+        ${poss.map(p=>{
+          const cur=wealth?Math.round((+p.d.value||0)/wealth*1000)/10:0;
+          const tgt=+p.d.talloc||null;
+          const gap=tgt==null?null:Math.round((cur-tgt)*10)/10;
+          const act=gap==null?'—':Math.abs(gap)<2?'✅ متوازن':gap>0?'🔻 کاهش '+Math.abs(gap).toLocaleString('fa-IR')+'٪':'🔺 افزایش '+Math.abs(gap).toLocaleString('fa-IR')+'٪';
+          return `<tr onclick="go('rec','position','${p.id}')"><td>${esc(p.d.title||'—')}</td>
+            <td>${cur.toLocaleString('fa-IR')}٪</td><td>${tgt==null?'—':tgt.toLocaleString('fa-IR')+'٪'}</td>
+            <td style="color:${gap==null?'var(--tx2)':Math.abs(gap)<2?'var(--ok)':'#ecd98f'}">${act}</td></tr>`;
+        }).join('')}
+        </tbody></table></div></div>
+      </div>`;
+    } else h+=`<div class="empty">هنوز دارایی‌ای در سبد ثبت نشده — «＋ دارایی سبد» را بزن</div>`;
   }
-  // 📐 طرح‌های توجیهی
-  if(feas.length){
-    h+=`<div class="sec"><h3>📐 طرح‌های توجیهی — شاخص‌های بودجه‌بندی سرمایه</h3>
-    <div class="tblwrap"><table><thead><tr><th>طرح</th><th>وضعیت</th><th>سرمایه اولیه</th><th>NPV</th><th>IRR</th><th>PI</th><th>بازگشت ساده</th><th>بازگشت تنزیلی</th><th>تصمیم</th></tr></thead><tbody>`;
-    feas.forEach(f=>{
-      const c=feasCalc(f.d);
-      const dec=!c?['—','var(--tx2)']:c.npv>0&&c.pi>=1.2?['✅ توجیه‌پذیر','var(--ok)']:c.npv>0?['🟡 مرزی — تحلیل حساسیت','#ecd98f']:['🚫 فاقد توجیه','var(--bad)'];
-      h+=`<tr onclick="go('rec','feasproj','${f.id}')">
-        <td>${esc(f.d.title||'—')}</td><td>${esc(f.d.status||'—')}</td><td>${abbrN(+f.d.inv0||0)}</td>
-        <td style="color:${c?(c.npv>0?'var(--ok)':'var(--bad)'):'var(--tx2)'}">${c?abbrN(c.npv):'—'}</td>
-        <td>${c&&c.irr!=null?c.irr.toLocaleString('fa-IR')+'٪':'—'}</td>
-        <td>${c?c.pi.toLocaleString('fa-IR'):'—'}</td>
-        <td>${c&&c.pb!=null?c.pb.toLocaleString('fa-IR')+' سال':'—'}</td>
-        <td>${c&&c.dpb!=null?c.dpb.toLocaleString('fa-IR')+' سال':'—'}</td>
-        <td style="color:${dec[1]};font-weight:700">${dec[0]}</td></tr>`;
-    });
-    h+=`</tbody></table></div>
-    <p style="font-size:10.5px;color:var(--tx2)">معیارها: NPV مثبت با نرخ تنزیل انتخابی، IRR بالاتر از هزینه سرمایه، PI ≥ ۱ (بالای ۱٫۲ مطمئن‌تر)، و دوره بازگشت تنزیلی داخل عمر طرح. ارزش اسقاط به جریان سال آخر افزوده می‌شود.</p></div>`;
+  if(T==='tools'){
+    const feasC=feas.map(f=>({f,c:feasCalc(f.d)})).filter(x2=>x2.c);
+    const npvPos=feasC.filter(x2=>x2.c.npv>0).length;
+    const bestIrr=feasC.reduce((a,x2)=>x2.c.irr!=null&&(a==null||x2.c.irr>a)?x2.c.irr:a,null);
+    const undervalued=vals.map(v=>dcfCalc(v.d)).filter(c=>c&&c.up!=null&&c.up>0).length;
+    h+=`<div class="cards">
+      ${card('💎 سهم‌های زیر ارزش ذاتی',undervalued+' از '+vals.length,null,"go('list','valuation')")}
+      ${card('📐 طرح‌های توجیه‌پذیر (NPV+)',npvPos+' از '+feasC.length,null,"go('list','feasproj')")}
+      ${card('بهترین IRR طرح‌ها',bestIrr==null?'—':bestIrr.toLocaleString('fa-IR')+'٪')}
+    </div>`;
+    if(vals.length){
+      h+=`<div class="sec"><h3>💎 ارزش‌گذاری سهام و شرکت‌ها — DCF و ضرایب</h3>
+      <div class="tblwrap"><table><thead><tr><th>سهم / شرکت</th><th>قیمت</th><th>ارزش ذاتی DCF</th><th>نرخ تنزیل</th><th>سهم ارزش پایانی</th><th>ضرایب (P/E │ P/B │ P/S)</th><th>حاشیه تا ارزش ذاتی</th></tr></thead><tbody>`;
+      vals.forEach(v=>{
+        const c=dcfCalc(v.d),m=multCalc(v.d);
+        const mtxt=m.length?m.map(([n2,x2])=>n2+': '+money(Math.round(x2))).join(' │ '):'—';
+        const upC=c&&c.up!=null?(c.up>0?'var(--ok)':'var(--bad)'):'var(--tx2)';
+        h+=`<tr onclick="go('rec','valuation','${v.id}')">
+          <td>${esc(v.d.title||'—')}</td><td>${v.d.price?money(+v.d.price):'—'}</td>
+          <td style="color:#ecd98f">${c?(c.vps!=null?money(Math.round(c.vps)):abbrN(Math.round(c.eq))):'ورودی ناقص'}</td>
+          <td>${c?Math.round(c.r*1000)/10+'٪':'—'}</td>
+          <td>${c&&c.tvShare!=null?c.tvShare.toLocaleString('fa-IR')+'٪':'—'}</td>
+          <td style="font-size:11px">${mtxt}</td>
+          <td style="color:${upC};font-weight:700">${c&&c.up!=null?(c.up>0?'+':'')+c.up.toLocaleString('fa-IR')+'٪':'—'}</td></tr>`;
+      });
+      h+=`</tbody></table></div>
+      <p style="font-size:10.5px;color:var(--tx2)">حاشیه مثبت یعنی قیمت بازار پایین‌تر از ارزش ذاتی است (حاشیه ایمنی). اگر «نرخ تنزیل» خالی باشد از CAPM محاسبه می‌شود. سهم بالای ۷۵٪ ارزش پایانی یعنی حساسیت زیاد به مفروضات رشد پایدار.</p></div>`;
+    }
+    if(feas.length){
+      h+=`<div class="sec"><h3>📐 طرح‌های توجیهی — شاخص‌های بودجه‌بندی سرمایه</h3>
+      <div class="tblwrap"><table><thead><tr><th>طرح</th><th>وضعیت</th><th>سرمایه اولیه</th><th>NPV</th><th>IRR</th><th>PI</th><th>بازگشت ساده</th><th>بازگشت تنزیلی</th><th>تصمیم</th></tr></thead><tbody>`;
+      feas.forEach(f=>{
+        const c=feasCalc(f.d);
+        const dec=!c?['—','var(--tx2)']:c.npv>0&&c.pi>=1.2?['✅ توجیه‌پذیر','var(--ok)']:c.npv>0?['🟡 مرزی — تحلیل حساسیت','#ecd98f']:['🚫 فاقد توجیه','var(--bad)'];
+        h+=`<tr onclick="go('rec','feasproj','${f.id}')">
+          <td>${esc(f.d.title||'—')}</td><td>${esc(f.d.status||'—')}</td><td>${abbrN(+f.d.inv0||0)}</td>
+          <td style="color:${c?(c.npv>0?'var(--ok)':'var(--bad)'):'var(--tx2)'}">${c?abbrN(c.npv):'—'}</td>
+          <td>${c&&c.irr!=null?c.irr.toLocaleString('fa-IR')+'٪':'—'}</td>
+          <td>${c?c.pi.toLocaleString('fa-IR'):'—'}</td>
+          <td>${c&&c.pb!=null?c.pb.toLocaleString('fa-IR')+' سال':'—'}</td>
+          <td>${c&&c.dpb!=null?c.dpb.toLocaleString('fa-IR')+' سال':'—'}</td>
+          <td style="color:${dec[1]};font-weight:700">${dec[0]}</td></tr>`;
+      });
+      h+=`</tbody></table></div>
+      <p style="font-size:10.5px;color:var(--tx2)">معیارها: NPV مثبت با نرخ تنزیل انتخابی، IRR بالاتر از هزینه سرمایه، PI ≥ ۱ (بالای ۱٫۲ مطمئن‌تر)، دوره بازگشت تنزیلی داخل عمر طرح.</p></div>`;
+    }
+    if(!vals.length&&!feas.length)h+=`<div class="empty">با دکمه‌های بالا اولین ارزش‌گذاری یا طرح توجیهی را ثبت کنید</div>`;
   }
-  // 👜 سبد و تخصیص دارایی
-  if(poss.length){
-    const kinds={};poss.forEach(p=>{const k=p.d.kind||'سایر';kinds[k]=(kinds[k]||0)+(+p.d.value||0);});
-    const cols=[CH.yellow,CH.aqua,CH.violet,CH.blue,CH.red,CH.muted,'#8ec6ea','#9a9dee','#48cdb0'];
-    const items=Object.entries(kinds).sort((a,b)=>b[1]-a[1]).map(([l,v],i)=>({l:l+' ('+abbrN(v)+')',v:Math.max(1,Math.round(v)),c:cols[i%cols.length]}));
+  if(T==='calc'){
+    const lbl='style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px"';
     h+=`<div class="chartgrid">
-      <div class="sec"><h3>👜 ترکیب سبد دارایی (ارزش روز)</h3>${donutSVG(items)}</div>
-      <div class="sec"><h3>🎯 توازن مجدد — وزن فعلی در برابر وزن هدف</h3>
-      <div class="tblwrap"><table><thead><tr><th>دارایی</th><th>وزن فعلی</th><th>وزن هدف</th><th>اقدام</th></tr></thead><tbody>
-      ${poss.map(p=>{
-        const cur=wealth?Math.round((+p.d.value||0)/wealth*1000)/10:0;
-        const tgt=+p.d.talloc||null;
-        const gap=tgt==null?null:Math.round((cur-tgt)*10)/10;
-        const act=gap==null?'—':Math.abs(gap)<2?'✅ متوازن':gap>0?'🔻 کاهش '+Math.abs(gap).toLocaleString('fa-IR')+'٪':'🔺 افزایش '+Math.abs(gap).toLocaleString('fa-IR')+'٪';
-        return `<tr onclick="go('rec','position','${p.id}')"><td>${esc(p.d.title||'—')}</td>
-          <td>${cur.toLocaleString('fa-IR')}٪</td><td>${tgt==null?'—':tgt.toLocaleString('fa-IR')+'٪'}</td>
-          <td style="color:${gap==null?'var(--tx2)':Math.abs(gap)<2?'var(--ok)':'#ecd98f'}">${act}</td></tr>`;
-      }).join('')}
-      </tbody></table></div></div>
+    <div class="sec"><h3>⏳ ارزش زمانی پول (TVM) — پس‌انداز و سود مرکب</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+        <div><label ${lbl}>سرمایه اولیه (PV)</label><input id="tvm_pv" inputmode="numeric" dir="ltr" placeholder="100000000"></div>
+        <div><label ${lbl}>واریز دوره‌ای (PMT)</label><input id="tvm_pmt" inputmode="numeric" dir="ltr" placeholder="0"></div>
+        <div><label ${lbl}>نرخ سود هر دوره ٪</label><input id="tvm_r" inputmode="numeric" dir="ltr" placeholder="30"></div>
+        <div><label ${lbl}>تعداد دوره‌ها</label><input id="tvm_n" inputmode="numeric" dir="ltr" placeholder="5"></div>
+        <div><label ${lbl}>مبلغ هدف آینده (اختیاری — برای PV)</label><input id="tvm_fv" inputmode="numeric" dir="ltr" placeholder=""></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn sm" onclick="tvmCalc()">🧮 محاسبه</button></div>
+      <div id="tvm_out" style="margin-top:10px"></div></div>
+    <div class="sec"><h3>📐 NPV │ IRR │ PI — ارزیابی سریع طرح</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+        <div><label ${lbl}>سرمایه‌گذاری اولیه</label><input id="ni_inv" inputmode="numeric" dir="ltr" placeholder="500000000"></div>
+        <div><label ${lbl}>نرخ تنزیل ٪</label><input id="ni_r" inputmode="numeric" dir="ltr" placeholder="35"></div>
+      </div>
+      <div style="margin-top:8px"><label ${lbl}>جریان‌های نقدی سال‌های ۱ به بعد (با کاما جدا کن)</label>
+      <input id="ni_cfs" dir="ltr" placeholder="200000000, 250000000, 300000000"></div>
+      <div style="margin-top:10px"><button class="btn sm" onclick="npvIrrCalc()">🧮 محاسبه</button></div>
+      <div id="ni_out" style="margin-top:10px"></div>
+      <p style="font-size:10.5px;color:var(--tx2);margin-top:8px">برای ثبت دائمی و مقایسه چند طرح، از «＋ طرح توجیهی» استفاده کن — این ماشین‌حساب برای بررسی فوری است.</p></div>
     </div>`;
   }
-  if(!vals.length&&!feas.length&&!poss.length)h+=`<div class="empty">با دکمه‌های بالا اولین ارزش‌گذاری، طرح توجیهی یا دارایی سبد را ثبت کنید</div>`;
+  if(T==='cfa'){
+    if(!view.cfaLvl)view.cfaLvl='سطح ۱';
+    const L=CFA_CUR[view.cfaLvl];
+    const ready=cfaReadiness(view.cfaLvl);
+    const rc=ready>=80?'var(--ok)':ready>=40?'#ecd98f':'var(--bad)';
+    const mocks=byE('cfastudy').filter(r=>r.d.kind==='آزمون آزمایشی'&&r.d.level===view.cfaLvl).sort((a,b)=>(ds(b.d.sdate)||'').localeCompare(ds(a.d.sdate)||''));
+    h+=`<div class="sec"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <b style="font-size:13.5px">🎓 آکادمی CFA — برنامه سه‌سطحی مؤسسه CFA</b><span style="flex:1"></span>
+      ${Object.keys(CFA_CUR).map(l=>`<button class="btn sm ${view.cfaLvl===l?'':'gh'}" onclick="view.cfaLvl='${l}';render()">${l}</button>`).join('')}
+      ${can('c','cfastudy')?`<button class="btn gh sm" onclick="openRec('cfastudy')">📝 ثبت آزمون آزمایشی</button>`:''}</div>
+      <div style="font-size:11.5px;color:var(--tx2);margin-top:6px">${esc(L.desc)} · وزن‌ها مطابق ساختار رسمی آزمون. روی نوار پیشرفت هر مبحث بزن تا ۲۵٪-۲۵٪ جلو برود (۱۰۰٪ → صفر می‌شود).</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap">
+        <div style="flex-shrink:0;text-align:center">
+          <svg width=110 height=110 viewBox="0 0 110 110">
+            <circle cx=55 cy=55 r=44 fill=none stroke="var(--bg3)" stroke-width=11/>
+            <circle cx=55 cy=55 r=44 fill=none stroke="${rc}" stroke-width=11 stroke-linecap=round stroke-dasharray="${(ready/100*276.5).toFixed(1)} 276.5" transform="rotate(-90 55 55)"/>
+            <text x=55 y=52 text-anchor=middle font-size=20 font-weight=800 fill="${rc}">${ready.toLocaleString('fa-IR')}٪</text>
+            <text x=55 y=70 text-anchor=middle font-size=8.5 fill="var(--tx2)">آمادگی وزنی</text></svg>
+        </div>
+        <div style="flex:1;min-width:220px;font-size:11.5px;color:var(--tx2);line-height:2">آمادگی = میانگین پیشرفت مباحث، وزن‌شده با وزن هر مبحث در آزمون. مباحث پروزن (${esc(L.topics.slice().sort((a,b)=>b.mid-a.mid).slice(0,2).map(t2=>t2.t).join('، '))}) بیشترین اثر را دارند — اول همان‌ها را قوی کن.${mocks.length?` · آخرین آزمون آزمایشی: <b style="color:var(--tx)">${(+mocks[0].d.score||0).toLocaleString('fa-IR')}٪</b>`:''}</div>
+      </div></div>`;
+    h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px">`;
+    L.topics.forEach(tp=>{
+      const pg=cfaProg(view.cfaLvl,tp.t);
+      const pc=pg>=100?'var(--ok)':pg>=50?'#ecd98f':pg>0?'#ff9f0a':'var(--bg3)';
+      const key=view.cfaLvl+'|'+tp.t;const open=view.cfaOpen===key;
+      h+=`<div class="sec" style="padding:12px">
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="view.cfaOpen='${open?'':key}';render()">
+          <b style="flex:1;font-size:12.5px">${esc(tp.t)}</b>
+          <span class="chip" style="background:var(--bg3);font-size:10px" title="وزن در آزمون">${esc(tp.w)}</span>
+          <span style="color:var(--ac)">${open?'▾':'◂'}</span></div>
+        <div style="font-size:10px;color:var(--tx2);margin:2px 0 8px" dir="ltr">${esc(tp.en)}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div onclick="cfaSetProg('${view.cfaLvl}','${tp.t.replace(/'/g,"\\'")}');" title="کلیک: +۲۵٪" style="flex:1;height:12px;border-radius:6px;background:var(--bg3);overflow:hidden;cursor:pointer"><div style="height:100%;width:${pg}%;background:${pc}"></div></div>
+          <b style="width:40px;text-align:left;font-size:12px;color:${pg>=100?'var(--ok)':'var(--tx)'}">${pg.toLocaleString('fa-IR')}٪</b></div>
+        ${open?`<div style="margin-top:9px;font-size:11.5px;line-height:2.1;color:var(--tx2)">📚 سرفصل‌های مطالعه:${tp.ms.map(m2=>`<div>• ${esc(m2)}</div>`).join('')}</div>`:''}
+      </div>`;
+    });
+    h+=`</div>`;
+    if(mocks.length){
+      h+=`<div class="sec" style="margin-top:12px"><h3>📝 آزمون‌های آزمایشی — ${esc(view.cfaLvl)}</h3>
+      <div class="tblwrap"><table><thead><tr><th>تاریخ</th><th>مبحث/کل</th><th>نمره</th><th>یادداشت</th></tr></thead><tbody>
+      ${mocks.slice(0,10).map(m2=>`<tr onclick="go('rec','cfastudy','${m2.id}')" style="cursor:pointer"><td style="text-align:center">${esc(iso2jstr(ds(m2.d.sdate))||'—')}</td><td style="text-align:right">${esc(m2.d.topic||'کل آزمون')}</td><td style="text-align:center;font-weight:800;color:${(+m2.d.score||0)>=70?'var(--ok)':(+m2.d.score||0)>=60?'#ecd98f':'var(--bad)'}">${(+m2.d.score||0).toLocaleString('fa-IR')}٪</td><td style="text-align:right;font-size:11px;color:var(--tx2)">${esc(m2.d.note||'—')}</td></tr>`).join('')}
+      </tbody></table></div>
+      <p style="font-size:10.5px;color:var(--tx2);margin-top:6px">💡 قاعده سرانگشتی: میانگین بالای ~۷۰٪ در آزمون‌های آزمایشی، احتمال قبولی بالایی دارد.</p></div>`;
+    }
+    h+=`<p style="font-size:10px;color:var(--tx2);margin-top:10px">ساختار مباحث و وزن‌ها بر اساس برنامه رسمی CFA Institute (سطوح ۱ و ۲: ده مبحث؛ سطح ۳: هسته مشترک + یکی از سه مسیر تخصصی «مدیریت پرتفوی / ثروت خصوصی / بازارهای خصوصی»).</p>`;
+  }
   return h;
 }
 /* ===== 💰 مدیریت مالی — سود و زیان تفصیلی (ماهانه/سالانه) ===== */
