@@ -250,11 +250,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.52</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.54</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.52</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.54</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1064,6 +1064,12 @@ cfastudy:{ic:'🎓',n:'پیشرفت مطالعه CFA',grp:'سرمایه‌گذا
  {k:'person',n:'داوطلب (اختیاری)',t:REL,r:'hr',s:1},
  {k:'note',n:'یادداشت',t:LNG}],
  cols:['title','kind','level','pct','score'],comp:'cfaBrief'},
+dataseries:{ic:'🧮',n:'سری داده (برای تحلیل کمی)',grp:'سرمایه‌گذاری و ثروت',f:[
+ {k:'title',n:'نام سری (مثل: بازده ماهانه صندوق X)',t:TXT},
+ {k:'skind',n:'نوع داده',t:SEL,o:['بازده دوره‌ای ٪','قیمت','جریان نقدی','سایر']},
+ {k:'vals',n:'مقادیر (با کاما یا خط جدید جدا کن — قابل کپی از اکسل)',t:LNG},
+ {k:'note',n:'توضیح',t:TXT}],
+ cols:['title','skind'],comp:'dsBrief'},
 /* ---------- حسابداری (دفتر کل، اسناد، بهای تمام‌شده) ---------- */
 acct:{ic:'🔢',n:'کدینگ حساب‌ها (کل حساب‌ها)',grp:'حسابداری',f:[
  {k:'code',n:'کد حساب',t:TXT},
@@ -2453,7 +2459,7 @@ const MODULES=[
  {id:'M08',n:'مالی و حقوقی',ents:['hrcontract','bizcontract','bank','tx','budget','leave']},
  {id:'M09',n:'حسابداری کامل و انبار',ents:['acct','voucher','vline','item','stockmv','cheque','payroll','costctr'],views:['gldash','glnew','chqdash']},
  {id:'M11',n:'صورت‌های مالی و تلفیق (IFRS)',ents:['finis','finbs','fincf'],views:['findash']},
- {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy'],views:['invdash']},
+ {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy','dataseries'],views:['invdash']},
  {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
  {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef','waste'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','mbuilder','mydash','pfdash']},
@@ -10796,10 +10802,10 @@ window.cfaBrief=cfaBrief;
 const CFA_CUR={
  'سطح ۱':{desc:'دانش پایه و ابزارهای سرمایه‌گذاری — ۱۸۰ سؤال چهارگزینه‌ای در دو جلسه',topics:[
   {t:'اخلاق و استانداردهای حرفه‌ای',en:'Ethical & Professional Standards',w:'۱۵–۲۰٪',mid:17.5,ms:['کد اخلاق و استانداردهای رفتار حرفه‌ای','راهنمای کاربردی استانداردهای I تا VII','استانداردهای جهانی عملکرد سرمایه‌گذاری (GIPS)','اخلاق در عمل و چارچوب تصمیم اخلاقی']},
-  {t:'روش‌های کمی',en:'Quantitative Methods',w:'۶–۹٪',mid:7.5,ms:['ارزش زمانی پول و بازده‌ها','آمار توصیفی و توزیع‌های احتمال','نمونه‌گیری و آزمون فرضیه','رگرسیون خطی ساده','داده‌های حجیم و یادگیری ماشین (مقدماتی)']},
+  {t:'روش‌های کمی',en:'Quantitative Methods',w:'۶–۹٪',mid:7.5,ms:['۱. نرخ‌ها و بازده‌ها','۲. ارزش زمانی پول در مالی','۳. سنجه‌های آماری بازده دارایی‌ها','۴. درخت احتمال و امیدهای شرطی (بیز)','۵. ریاضیات پرتفوی','۶. روش‌های شبیه‌سازی','۷. برآورد و استنباط','۸. آزمون فرضیه','۹. آزمون‌های همبستگی و استقلال','۱۰. رگرسیون خطی ساده','۱۱. مقدمه‌ای بر تکنیک‌های کلان‌داده']},
   {t:'اقتصاد',en:'Economics',w:'۶–۹٪',mid:7.5,ms:['عرضه و تقاضا و ساختارهای بازار','چرخه‌های تجاری، تورم و بیکاری','سیاست پولی و مالی','تجارت بین‌الملل و جریان سرمایه','نرخ ارز (مقدماتی)','اقتصاد جغرافیایی']},
   {t:'تحلیل صورت‌های مالی',en:'Financial Statement Analysis',w:'۱۱–۱۴٪',mid:12.5,ms:['صورت سود و زیان، ترازنامه و جریان نقد','موجودی کالا و دارایی‌های بلندمدت','مالیات بر درآمد و بدهی‌های غیرجاری','تکنیک‌های تحلیل مالی و نسبت‌ها','کیفیت گزارشگری مالی','مقدمه‌ای بر تحلیل شرکت‌ها']},
-  {t:'ناشران شرکتی',en:'Corporate Issuers',w:'۶–۹٪',mid:7.5,ms:['حاکمیت شرکتی و ذینفعان','ساختار سرمایه و اهرم','مدیریت سرمایه در گردش','بودجه‌بندی سرمایه‌ای و هزینه سرمایه','مدل‌های کسب‌وکار']},
+  {t:'ناشران شرکتی',en:'Corporate Issuers',w:'۶–۹٪',mid:7.5,ms:['۱. اشکال سازمانی، ویژگی‌ها و مالکیت ناشران','۲. سرمایه‌گذاران و سایر ذینفعان','۳. حاکمیت شرکتی: تعارض‌ها، سازوکارها، ریسک و منفعت','۴. سرمایه در گردش و نقدشوندگی','۵. سرمایه‌گذاری و تخصیص سرمایه (NPV/IRR/ROIC)','۶. ساختار سرمایه (MM و WACC)','۷. مدل‌های کسب‌وکار']},
   {t:'سرمایه‌گذاری در سهام',en:'Equity Investments',w:'۱۱–۱۴٪',mid:12.5,ms:['ساختار و سازوکار بازارها','شاخص‌های بازار و کارایی بازار','تحلیل صنعت و شرکت','ارزش‌گذاری: DDM، جریان نقد و ضرایب قیمتی']},
   {t:'درآمد ثابت',en:'Fixed Income',w:'۱۱–۱۴٪',mid:12.5,ms:['ویژگی‌ها و انواع اوراق بدهی','قیمت‌گذاری اوراق و منحنی بازده','دیرش، تحدب و ریسک نرخ بهره','تحلیل اعتباری','اوراق بهادارسازی‌شده (ABS/MBS)']},
   {t:'مشتقه‌ها',en:'Derivatives',w:'۵–۸٪',mid:6.5,ms:['فوروارد، فیوچرز، سواپ و آپشن','قیمت‌گذاری بدون آربیتراژ','ارزش‌گذاری آپشن (مقدماتی)','کاربردهای پوشش ریسک']},
@@ -10827,6 +10833,237 @@ const CFA_CUR={
   {t:'مسیر تخصصی (یکی از سه)',en:'Specialized Pathway',w:'۳۰–۳۵٪',mid:32.5,ms:['🧭 مدیریت پرتفوی: شاخص‌سازی، فعال کمی، ETF و اوراق آلفا','🏛️ ثروت خصوصی: برنامه‌ریزی مالی شخصی، مالیات، ارث و انتقال ثروت','🏗️ بازارهای خصوصی: PE/VC، بدهی خصوصی، املاک و زیرساخت']},
  ]}};
 /* 🎯 پیشرفت مطالعه: آخرین رکورد هر (سطح، مبحث) */
+/* 🧠 پایگاه دانش فنی CFA — لایه‌به‌لایه از منابع رسمی ساخته می‌شود (جلد ۱: روش‌های کمی سطح ۱ — ۱۱ ماژول) */
+function dsBrief(r){const n=String(r.d.vals||'').split(/[،,\n\s]+/).filter(s=>s.trim()!=='').length;return {label:'نوع │ تعداد داده',v:esc(r.d.skind||'—')+' │ '+n.toLocaleString('fa-IR'),bad:false};}
+window.dsBrief=dsBrief;
+const CFA_KB={'سطح ۱':{'روش‌های کمی':[
+ {m:'۱. نرخ‌ها و بازده‌ها',pts:['نرخ بهره = نرخ واقعی بدون ریسک + تورم انتظاری + صرف‌های ریسک (نکول، نقدشوندگی، سررسید)','بازده دوره نگهداری HPR = (P1−P0+D)/P0','میانگین حسابی برای «پیش‌بینی یک دوره»، میانگین هندسی برای «عملکرد واقعی چنددوره‌ای» — هندسی همیشه ≤ حسابی و شکاف = کشیدگی نوسان (volatility drag)','میانگین هارمونیک برای میانگین قیمت خرید با مبلغ ثابت (dollar-cost averaging)','بازده پولی MWR = IRR جریان‌های نقدی سرمایه‌گذار (اثر زمان‌بندی واریز/برداشت را می‌گیرد)؛ بازده زمانی TWR = زنجیره بازده زیر‌دوره‌ها (سنجش مهارت مدیر، مستقل از جریان‌ها)','سالانه‌سازی: (1+R دوره)^(تعداد دوره در سال) − 1؛ بازده پیوسته r=ln(1+HPR)','بازده واقعی = (1+اسمی)/(1+تورم) − 1؛ بازده اهرمی = بازده دارایی + (بازده−هزینه بدهی)×(بدهی/سرمایه خودی)'],
+  frm:['HPR=(P1−P0+CF)/P0','R_G=[Π(1+Ri)]^(1/n)−1','R_H=n/Σ(1/Xi)','R_ann=(1+R_p)^m−1','r_cc=ln(S1/S0)','R_real=(1+R_nom)/(1+π)−1'],
+  rules:['برای گزارش عملکرد گذشته همیشه هندسی؛ برای برآورد سال بعد حسابی','اگر MWR ≪ TWR یعنی زمان‌بندی ورود/خروج سرمایه‌گذار بد بوده (ورود در اوج)','مقایسه دو دارایی با افق متفاوت را فقط با بازده سالانه‌شده انجام بده']},
+ {m:'۲. ارزش زمانی پول در مالی',pts:['قیمت هر ابزار = ارزش فعلی جریان‌های آتی با نرخ تنزیل متناسب ریسک','اوراق بدون کوپن: PV=FV/(1+r)^n؛ کوپن‌دار: مجموع PV کوپن‌ها + اسمی؛ سهام: مدل گوردون P0=D1/(r−g)','نرخ ضمنی: از قیمت بازار، r یا g ضمنی را استخراج کن (مثلاً g ضمنی = r − D1/P0)','جمع‌پذیری جریان نقدی: پایه قیمت‌گذاری بدون آربیتراژ — نرخ فوروارد ضمنی از منحنی اسپات: (1+z2)²=(1+z1)(1+F1,1)','برابری پوشش‌دار نرخ ارز: F=S×(1+r داخلی)/(1+r خارجی)'],
+  frm:['P0=Σ CFt/(1+r)^t','P0=D1/(r−g)','g_implied=r−D1/P0','(1+z2)²=(1+z1)(1+F)','F/S=(1+rd)/(1+rf)'],
+  rules:['اگر قیمت بازار < PV مدل → دارایی ارزان (با فرض درستی مفروضات)','حساسیت مدل گوردون به (r−g) بسیار بالاست؛ g نزدیک r یعنی ارزش‌گذاری ناپایدار']},
+ {m:'۳. سنجه‌های آماری بازده',pts:['مرکز: میانگین/میانه/مد — با داده پرت، میانه مقاوم‌تر است؛ برش (trim) یا وینزوریزه برای کنترل پرت‌ها','پراکندگی: دامنه، MAD، واریانس و انحراف معیار نمونه (تقسیم بر n−1)','ریسک نامطلوب: انحراف پایین‌سو فقط انحراف‌های زیر هدف را می‌شمارد — برای سرمایه‌گذار واقعی‌تر از σ','ضریب تغییرات CV=s/میانگین: ریسک به ازای هر واحد بازده — مقایسه دارایی‌ها با مقیاس متفاوت','چولگی منفی یعنی دم زیان بلند (خطرناک)؛ کشیدگی مازاد>0 یعنی دم‌های چاق — رویدادهای شدید محتمل‌تر از نرمال','همبستگی فقط رابطه خطی را می‌گیرد؛ همبستگی≠علیت؛ به داده پرت حساس است'],
+  frm:['s²=Σ(x−x̄)²/(n−1)','σ_down=√[Σ min(0,ri−B)²/(n−1)]','CV=s/x̄','Skew≈[n/((n−1)(n−2))]Σ((x−x̄)/s)³','ExKurt≈…−3','r_xy=cov/(sx·sy)'],
+  rules:['بین دو گزینه با بازده مشابه، آن‌که CV کمتر دارد کاراتر است','چولگی منفیِ بزرگ + کشیدگی بالا = ریسک دم؛ فقط به σ اکتفا نکن','قبل از تصمیم روی همبستگی، نمودار پراکنش را ببین (رابطه غیرخطی/پرت)']},
+ {m:'۴. درخت احتمال و بیز',pts:['امید ریاضی E(X)=Σp·x؛ واریانس حول امید','قاعده امید کل: E(X)=Σ E(X|سناریو)·P(سناریو) — درخت سناریو برای پیش‌بینی سود/بازده','بیز: با مشاهده جدید، احتمال پیشین را به‌روز کن — P(رویداد|مشاهده)=P(مشاهده|رویداد)·P(رویداد)/P(مشاهده)'],
+  frm:['E(X)=Σpi·xi','E(X)=ΣE(X|Si)P(Si)','P(A|B)=P(B|A)P(A)/P(B)'],
+  rules:['تحلیل سناریو را با درخت و وزن احتمال انجام بده نه یک عدد نقطه‌ای','بعد از هر سیگنال جدید (گزارش سود، خبر)، احتمال‌ها را بیزی به‌روزرسانی کن']},
+ {m:'۵. ریاضیات پرتفوی',pts:['بازده پرتفوی = میانگین وزنی؛ واریانس پرتفوی = w′Σw شامل کوواریانس‌ها — منافع تنوع از همبستگی<۱','کوواریانس از سناریوها یا سری تاریخی','با فرض نرمال: بازه اطمینان بازده، و Roy Safety-First: بهترین پرتفوی آنی است که SFRatio=(E(R)−RL)/σ بیشینه باشد','VaR پارامتریک از z: مثلاً ۵٪ VaR = −(E(R)−1.65σ)'],
+  frm:['E(Rp)=Σwi·E(Ri)','σp²=Σwi²σi²+ΣΣwiwjσiσjρij','SFRatio=(E(Rp)−RL)/σp','VaR95≈−(μ−1.645σ)'],
+  rules:['دارایی با همبستگی پایین حتی با σ بالا می‌تواند ریسک کل را کم کند — به تنهایی قضاوت نکن','برای انتخاب بین پرتفوی‌ها با حداقل بازده قابل قبول RL، SFRatio بزرگ‌تر بهتر']},
+ {m:'۶. روش‌های شبیه‌سازی',pts:['قیمت‌ها لگ‌نرمال‌اند اگر بازده پیوسته نرمال باشد — قیمت منفی نمی‌شود','مونت‌کارلو: توزیع ورودی‌ها را تعریف کن، هزاران مسیر بساز، توزیع خروجی (ارزش/سود) را ببین — برای ابزارهای وابسته به مسیر','بوت‌استرپ: نمونه‌گیری با جایگذاری از خود داده تاریخی — بدون فرض توزیع'],
+  frm:['ST=S0·e^(r_cc·T)','r_cc~N(μ,σ²) ⇒ ST لگ‌نرمال'],
+  rules:['وقتی فرم بسته نداری (اختیار آسیایی، پروژه با چند ریسک)، مونت‌کارلو','وقتی به توزیع نرمال شک داری، بوت‌استرپ از داده واقعی']},
+ {m:'۷. برآورد و استنباط',pts:['نمونه‌گیری: تصادفی ساده، طبقه‌ای (نماینده‌تر در زیرگروه‌ها)، خوشه‌ای (ارزان‌تر)؛ سوگیری‌ها: بقا، پیش‌نگری، دوره زمانی','قضیه حد مرکزی: میانگین نمونه با n≥۳۰ تقریباً نرمال — پایه استنباط','خطای معیار میانگین sx̄=s/√n؛ با n بزرگ‌تر برآورد دقیق‌تر'],
+  frm:['SE=s/√n','CI=x̄±t·SE'],
+  rules:['به بک‌تستی که فقط صندوق‌های زنده را دیده (سوگیری بقا) اعتماد نکن','نمونه زیر ۳۰ + توزیع نامعلوم = ادعای آماری نکن']},
+ {m:'۸. آزمون فرضیه',pts:['فرایند: H0/H1، سطح معناداری، آماره، مقدار بحرانی/p-value، تصمیم','خطای نوع I (رد اشتباه H0، α) و نوع II (نگه‌داشتن اشتباه)؛ توان آزمون','آزمون میانگین: t؛ تفاوت دو میانگین وابسته: t زوجی؛ برابری واریانس‌ها: F'],
+  frm:['t=(x̄−μ0)/(s/√n)','F=s1²/s2²'],
+  rules:['p-value<α → رد H0؛ ولی معناداری آماری ≠ اهمیت اقتصادی (هزینه معامله را کم کن!)','قبل از مقایسه عملکرد دو استراتژی، برابری واریانس را چک کن']},
+ {m:'۹. آزمون‌های همبستگی و استقلال',pts:['معناداری همبستگی: t=r√(n−2)/√(1−r²) با df=n−2 — همبستگی کوچک با n بزرگ می‌تواند معنادار شود','اسپیرمن (رتبه‌ای) وقتی داده نرمال نیست یا پرت دارد','جدول توافقی و آزمون کای‌دو برای استقلال دو متغیر طبقه‌ای'],
+  frm:['t=r√(n−2)/√(1−r²)','χ²=ΣΣ(O−E)²/E'],
+  rules:['قبل از استفاده از همبستگی در مدل تخصیص، معناداری‌اش را بیازما','برای داده‌های رتبه‌ای/پرت‌دار پیرسون را کنار بگذار، اسپیرمن']},
+ {m:'۱۰. رگرسیون خطی ساده',pts:['Y=b0+b1X+ε؛ حداقل مربعات: b1=cov(X,Y)/var(X)','چهار فرض: خطی بودن، واریانس همسان، استقلال خطاها، نرمالی خطاها — نقض‌ها را از نمودار باقیمانده بشناس','R²=سهم توضیح‌داده‌شده؛ در رگرسیون ساده R²=r²؛ SEE پراکندگی حول خط','آزمون شیب: t=b1/se(b1)؛ پیش‌بینی با بازه پیش‌بینی (عدم قطعیت پارامتر+خطا)','فرم‌های تابعی: log-lin (رشد نمایی)، lin-log، log-log (کشش)'],
+  frm:['b1=cov/varX','R²=SSR/SST','SEE=√(SSE/(n−2))','t=b1/se(b1)'],
+  rules:['R² پایین یعنی X به‌تنهایی توضیح‌دهنده خوبی نیست — تصمیم را فقط به این مدل گره نزن','برای داده رشد (فروش، قیمت) log-lin معمولاً برازش بهتری دارد','برون‌یابی خارج از دامنه داده ممنوع']},
+ {m:'۱۱. تکنیک‌های کلان‌داده',pts:['کلان‌داده: حجم/سرعت/تنوع بالا — منابع جایگزین: متن شبکه‌ها، سنسور، تراکنش','یادگیری ماشین: باناظر (پیش‌بینی برچسب)، بی‌ناظر (خوشه‌بندی)، یادگیری عمیق؛ خطر بیش‌برازش','پردازش متن و NLP برای سنجش احساسات بازار'],frm:[],
+  rules:['مدل پیچیده بدون اعتبارسنجی خارج‌نمونه = دام بیش‌برازش','سیگنال داده جایگزین را قبل از استفاده، از نظر سوگیری جمع‌آوری بیازما']},
+]}};
+/* 📕 جلد ۲: ناشران شرکتی — سطح ۱ (۷ ماژول) */
+CFA_KB['سطح ۱']['ناشران شرکتی']=[
+ {m:'۱. اشکال سازمانی و مالکیت',pts:['طیف اشکال: مالکیت فردی (مسئولیت نامحدود) → شراکت → شرکت با مسئولیت محدود؛ شرکت سهامی: شخصیت حقوقی مستقل، مسئولیت محدود سهامدار، انتقال‌پذیری سهم، عمر نامحدود','جدایی مالکیت از مدیریت → مسئله نمایندگی (agency)','دوگانه مالیات در شرکت سهامی (سود شرکت + سود تقسیمی)؛ عبوری در شراکت','عمومی در برابر خصوصی: نقدشوندگی و شفافیت قیمت در برابر آزادی عمل و افشای کمتر؛ مسیرها: IPO، عرضه مستقیم، SPAC؛ خصوصی‌سازی با LBO/MBO'],
+  frm:[],rules:['برای کسب‌وکار پرریسک با نیاز تامین مالی بیرونی، ساختار سهامی با مسئولیت محدود انتخاب درست است','قبل از ورود به سهام خصوصی، صرف نقدناشوندگی طلب کن']},
+ {m:'۲. سرمایه‌گذاران و ذینفعان',pts:['طلبکار: حق ثابت (بهره+اصل)، بدون رأی، صعود محدود/نزول محدودتر؛ سهامدار: حق باقیمانده، رأی، صعود نامحدود','تعارض بدهی-سهام: سهامدار به ریسک بیشتر متمایل است (اختیار خرید روی دارایی شرکت)؛ طلبکار با کاوننت مهار می‌کند','ذینفعان: هیئت‌مدیره، مدیران، کارکنان، مشتری، تامین‌کننده، دولت — دو نظریه: سهامدارمحور و ذینفع‌محور','ESG: ریسک‌های محیط‌زیستی/اجتماعی/حاکمیتی می‌توانند مالی شوند (کربن، دعاوی، جریمه)'],
+  frm:[],rules:['وقتی اهرم شرکت بالا می‌رود، به‌عنوان طلبکار کاوننت سفت‌تر بخواه؛ به‌عنوان سهامدار مراقب انتقال ریسک باش','ریسک ESG را مثل هر ریسک مالی کمّی کن (احتمال × اثر)']},
+ {m:'۳. حاکمیت شرکتی',pts:['تعارض‌ها: مدیر-سهامدار (امپراتوری‌سازی، پاداش)، سهامدار عمده-خرد (تونل‌زنی، معاملات وابسته)، سهامدار-طلبکار','سازوکارها: شفافیت گزارشگری، مجمع و حق رأی، هیئت‌مدیره مستقل و کمیته‌ها (حسابرسی/پاداش/انتصاب)، کاوننت طلبکار، مقررات','حاکمیت ضعیف = ریسک عملیاتی/حقوقی/شهرتی/مالی؛ حاکمیت خوب = هزینه سرمایه پایین‌تر'],
+  frm:[],rules:['قبل از سرمایه‌گذاری چک‌لیست: استقلال هیئت، ساختار پاداش، معاملات وابسته، حقوق سهامدار خرد، کیفیت افشا','سهم با حاکمیت ضعیف را فقط با تخفیف قیمتی معنادار بخر']},
+ {m:'۴. سرمایه در گردش و نقدشوندگی',pts:['چرخه تبدیل نقد CCC = روزهای موجودی + روزهای وصول − روزهای پرداخت؛ کوتاه‌تر = نیاز نقد کمتر','منابع نقدشوندگی: اولیه (نقد، خطوط اعتباری، جریان عملیاتی) و ثانویه (فروش دارایی، تجدید ساختار)','کشنده‌های نقدینگی (drags/pulls): وصول کند، موجودی راکد، کاهش اعتبار تامین‌کننده','رویکردها: محافظه‌کار (نقد زیاد، هزینه فرصت) در برابر تهاجمی (ریسک تامین مالی)'],
+  frm:['CCC=DOH+DSO−DPO','DOH=موجودی/COGS×۳۶۵','DSO=دریافتنی/فروش×۳۶۵','DPO=پرداختنی/COGS×۳۶۵'],
+  rules:['CCC طولانی‌شونده = زنگ خطر جدی نقدینگی — قبل از رشد فروش، چرخه را کوتاه کن','CCC منفی (مثل خرده‌فروش‌ها) یعنی تامین مالی رایگان از تامین‌کننده — مزیت رقابتی']},
+ {m:'۵. سرمایه‌گذاری و تخصیص سرمایه',pts:['انواع پروژه: نگهداشت، انطباق مقرراتی، توسعه فعلی، کسب‌وکار جدید (ریسک صعودی)','NPV معیار طلایی؛ IRR با NPV در پروژه‌های متعارض ممکن است تضاد دهد (مقیاس/زمان‌بندی) — NPV مقدم','ROIC=NOPAT/سرمایه به‌کارگرفته؛ ارزش‌آفرینی یعنی ROIC>WACC','دام‌ها: سوگیری خوش‌بینی، هزینه غرق‌شده، جیره‌بندی نادرست، نادیده‌گرفتن گزینه‌های واقعی (توسعه/توقف/تاخیر)'],
+  frm:['ROIC=NOPAT/IC','NPV=Σ CFt/(1+r)^t − I0'],
+  rules:['بین IRR و NPV اختلاف شد؟ NPV را بگیر','پروژه با ROIC پایین‌تر از WACC حتی اگر «سودده» به‌نظر برسد نابودگر ارزش است','ارزش گزینه واقعی (تاخیر/توسعه/رها) را به NPV ساده اضافه کن']},
+ {m:'۶. ساختار سرمایه',pts:['MM بدون مالیات: ساختار سرمایه بی‌اثر بر ارزش؛ MM II: اهرم بیشتر → هزینه سهام بیشتر (خطی با D/E)','MM با مالیات: سپر مالیاتی بدهی VL=VU+t×D؛ اما هزینه درماندگی مالی حد می‌گذارد → ساختار بهینه = تعادل سپر و درماندگی','نظریه سلسله‌مراتب (pecking order): اول منابع داخلی، بعد بدهی، آخر سهام (علامت‌دهی منفی انتشار سهام)','WACC با وزن‌های هدفِ بازاری محاسبه شود'],
+  frm:['WACC=(E/V)re+(D/V)rd(1−t)','re=r0+(r0−rd)(D/E)(1−t)','VL=VU+tD'],
+  rules:['وقتی سود عملیاتی نوسانی است، ظرفیت بدهی را پایین‌تر از سپر مالیاتی بهینه نگه دار','انتشار سهام وقتی قیمت بالاست منطقی است ولی علامت منفی به بازار می‌دهد — آماده توضیح باش'],},
+ {m:'۷. مدل‌های کسب‌وکار',pts:['مدل کسب‌وکار: مشتری کیست، چه می‌فروشی، کجا، به چه قیمتی (ارزش پیشنهادی) و چگونه تحویل می‌دهی','مدل‌های قیمت‌گذاری: اشتراک، فریمیوم، تیغ-و-تیغه، مزایده، پرداخت به ازای مصرف','اثر شبکه‌ای و مدل پلتفرمی: ارزش با تعداد کاربر رشد غیرخطی دارد؛ برنده-همه‌چیز','نوآوری مدل می‌تواند از نوآوری محصول ارزشمندتر باشد'],
+  frm:[],rules:['در تحلیل شرکت، قبل از اعداد، مدل کسب‌وکار و خندق رقابتی‌اش را بفهم','برای پلتفرم‌ها متریک فعال‌سازی/نگهداشت مهم‌تر از سود کوتاه‌مدت است']},
+];
+/* 🗂️ رجیستر منابع رسمی هر سطح — زیرساخت سطح‌بندی مغز (با افزودن هر جلد، loaded می‌شود) */
+const CFA_SRC={
+ 'سطح ۱':[
+  {v:'V1',topic:'روش‌های کمی',loaded:true,mods:11,ver:'مادر-۱۵۳'},
+  {v:'V3',topic:'ناشران شرکتی',loaded:true,mods:7,ver:'مادر-۱۵۴'},
+  {v:'—',topic:'اقتصاد',loaded:false},{v:'—',topic:'تحلیل صورت‌های مالی',loaded:false},
+  {v:'—',topic:'سرمایه‌گذاری در سهام',loaded:false},{v:'—',topic:'درآمد ثابت',loaded:false},
+  {v:'—',topic:'مشتقه‌ها',loaded:false},{v:'—',topic:'سرمایه‌گذاری‌های جایگزین',loaded:false},
+  {v:'—',topic:'مدیریت پرتفوی',loaded:false},{v:'—',topic:'اخلاق و استانداردهای حرفه‌ای',loaded:false}],
+ 'سطح ۲':[],'سطح ۳':[]};
+/* 🧰 نگاشت مبحث → ابزارهای آزمایشگاه */
+const CFA_TOOLS={'روش‌های کمی':['ret','mwtw','port','reg','bayes'],'ناشران شرکتی':['wacc','lev','ccc','mm']};
+/* 🔎 دسترسی KB */
+function cfaKbOf(level,topic){return (CFA_KB[level]||{})[topic]||null;}
+/* ===== 🧠 آزمایشگاه تحلیل کمی (ابزار + مشاور) ===== */
+function qParse(txt){return String(txt||'').split(/[،,\n\t\s]+/).map(s=>+faNum(s.trim()).replace(/[٬]/g,'')).filter(v=>isFinite(v)&&v!==0||v===0).filter((v,i,a)=>!isNaN(v));}
+function qStats(a){const n=a.length;if(!n)return null;const mean=a.reduce((s,v)=>s+v,0)/n;
+  const srt=a.slice().sort((p,q)=>p-q);const med=n%2?srt[(n-1)/2]:(srt[n/2-1]+srt[n/2])/2;
+  const v=n>1?a.reduce((s,x2)=>s+(x2-mean)**2,0)/(n-1):0;const sd=Math.sqrt(v);
+  const mad=a.reduce((s,x2)=>s+Math.abs(x2-mean),0)/n;
+  const geo=a.every(x2=>x2>-100)?(a.reduce((p,x2)=>p*(1+x2/100),1)**(1/n)-1)*100:null;
+  let skew=null,kurt=null;
+  if(n>2&&sd>0){skew=n/((n-1)*(n-2))*a.reduce((s,x2)=>s+((x2-mean)/sd)**3,0);}
+  if(n>3&&sd>0){const m4=a.reduce((s,x2)=>s+((x2-mean)/sd)**4,0);kurt=(n*(n+1))/((n-1)*(n-2)*(n-3))*m4-3*(n-1)**2/((n-2)*(n-3));}
+  const q1=srt[Math.max(0,Math.floor(n*0.25)-0)]??srt[0], q3=srt[Math.min(n-1,Math.floor(n*0.75))];
+  return {n,mean,med,sd,v,mad,geo,skew,kurt,min:srt[0],max:srt[n-1],rng:srt[n-1]-srt[0],cv:mean!==0?Math.abs(sd/mean):null,q1,q3};}
+function qDownside(a,target){const n=a.length;if(n<2)return null;const s=a.reduce((acc,r)=>acc+Math.min(0,r-target)**2,0);return Math.sqrt(s/(n-1));}
+function qAdvice(st,dd,target){const adv=[];if(!st)return adv;
+  if(st.geo!=null&&st.mean-st.geo>1)adv.push('🟡 شکاف میانگین حسابی ('+st.mean.toFixed(1)+'٪) و هندسی ('+st.geo.toFixed(1)+'٪) بالاست — نوسان، بازده مرکب واقعی را می‌خورَد (volatility drag). برای برنامه‌ریزی بلندمدت هندسی را مبنا بگذار.');
+  if(st.skew!=null&&st.skew<-0.5)adv.push('🔴 چولگی منفی ('+st.skew.toFixed(2)+'): دم زیان بلند — احتمال افت‌های شدید بیش از توزیع متقارن است؛ حد ضرر/پوشش ریسک جدی بگیر.');
+  if(st.kurt!=null&&st.kurt>1)adv.push('🟠 کشیدگی مازاد '+st.kurt.toFixed(2)+': دم‌های چاق — رویدادهای شدید محتمل‌تر از نرمال؛ به VaR نرمال اکتفا نکن.');
+  if(st.cv!=null)adv.push('ℹ️ ضریب تغییرات CV='+st.cv.toFixed(2)+' — برای هر واحد بازده، '+st.cv.toFixed(2)+' واحد ریسک می‌پذیری؛ در مقایسه گزینه‌ها، CV کمتر کاراتر است.');
+  if(dd!=null&&st.sd>0){const ratio=dd/st.sd;adv.push((ratio<0.6?'🟢':'🟡')+' انحراف پایین‌سو '+dd.toFixed(2)+'٪ ('+Math.round(ratio*100)+'٪ از σ) نسبت به هدف '+target+'٪ — '+(ratio<0.6?'بخش عمده نوسان، صعودی است (مطلوب).':'بخش قابل توجه نوسان، نزولی است.'));}
+  if(st.n<30)adv.push('⚠️ فقط '+st.n+' مشاهده — زیر آستانه CLT (۳۰)؛ نتیجه‌گیری آماری را محکم نگیر.');
+  return adv;}
+function qIRR(flows){ // flows: [{t:سال اعشاری, cf}] شامل t=0
+  const f=r=>flows.reduce((s,x2)=>s+x2.cf/Math.pow(1+r,x2.t),0);
+  let lo=-0.99,hi=10;if(f(lo)*f(hi)>0)return null;
+  for(let i=0;i<100;i++){const m2=(lo+hi)/2;(f(lo)*f(m2)<=0)?hi=m2:lo=m2;}
+  return (lo+hi)/2*100;}
+window.qlabRun=function(kind){
+  const out=document.getElementById('ql_out');if(!out)return;
+  const g=id=>document.getElementById(id)?document.getElementById(id).value:'';
+  let h='';
+  if(kind==='ret'){
+    const a=qParse(g('ql_series'));const st=qStats(a);
+    if(!st){out.innerHTML='<div class="empty">سری بازده (٪) را وارد کن</div>';return;}
+    const target=+faNum(g('ql_target'))||0;const dd=qDownside(a,target);
+    const ann=(m2)=>((Math.pow(1+st.geo/100,m2)-1)*100);
+    const per=+g('ql_peryr')||12;
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+      ${[['تعداد دوره',st.n.toLocaleString('fa-IR')],['میانگین حسابی',st.mean.toFixed(2)+'٪'],['میانگین هندسی',st.geo==null?'—':st.geo.toFixed(2)+'٪'],['سالانه‌شده (هندسی)',st.geo==null?'—':ann(per).toFixed(1)+'٪'],['انحراف معیار',st.sd.toFixed(2)+'٪'],['انحراف پایین‌سو',dd==null?'—':dd.toFixed(2)+'٪'],['CV',st.cv==null?'—':st.cv.toFixed(2)],['چولگی',st.skew==null?'—':st.skew.toFixed(2)],['کشیدگی مازاد',st.kurt==null?'—':st.kurt.toFixed(2)],['کمینه│بیشینه',st.min.toFixed(1)+'٪│'+st.max.toFixed(1)+'٪'],['میانه',st.med.toFixed(2)+'٪'],['VaR₉₅ نرمال (دوره)',(-(st.mean-1.645*st.sd)).toFixed(1)+'٪']].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:9px"><div style="font-size:10.5px;color:var(--tx2)">${t2}</div><div style="font-size:14.5px;font-weight:800;margin-top:2px">${v2}</div></div>`).join('')}
+    </div><div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (بر پایه ماژول‌های ۱، ۳ و ۵ کمیِ CFA)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">${qAdvice(st,dd,target).map(a2=>`<div>${a2}</div>`).join('')||'✅ نشانه خاصی دیده نشد.'}</div></div>`;
+  }
+  if(kind==='mwtw'){
+    const rows=String(g('ql_flows')||'').split(/\n/).map(l=>l.split(/[،,\t]/)).filter(r2=>r2.length>=2);
+    const flows=rows.map(r2=>({t:+faNum(r2[0])||0,cf:+faNum(String(r2[1]).replace(/[٬\s]/g,''))||0}));
+    const subs=qParse(g('ql_subret'));
+    let mwr=null;if(flows.length>=2)mwr=qIRR(flows);
+    let twr=null;if(subs.length)twr=(subs.reduce((p,r2)=>p*(1+r2/100),1)-1)*100;
+    if(mwr==null&&twr==null){out.innerHTML='<div class="empty">جریان‌ها یا بازده زیر‌دوره‌ها را وارد کن</div>';return;}
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+      ${mwr!=null?`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">بازده پولی MWR (IRR)</div><div style="font-size:16px;font-weight:800;color:#ecd98f">${mwr.toFixed(2)}٪</div></div>`:''}
+      ${twr!=null?`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">بازده زمانی TWR (کل بازه)</div><div style="font-size:16px;font-weight:800">${twr.toFixed(2)}٪</div></div>`:''}
+    </div>
+    <div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تفسیر</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+    ${mwr!=null&&twr!=null?(Math.abs(mwr-twr)<1?'✅ MWR≈TWR — زمان‌بندی جریان‌ها اثر خاصی نداشته.':mwr<twr?'🔴 MWR ('+mwr.toFixed(1)+'٪) کمتر از TWR ('+twr.toFixed(1)+'٪) — زمان‌بندی واریز/برداشت‌ها به زیانت بوده (ورود در اوج/خروج در کف). عملکرد مدیر را با TWR بسنج.':'🟢 MWR بیشتر از TWR — زمان‌بندی جریان‌هایت هوشمندانه بوده.'):'برای مقایسه، هر دو را وارد کن: MWR مهارت زمان‌بندی تو، TWR مهارت مدیر را می‌سنجد.'}</div></div>`;
+  }
+  if(kind==='port'){
+    const w1=(+faNum(g('ql_w1'))||0)/100,r1=+faNum(g('ql_r1'))||0,s1=+faNum(g('ql_s1'))||0;
+    const r2=+faNum(g('ql_r2'))||0,s2=+faNum(g('ql_s2'))||0,rho=+faNum(g('ql_rho'))||0;
+    const RL=+faNum(g('ql_rl'))||0;const w2=1-w1;
+    const er=w1*r1+w2*r2;
+    const pv=w1*w1*s1*s1+w2*w2*s2*s2+2*w1*w2*s1*s2*rho;
+    const ps=Math.sqrt(Math.max(0,pv));
+    const sf=ps>0?(er-RL)/ps:null;
+    const var95=-(er-1.645*ps);
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+      ${[['بازده انتظاری پرتفوی',er.toFixed(2)+'٪'],['انحراف معیار پرتفوی',ps.toFixed(2)+'٪'],['نسبت ایمنی اول (Roy)',sf==null?'—':sf.toFixed(2)],['VaR₉₅ نرمال',var95.toFixed(1)+'٪']].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">${t2}</div><div style="font-size:15px;font-weight:800;margin-top:2px">${v2}</div></div>`).join('')}
+    </div>
+    <div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (ماژول ۵ — ریاضیات پرتفوی)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      ${(()=>{const naive=w1*s1+w2*s2;const save=naive-ps;const tips=[];
+        tips.push(save>0.5?'🟢 تنوع‌بخشی '+save.toFixed(1)+' واحد درصد از ریسک را حذف کرده (σ ترکیب ساده '+naive.toFixed(1)+'٪ → واقعی '+ps.toFixed(1)+'٪) — نتیجه همبستگی '+rho+'.':'ℹ️ با این همبستگی، منافع تنوع‌بخشی محدود است.');
+        if(rho>0.8)tips.push('🟡 همبستگی بالای ۰٫۸ — این دو دارایی تقریباً یک ریسک‌اند؛ تنوع واقعی نمی‌سازند.');
+        if(sf!=null)tips.push('📐 SFRatio='+sf.toFixed(2)+' نسبت به حداقل بازده '+RL+'٪ — در مقایسه چند پرتفوی، بیشترین SFRatio کمترین احتمال شکستن کف را دارد.');
+        tips.push('📉 در بدترین ۵٪ حالت‌ها (فرض نرمال) زیان دوره از '+var95.toFixed(1)+'٪ بیشتر می‌شود؛ اگر دم‌های چاق داری این را خوش‌بینانه بدان.');
+        return tips.map(t2=>'<div>'+t2+'</div>').join('');})()}</div></div>`;
+  }
+  if(kind==='reg'){
+    const xs=qParse(g('ql_x')),ys=qParse(g('ql_y'));
+    const n=Math.min(xs.length,ys.length);
+    if(n<3){out.innerHTML='<div class="empty">حداقل ۳ جفت داده X و Y هم‌طول لازم است</div>';return;}
+    const X=xs.slice(0,n),Y=ys.slice(0,n);
+    const mx=X.reduce((s,v)=>s+v,0)/n,my=Y.reduce((s,v)=>s+v,0)/n;
+    let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){sxy+=(X[i]-mx)*(Y[i]-my);sxx+=(X[i]-mx)**2;syy+=(Y[i]-my)**2;}
+    const b1=sxx?sxy/sxx:0,b0=my-b1*mx;
+    let sse=0;for(let i=0;i<n;i++){const e=Y[i]-(b0+b1*X[i]);sse+=e*e;}
+    const r2v=syy?1-sse/syy:0;const see=Math.sqrt(sse/(n-2));
+    const seb1=Math.sqrt((sse/(n-2))/sxx);const tb1=seb1?b1/seb1:0;
+    const rr=Math.sqrt(Math.max(0,r2v))*(b1>=0?1:-1);
+    const xp=+faNum(g('ql_xp'));const yp=b0+b1*(isFinite(xp)?xp:0);
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+      ${[['شیب b1',b1.toFixed(4)],['عرض از مبدأ b0',b0.toFixed(4)],['R²',(r2v*100).toFixed(1)+'٪'],['همبستگی r',rr.toFixed(3)],['SEE',see.toFixed(3)],['t شیب',tb1.toFixed(2)],['n',n.toLocaleString('fa-IR')],[isFinite(xp)&&g('ql_xp')!==''?'پیش‌بینی Y برای X='+xp:'پیش‌بینی',isFinite(xp)&&g('ql_xp')!==''?yp.toFixed(3):'X را وارد کن']].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:9px"><div style="font-size:10.5px;color:var(--tx2)">${t2}</div><div style="font-size:14px;font-weight:800;margin-top:2px">${v2}</div></div>`).join('')}
+    </div>
+    <div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (ماژول‌های ۹ و ۱۰)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      ${Math.abs(tb1)>2?'🟢 شیب از نظر آماری معنادار است (|t|='+Math.abs(tb1).toFixed(1)+'>۲) — رابطه خطی واقعی محتمل.':'🔴 شیب معنادار نیست (|t|='+Math.abs(tb1).toFixed(1)+'≤۲) — به این رابطه برای تصمیم اتکا نکن.'}
+      ${r2v<0.3?'<div>🟡 R² فقط '+(r2v*100).toFixed(0)+'٪ — X بخش کوچکی از تغییرات Y را توضیح می‌دهد؛ عوامل دیگر را هم ببین.</div>':'<div>ℹ️ '+(r2v*100).toFixed(0)+'٪ از تغییرات Y با X توضیح داده می‌شود.</div>'}
+      <div>⚠️ پیش‌بینی فقط داخل دامنه داده (${Math.min(...X).toFixed(1)} تا ${Math.max(...X).toFixed(1)}) معتبر است — برون‌یابی نکن.</div></div></div>`;
+  }
+  if(kind==='bayes'){
+    const prior=(+faNum(g('ql_prior'))||0)/100, tp=(+faNum(g('ql_tp'))||0)/100, fp=(+faNum(g('ql_fp'))||0)/100;
+    const pB=tp*prior+fp*(1-prior);
+    const post=pB>0?tp*prior/pB:0;
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
+      <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">احتمال پسین P(رویداد|سیگنال)</div><div style="font-size:18px;font-weight:800;color:#ecd98f">${(post*100).toFixed(1)}٪</div></div>
+      <div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">احتمال کل مشاهده سیگنال</div><div style="font-size:16px;font-weight:800">${(pB*100).toFixed(1)}٪</div></div>
+    </div>
+    <div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تفسیر (ماژول ۴ — بیز)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      باور تو از ${(prior*100).toFixed(0)}٪ به ${(post*100).toFixed(1)}٪ ${post>prior?'تقویت':'تضعیف'} شد.
+      ${post<0.5&&tp>0.7?'<div>🟡 با اینکه سیگنال قوی است، چون احتمال پیشین پایین بود هنوز احتمال رویداد زیر ۵۰٪ است — دام «نادیده‌گرفتن نرخ پایه» را بشناس.</div>':''}</div></div>`;
+  }
+  if(kind==='wacc'){
+    const E=+faNum(g('qc_e').replace(/[٬,\s]/g,''))||0,D=+faNum(g('qc_d').replace(/[٬,\s]/g,''))||0;
+    const re=+faNum(g('qc_re'))||0,rd=+faNum(g('qc_rd'))||0,tax=(+faNum(g('qc_t'))||0)/100;
+    const roic=faNum(g('qc_roic'))!==''?+faNum(g('qc_roic')):null;
+    const V=E+D;if(!V){out.innerHTML='<div class="empty">ارزش سهام و بدهی را وارد کن</div>';return;}
+    const we=E/V,wd=D/V;const wacc=we*re+wd*rd*(1-tax);
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+      ${[['وزن سهام',(we*100).toFixed(1)+'٪'],['وزن بدهی',(wd*100).toFixed(1)+'٪'],['هزینه بدهی پس از مالیات',(rd*(1-tax)).toFixed(2)+'٪'],['WACC',wacc.toFixed(2)+'٪']].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">${t2}</div><div style="font-size:15.5px;font-weight:800;margin-top:2px;color:${t2==='WACC'?'#ecd98f':'var(--tx)'}">${v2}</div></div>`).join('')}
+    </div><div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (ماژول ۶ — ساختار سرمایه)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      ${roic!=null?(roic>wacc?'🟢 ROIC ('+roic.toFixed(1)+'٪) > WACC ('+wacc.toFixed(1)+'٪) — شرکت به ازای هر تومان سرمایه، ارزش می‌سازد (اسپرد '+(roic-wacc).toFixed(1)+' واحد).':'🔴 ROIC ('+roic.toFixed(1)+'٪) < WACC ('+wacc.toFixed(1)+'٪) — رشد با این بازده، نابودگر ارزش است؛ اول بازده را درست کن بعد رشد.'):'ℹ️ اگر ROIC را هم بدهی، آزمون ارزش‌آفرینی (ROIC در برابر WACC) را انجام می‌دهم.'}
+      ${wd>0.6?'<div>🟡 وزن بدهی '+(wd*100).toFixed(0)+'٪ — سپر مالیاتی داری ولی به ناحیه هزینه درماندگی مالی نزدیکی؛ نوسان سود عملیاتی را بسنج.</div>':''}
+      <div>📐 قاعده: نرخ تنزیل پروژه‌های هم‌ریسک با شرکت = همین WACC؛ پروژه پرریسک‌تر نرخ بالاتر می‌خواهد.</div></div></div>`;
+  }
+  if(kind==='lev'){
+    const S=+faNum(g('qc_s').replace(/[٬,\s]/g,''))||0,VC=+faNum(g('qc_vc').replace(/[٬,\s]/g,''))||0,FC=+faNum(g('qc_fc').replace(/[٬,\s]/g,''))||0,I=+faNum(g('qc_i').replace(/[٬,\s]/g,''))||0;
+    const cm=S-VC;const ebit=cm-FC;const dol=ebit?cm/ebit:null;const dfl=(ebit-I)?ebit/(ebit-I):null;const dtl=dol!=null&&dfl!=null?dol*dfl:null;
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+      ${[['حاشیه مشارکت',abbrN(cm)],['EBIT',abbrN(ebit)],['اهرم عملیاتی DOL',dol==null?'∞':dol.toFixed(2)],['اهرم مالی DFL',dfl==null?'∞':dfl.toFixed(2)],['اهرم کل DTL',dtl==null?'—':dtl.toFixed(2)]].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">${t2}</div><div style="font-size:15px;font-weight:800;margin-top:2px">${v2}</div></div>`).join('')}
+    </div><div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      ${dtl!=null?'📐 ۱٪ تغییر فروش ≈ '+dtl.toFixed(1)+'٪ تغییر سود خالص — حساسیت سودت به فروش این است.':''}
+      ${dol!=null&&dol>2?'<div>🟡 اهرم عملیاتی بالا (هزینه ثابت سنگین) — در رکود فروش، سود به‌سرعت فرو می‌ریزد؛ روی این ساختار، بدهی زیاد سوار نکن.</div>':''}
+      ${dol!=null&&dfl!=null&&dol>2&&dfl>1.5?'<div>🔴 ترکیب اهرم عملیاتی و مالی بالا = ریسک مضاعف؛ یکی را کم کن.</div>':''}
+      ${ebit<=I&&ebit>0?'<div>🔴 EBIT به‌سختی بهره را می‌پوشاند — ریسک نکول.</div>':''}</div></div>`;
+  }
+  if(kind==='ccc'){
+    const inv=+faNum(g('qc_inv').replace(/[٬,\s]/g,''))||0,cogs=+faNum(g('qc_cogs').replace(/[٬,\s]/g,''))||0;
+    const ar=+faNum(g('qc_ar').replace(/[٬,\s]/g,''))||0,rev=+faNum(g('qc_rev').replace(/[٬,\s]/g,''))||0;
+    const ap=+faNum(g('qc_ap').replace(/[٬,\s]/g,''))||0;
+    if(!cogs||!rev){out.innerHTML='<div class="empty">فروش و بهای تمام‌شده سالانه لازم است</div>';return;}
+    const doh=inv/cogs*365,dso=ar/rev*365,dpo=ap/cogs*365;const ccc=doh+dso-dpo;
+    const need=ccc/365*rev;
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+      ${[['روزهای موجودی DOH',doh.toFixed(0)+' روز'],['روزهای وصول DSO',dso.toFixed(0)+' روز'],['روزهای پرداخت DPO',dpo.toFixed(0)+' روز'],['چرخه تبدیل نقد CCC',ccc.toFixed(0)+' روز'],['سرمایه در گردش لازم',abbrN(Math.max(0,need))]].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">${t2}</div><div style="font-size:15px;font-weight:800;margin-top:2px;color:${t2.includes('CCC')?(ccc<0?'var(--ok)':ccc>90?'var(--bad)':'#ecd98f'):'var(--tx)'}">${v2}</div></div>`).join('')}
+    </div><div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (ماژول ۴ — سرمایه در گردش)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      ${ccc<0?'🟢 CCC منفی — تامین‌کننده‌ها عملاً کسب‌وکارت را تامین مالی می‌کنند؛ مزیت رقابتی کمیاب.':ccc>90?'🔴 چرخه '+ccc.toFixed(0)+' روزه یعنی حدود '+abbrN(need)+' نقد دائمی در چرخه قفل است — هر ۱۰ روز کوتاه‌سازی ≈ '+abbrN(rev/365*10)+' نقد آزاد می‌کند.':'🟡 چرخه در محدوده متعارف؛ برای آزادسازی نقد: وصول سریع‌تر (تخفیف نقدی)، موجودی کم‌گردش کمتر، مذاکره مهلت پرداخت بیشتر.'}
+      ${dso>60?'<div>🟠 DSO بالای ۶۰ روز — سیاست اعتباری را سفت کن؛ به داشبورد مطالبات وصل شو.</div>':''}
+      ${doh>120?'<div>🟠 DOH بالای ۱۲۰ روز — موجودی راکد را با داشبورد انبار شناسایی و نقد کن.</div>':''}</div></div>`;
+  }
+  if(kind==='mm'){
+    const r0=+faNum(g('qc_r0'))||0,rd=+faNum(g('qc_rd2'))||0,tax=(+faNum(g('qc_t2'))||0)/100;
+    const D=+faNum(g('qc_d2').replace(/[٬,\s]/g,''))||0,E=+faNum(g('qc_e2').replace(/[٬,\s]/g,''))||0;
+    if(!E){out.innerHTML='<div class="empty">ارزش سهام را وارد کن</div>';return;}
+    const de=D/E;const re=r0+(r0-rd)*de*(1-tax);
+    const shield=tax*D;
+    const V=E+D;const wacc=(E/V)*re+(D/V)*rd*(1-tax);
+    h=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+      ${[['D/E',de.toFixed(2)],['هزینه سهام با اهرم (MM II)',re.toFixed(2)+'٪'],['سپر مالیاتی بدهی (tD)',abbrN(shield)],['WACC',wacc.toFixed(2)+'٪']].map(([t2,v2])=>`<div class="sec" style="text-align:center;padding:10px"><div style="font-size:11px;color:var(--tx2)">${t2}</div><div style="font-size:15px;font-weight:800;margin-top:2px">${v2}</div></div>`).join('')}
+    </div><div class="sec" style="margin-top:8px;border-inline-start:3px solid var(--ac)"><b style="font-size:12px">🧠 تحلیل مشاور (MM با مالیات)</b><div style="font-size:12px;line-height:2.2;margin-top:4px">
+      📐 هر واحد بدهی اضافه، هزینه سهام را بالا می‌برد (re=r0+(r0−rd)(D/E)(1−t)) ولی تا قبل از ناحیه درماندگی، سپر مالیاتی ارزش می‌سازد (VL=VU+tD≈+${abbrN(shield)}).
+      ${de>1.5?'<div>🔴 D/E بالای ۱٫۵ — احتمال غلبه هزینه درماندگی بر سپر مالیاتی؛ طبق سلسله‌مراتب تامین مالی، سراغ منابع داخلی/کاهش بدهی برو.</div>':de>0.8?'<div>🟡 اهرم متوسط رو به بالا — ظرفیت بدهی باقیمانده را برای فرصت‌ها/رکود نگه دار.</div>':'<div>🟢 اهرم محافظه‌کارانه — در صورت ثبات جریان نقد، جا برای استفاده از سپر مالیاتی هست.</div>'}</div></div>`;
+  }
+  out.innerHTML=h;
+};
 function cfaProg(level,topic){const rs=byE('cfastudy').filter(r=>r.d.kind!=='آزمون آزمایشی'&&r.d.level===level&&r.d.topic===topic).sort((a,b)=>b.u-a.u);return rs.length?Math.max(0,Math.min(100,+rs[0].d.pct||0)):0;}
 function cfaSetProg(level,topic){
   if(!can('c','cfastudy')){alert('اجازه ثبت ندارید');return;}
@@ -10871,7 +11108,7 @@ window.npvIrrCalc=npvIrrCalc;
 function invdashHTML(){
   const vals=byE('valuation'),feas=byE('feasproj'),poss=byE('position');
   if(!view.ivTab)view.ivTab='port';
-  const TB=[['port','👜 پورتفوی و تخصیص دارایی'],['tools','💎 ارزش‌گذاری و طرح‌ها'],['calc','🧮 ماشین‌حساب مالی'],['cfa','🎓 آکادمی CFA']];
+  const TB=[['port','👜 پورتفوی و تخصیص دارایی'],['tools','💎 ارزش‌گذاری و طرح‌ها'],['calc','🧮 ماشین‌حساب مالی'],['qlab','🧠 آزمایشگاه تحلیل کمی'],['cfa','🎓 آکادمی CFA']];
   let h=`<div class="tools">
     <div style="display:flex;gap:6px;flex-wrap:wrap">${TB.map(([k,n])=>`<button class="btn ${view.ivTab===k?'':'gh'} sm" onclick="view.ivTab='${k}';render()">${n}</button>`).join('')}</div>
     <span style="flex:1"></span>
@@ -10985,14 +11222,113 @@ function invdashHTML(){
       <p style="font-size:10.5px;color:var(--tx2);margin-top:8px">برای ثبت دائمی و مقایسه چند طرح، از «＋ طرح توجیهی» استفاده کن — این ماشین‌حساب برای بررسی فوری است.</p></div>
     </div>`;
   }
+  if(T==='qlab'){
+    if(!view.qlTool)view.qlTool='ret';
+    const QT=[['ret','📈 تحلیل سری بازده'],['mwtw','🔁 MWR / TWR'],['port','🧺 پرتفوی دو دارایی + ریسک'],['reg','📉 رگرسیون ساده'],['bayes','🎲 به‌روزرسانی بیزی']];
+    const QC=[['wacc','🏦 WACC و ارزش‌آفرینی'],['lev','⚖️ اهرم‌ها (DOL/DFL/DTL)'],['ccc','💧 چرخه تبدیل نقد'],['mm','🏛️ ساختار سرمایه MM']];
+    const lbl='style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px"';
+    const dsOpts=byE('dataseries').map(d=>`<option value="${d.id}">${esc(d.d.title||'—')}</option>`).join('');
+    const dsSel=tgt=>dsOpts?`<select onchange="if(this.value){const r=recs[this.value];document.getElementById('${tgt}').value=(r&&r.d.vals)||'';}" style="max-width:210px"><option value="">— بارگذاری از سری‌های ذخیره‌شده —</option>${dsOpts}</select>`:'';
+    h+=`<div class="sec" style="padding:10px 12px"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:10.5px;color:var(--tx2)">کمّی:</span>
+      ${QT.map(([k,n2])=>`<button class="btn sm ${view.qlTool===k?'':'gh'}" onclick="view.qlTool='${k}';render()">${n2}</button>`).join('')}
+      <span style="font-size:10.5px;color:var(--tx2);margin-inline-start:8px">شرکتی:</span>
+      ${QC.map(([k,n2])=>`<button class="btn sm ${view.qlTool===k?'':'gh'}" onclick="view.qlTool='${k}';render()">${n2}</button>`).join('')}
+      <span style="flex:1"></span>
+      ${can('c','dataseries')?`<button class="btn gh sm" onclick="openRec('dataseries')">➕ سری داده جدید</button><button class="btn gh sm" onclick="impOpen('dataseries')">📥 ورود اکسل سری</button>`:''}</div>
+      <div style="font-size:10.5px;color:var(--tx2);margin-top:5px">ابزارهای این بخش مستقیماً از متدولوژی «روش‌های کمی» برنامه CFA ساخته شده‌اند؛ داده را دستی بریز یا از اکسل کپی کن (کاما/فاصله/خط جدید) یا از سری‌های ذخیره‌شده بارگذار.</div></div>`;
+    const K=view.qlTool;
+    if(K==='ret')h+=`<div class="sec"><h3>📈 تحلیل کامل سری بازده</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:260px"><label ${lbl}>بازده‌های دوره‌ای ٪ (مثل: 2.1, -0.8, 3.4 …)</label><textarea id="ql_series" rows="2" dir="ltr" style="width:100%" placeholder="2.1, -0.8, 3.4, 1.2, -2.5, 4.0"></textarea></div>
+        ${dsSel('ql_series')}
+        <div><label ${lbl}>حداقل بازده هدف ٪ (برای ریسک نامطلوب)</label><input id="ql_target" dir="ltr" style="width:110px" placeholder="0"></div>
+        <div><label ${lbl}>تعداد دوره در سال</label><input id="ql_peryr" dir="ltr" style="width:80px" value="12"></div>
+        <button class="btn sm" onclick="qlabRun('ret')">🧮 تحلیل</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='mwtw')h+=`<div class="sec"><h3>🔁 بازده پولی (MWR) و زمانی (TWR)</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:250px"><label ${lbl}>جریان‌های نقدی: هر خط «زمان(سال)، مبلغ» — سرمایه‌گذاری منفی، برداشت/ارزش نهایی مثبت</label>
+        <textarea id="ql_flows" rows="4" dir="ltr" style="width:100%" placeholder="0, -100000000&#10;1, -50000000&#10;2, 180000000"></textarea></div>
+        <div style="flex:1;min-width:250px"><label ${lbl}>بازده زیر‌دوره‌ها ٪ (برای TWR)</label>
+        <textarea id="ql_subret" rows="4" dir="ltr" style="width:100%" placeholder="4.2, -1.5, 6.0, 2.3"></textarea></div></div>
+      <div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('mwtw')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='port')h+=`<div class="sec"><h3>🧺 پرتفوی دو دارایی — بازده، ریسک، تنوع، SFRatio و VaR</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
+        <div><label ${lbl}>وزن دارایی ۱ ٪</label><input id="ql_w1" dir="ltr" placeholder="60"></div>
+        <div><label ${lbl}>بازده انتظاری ۱ ٪</label><input id="ql_r1" dir="ltr" placeholder="35"></div>
+        <div><label ${lbl}>انحراف معیار ۱ ٪</label><input id="ql_s1" dir="ltr" placeholder="25"></div>
+        <div><label ${lbl}>بازده انتظاری ۲ ٪</label><input id="ql_r2" dir="ltr" placeholder="22"></div>
+        <div><label ${lbl}>انحراف معیار ۲ ٪</label><input id="ql_s2" dir="ltr" placeholder="10"></div>
+        <div><label ${lbl}>همبستگی ρ (−۱ تا ۱)</label><input id="ql_rho" dir="ltr" placeholder="0.3"></div>
+        <div><label ${lbl}>حداقل بازده قابل قبول RL ٪</label><input id="ql_rl" dir="ltr" placeholder="20"></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('port')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='reg')h+=`<div class="sec"><h3>📉 رگرسیون خطی ساده — رابطه دو متغیر و پیش‌بینی</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:230px"><label ${lbl}>X (متغیر مستقل — مثلاً بازده بازار ٪)</label><textarea id="ql_x" rows="3" dir="ltr" style="width:100%" placeholder="1.2, -0.5, 2.8, 0.4, -1.8, 3.1"></textarea>${dsSel('ql_x')}</div>
+        <div style="flex:1;min-width:230px"><label ${lbl}>Y (متغیر وابسته — مثلاً بازده سهم ٪)</label><textarea id="ql_y" rows="3" dir="ltr" style="width:100%" placeholder="1.8, -1.1, 3.9, 0.2, -2.9, 4.5"></textarea>${dsSel('ql_y')}</div>
+        <div><label ${lbl}>پیش‌بینی برای X=</label><input id="ql_xp" dir="ltr" style="width:100px" placeholder="2.0"></div></div>
+      <div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('reg')">🧮 برازش</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='bayes')h+=`<div class="sec"><h3>🎲 به‌روزرسانی بیزی باور با سیگنال جدید</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+        <div><label ${lbl}>احتمال پیشین رویداد ٪ (مثلاً موفقیت طرح)</label><input id="ql_prior" dir="ltr" placeholder="30"></div>
+        <div><label ${lbl}>احتمال دیدن سیگنال اگر رویداد رخ دهد ٪</label><input id="ql_tp" dir="ltr" placeholder="80"></div>
+        <div><label ${lbl}>احتمال دیدن سیگنال اگر رخ ندهد ٪ (هشدار کاذب)</label><input id="ql_fp" dir="ltr" placeholder="20"></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('bayes')">🧮 به‌روزرسانی</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='wacc')h+=`<div class="sec"><h3>🏦 هزینه سرمایه WACC + آزمون ارزش‌آفرینی</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px">
+        <div><label ${lbl}>ارزش بازار سهام E</label><input id="qc_e" dir="ltr" placeholder="600000000000"></div>
+        <div><label ${lbl}>ارزش بازار بدهی D</label><input id="qc_d" dir="ltr" placeholder="400000000000"></div>
+        <div><label ${lbl}>هزینه سهام re ٪</label><input id="qc_re" dir="ltr" placeholder="40"></div>
+        <div><label ${lbl}>هزینه بدهی rd ٪</label><input id="qc_rd" dir="ltr" placeholder="30"></div>
+        <div><label ${lbl}>نرخ مالیات ٪</label><input id="qc_t" dir="ltr" placeholder="25"></div>
+        <div><label ${lbl}>ROIC شرکت ٪ (اختیاری)</label><input id="qc_roic" dir="ltr" placeholder="38"></div>
+      </div><div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('wacc')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='lev')h+=`<div class="sec"><h3>⚖️ درجه اهرم عملیاتی، مالی و کل</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
+        <div><label ${lbl}>فروش S</label><input id="qc_s" dir="ltr" placeholder="1000000000"></div>
+        <div><label ${lbl}>هزینه‌های متغیر VC</label><input id="qc_vc" dir="ltr" placeholder="600000000"></div>
+        <div><label ${lbl}>هزینه‌های ثابت عملیاتی FC</label><input id="qc_fc" dir="ltr" placeholder="250000000"></div>
+        <div><label ${lbl}>هزینه بهره I</label><input id="qc_i" dir="ltr" placeholder="50000000"></div>
+      </div><div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('lev')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='ccc')h+=`<div class="sec"><h3>💧 چرخه تبدیل نقد (CCC) و نیاز سرمایه در گردش</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
+        <div><label ${lbl}>موجودی کالا (میانگین)</label><input id="qc_inv" dir="ltr" placeholder="300000000"></div>
+        <div><label ${lbl}>بهای تمام‌شده سالانه COGS</label><input id="qc_cogs" dir="ltr" placeholder="1800000000"></div>
+        <div><label ${lbl}>حساب‌های دریافتنی</label><input id="qc_ar" dir="ltr" placeholder="250000000"></div>
+        <div><label ${lbl}>فروش سالانه</label><input id="qc_rev" dir="ltr" placeholder="2400000000"></div>
+        <div><label ${lbl}>حساب‌های پرداختنی</label><input id="qc_ap" dir="ltr" placeholder="200000000"></div>
+      </div><div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('ccc')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+    if(K==='mm')h+=`<div class="sec"><h3>🏛️ ساختار سرمایه — MM با مالیات (هزینه سهام اهرمی و سپر مالیاتی)</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
+        <div><label ${lbl}>هزینه سرمایه بدون اهرم r0 ٪</label><input id="qc_r0" dir="ltr" placeholder="35"></div>
+        <div><label ${lbl}>هزینه بدهی rd ٪</label><input id="qc_rd2" dir="ltr" placeholder="28"></div>
+        <div><label ${lbl}>نرخ مالیات ٪</label><input id="qc_t2" dir="ltr" placeholder="25"></div>
+        <div><label ${lbl}>ارزش بدهی D</label><input id="qc_d2" dir="ltr" placeholder="400000000000"></div>
+        <div><label ${lbl}>ارزش سهام E</label><input id="qc_e2" dir="ltr" placeholder="600000000000"></div>
+      </div><div style="margin-top:8px"><button class="btn sm" onclick="qlabRun('mm')">🧮 محاسبه</button></div>
+      <div id="ql_out" style="margin-top:10px"></div></div>`;
+  }
   if(T==='cfa'){
     if(!view.cfaLvl)view.cfaLvl='سطح ۱';
     const L=CFA_CUR[view.cfaLvl];
     const ready=cfaReadiness(view.cfaLvl);
     const rc=ready>=80?'var(--ok)':ready>=40?'#ecd98f':'var(--bad)';
     const mocks=byE('cfastudy').filter(r=>r.d.kind==='آزمون آزمایشی'&&r.d.level===view.cfaLvl).sort((a,b)=>(ds(b.d.sdate)||'').localeCompare(ds(a.d.sdate)||''));
+    if(!view.cfaView)view.cfaView='study';
     h+=`<div class="sec"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <b style="font-size:13.5px">🎓 آکادمی CFA — برنامه سه‌سطحی مؤسسه CFA</b><span style="flex:1"></span>
+      <b style="font-size:13.5px">🎓 آکادمی CFA — برنامه سه‌سطحی مؤسسه CFA</b>
+      <button class="btn sm ${view.cfaView==='brain'?'':'gh'}" onclick="view.cfaView=view.cfaView==='brain'?'study':'brain';render()">🧠 وضعیت مغز و منابع</button>
+      <span style="flex:1"></span>
       ${Object.keys(CFA_CUR).map(l=>`<button class="btn sm ${view.cfaLvl===l?'':'gh'}" onclick="view.cfaLvl='${l}';render()">${l}</button>`).join('')}
       ${can('c','cfastudy')?`<button class="btn gh sm" onclick="openRec('cfastudy')">📝 ثبت آزمون آزمایشی</button>`:''}</div>
       <div style="font-size:11.5px;color:var(--tx2);margin-top:6px">${esc(L.desc)} · وزن‌ها مطابق ساختار رسمی آزمون. روی نوار پیشرفت هر مبحث بزن تا ۲۵٪-۲۵٪ جلو برود (۱۰۰٪ → صفر می‌شود).</div>
@@ -11006,6 +11342,37 @@ function invdashHTML(){
         </div>
         <div style="flex:1;min-width:220px;font-size:11.5px;color:var(--tx2);line-height:2">آمادگی = میانگین پیشرفت مباحث، وزن‌شده با وزن هر مبحث در آزمون. مباحث پروزن (${esc(L.topics.slice().sort((a,b)=>b.mid-a.mid).slice(0,2).map(t2=>t2.t).join('، '))}) بیشترین اثر را دارند — اول همان‌ها را قوی کن.${mocks.length?` · آخرین آزمون آزمایشی: <b style="color:var(--tx)">${(+mocks[0].d.score||0).toLocaleString('fa-IR')}٪</b>`:''}</div>
       </div></div>`;
+    if(view.cfaView==='brain'){
+      // 🧠 زیرساخت سطح‌بندی: هر سطح با منابع خودش + نمای کلان
+      const lvls=Object.keys(CFA_CUR);
+      h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:12px">`;
+      lvls.forEach(lv=>{
+        const srcs=CFA_SRC[lv]||[];const loaded=srcs.filter(s2=>s2.loaded);
+        const kbT=Object.keys(CFA_KB[lv]||{});const kbM=kbT.reduce((a2,t3)=>a2+((CFA_KB[lv]||{})[t3]||[]).length,0);
+        const tools=kbT.reduce((a2,t3)=>a2+((CFA_TOOLS[t3]||[]).length),0);
+        const rd2=cfaReadiness(lv);
+        const cov=srcs.length?Math.round(loaded.length/srcs.length*100):0;
+        h+=`<div class="sec" style="padding:12px;${lv===view.cfaLvl?'border:1px solid var(--ac)':''}">
+          <div style="display:flex;align-items:center;gap:8px"><b style="flex:1;font-size:13px">🧠 ${esc(lv)}</b>
+          <span class="chip" style="background:var(--bg3);font-size:10px">${srcs.length?loaded.length.toLocaleString('fa-IR')+' از '+srcs.length.toLocaleString('fa-IR')+' منبع':'منبعی تعریف نشده'}</span></div>
+          <div style="height:9px;border-radius:5px;background:var(--bg3);overflow:hidden;margin:8px 0"><div style="height:100%;width:${cov}%;background:${cov>=100?'var(--ok)':cov>0?'#ecd98f':'var(--bg3)'}"></div></div>
+          <div style="font-size:11px;color:var(--tx2);line-height:2">📖 دانش: ${kbM.toLocaleString('fa-IR')} ماژول در ${kbT.length.toLocaleString('fa-IR')} مبحث · 🧰 ${tools.toLocaleString('fa-IR')} ابزار متصل · 🎯 آمادگی مطالعه: ${rd2.toLocaleString('fa-IR')}٪</div>
+        </div>`;
+      });
+      h+=`</div>`;
+      const srcsL=CFA_SRC[view.cfaLvl]||[];
+      if(srcsL.length){
+        h+=`<div class="sec" style="margin-bottom:12px"><h3>🗂️ منابع ${esc(view.cfaLvl)} — پوشش مغز</h3>
+        <div class="tblwrap"><table style="font-size:11.5px"><thead><tr><th>جلد</th><th style="text-align:right">مبحث</th><th>وضعیت</th><th>ماژول‌های دانش</th><th>ابزارها</th><th>نسخه ورود</th></tr></thead><tbody>
+        ${srcsL.map(s2=>`<tr><td style="text-align:center" dir="ltr">${esc(s2.v)}</td><td style="text-align:right">${esc(s2.topic)}</td>
+          <td style="text-align:center">${s2.loaded?'<b style=\'color:var(--ok)\'>✅ بارگذاری‌شده</b>':'<span style=\'color:var(--tx2)\'>⬜ در انتظار منبع</span>'}</td>
+          <td style="text-align:center">${s2.loaded?(s2.mods||0).toLocaleString('fa-IR'):'—'}</td>
+          <td style="text-align:center">${(CFA_TOOLS[s2.topic]||[]).length?(CFA_TOOLS[s2.topic]||[]).length.toLocaleString('fa-IR'):'—'}</td>
+          <td style="text-align:center;font-size:10.5px;color:var(--tx2)">${esc(s2.ver||'—')}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p style="font-size:10.5px;color:var(--tx2);margin-top:6px">💡 با افزودن هر جلد جدید، دانش و ابزارهایش به همین سطح اضافه و اینجا «بارگذاری‌شده» می‌شود. داشبرد کلان نهایی، جمع این سه سطح خواهد بود.</p></div>`;
+      }
+    }
     h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px">`;
     L.topics.forEach(tp=>{
       const pg=cfaProg(view.cfaLvl,tp.t);
@@ -11020,10 +11387,26 @@ function invdashHTML(){
         <div style="display:flex;align-items:center;gap:8px">
           <div onclick="cfaSetProg('${view.cfaLvl}','${tp.t.replace(/'/g,"\\'")}');" title="کلیک: +۲۵٪" style="flex:1;height:12px;border-radius:6px;background:var(--bg3);overflow:hidden;cursor:pointer"><div style="height:100%;width:${pg}%;background:${pc}"></div></div>
           <b style="width:40px;text-align:left;font-size:12px;color:${pg>=100?'var(--ok)':'var(--tx)'}">${pg.toLocaleString('fa-IR')}٪</b></div>
-        ${open?`<div style="margin-top:9px;font-size:11.5px;line-height:2.1;color:var(--tx2)">📚 سرفصل‌های مطالعه:${tp.ms.map(m2=>`<div>• ${esc(m2)}</div>`).join('')}</div>`:''}
+        ${open?`<div style="margin-top:9px;font-size:11.5px;line-height:2.1;color:var(--tx2)">📚 سرفصل‌های مطالعه:${tp.ms.map(m2=>`<div>• ${esc(m2)}</div>`).join('')}
+          ${cfaKbOf(view.cfaLvl,tp.t)?`<button class="btn sm" style="margin-top:6px" onclick="event.stopPropagation();view.cfaKbT='${tp.t.replace(/'/g,"\\'")}';view.cfaKbM=0;render()">📖 دانش فنی کامل (${cfaKbOf(view.cfaLvl,tp.t).length.toLocaleString('fa-IR')} ماژول)</button>`:''}</div>`:''}
       </div>`;
     });
     h+=`</div>`;
+    // 📖 پنل دانش فنی
+    if(view.cfaKbT&&cfaKbOf(view.cfaLvl,view.cfaKbT)){
+      const KBB=cfaKbOf(view.cfaLvl,view.cfaKbT);const mi=Math.max(0,Math.min(KBB.length-1,+view.cfaKbM||0));const MD=KBB[mi];
+      h+=`<div class="sec" style="margin-top:12px;border:1px solid var(--ac)">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <b style="font-size:13px">📖 دانش فنی — ${esc(view.cfaKbT)} (${esc(view.cfaLvl)})</b><span style="flex:1"></span>
+          <button class="btn gh sm" onclick="view.cfaKbT='';render()">✕ بستن</button></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${KBB.map((md,i2)=>`<button class="btn sm ${i2===mi?'':'gh'}" style="font-size:10.5px;padding:4px 9px" onclick="view.cfaKbM=${i2};render()">${esc(md.m.split('.')[0])}</button>`).join('')}</div>
+        <b style="font-size:12.5px;color:#ecd98f">${esc(MD.m)}</b>
+        <div style="font-size:12.5px;line-height:2.3;margin-top:6px">${MD.pts.map(p2=>`<div>🔹 ${esc(p2)}</div>`).join('')}</div>
+        ${MD.frm&&MD.frm.length?`<div style="margin-top:8px;padding:8px 10px;background:var(--bg3);border-radius:8px;font-size:12px" dir="ltr">${MD.frm.map(f2=>`<div style="padding:2px 0">📐 ${esc(f2)}</div>`).join('')}</div>`:''}
+        ${MD.rules&&MD.rules.length?`<div style="margin-top:8px"><b style="font-size:11.5px;color:var(--ac)">⚖️ قواعد تصمیم حرفه‌ای:</b><div style="font-size:12px;line-height:2.2">${MD.rules.map(r3=>`<div>• ${esc(r3)}</div>`).join('')}</div></div>`:''}
+        <div style="margin-top:8px;font-size:10.5px;color:var(--tx2)">🧪 تمرین عملی: همین متد را در «🧠 آزمایشگاه تحلیل کمی» با داده خودت اجرا کن.</div>
+      </div>`;
+    }
     if(mocks.length){
       h+=`<div class="sec" style="margin-top:12px"><h3>📝 آزمون‌های آزمایشی — ${esc(view.cfaLvl)}</h3>
       <div class="tblwrap"><table><thead><tr><th>تاریخ</th><th>مبحث/کل</th><th>نمره</th><th>یادداشت</th></tr></thead><tbody>
