@@ -262,11 +262,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.82</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.83</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.82</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.83</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -14102,24 +14102,28 @@ const CFA_FLIP=[['افزایش','کاهش'],['بیشتر','کمتر'],['بالا
 function cfaFlip(txt){for(const [a,b] of CFA_FLIP){if(txt.includes(a))return txt.split(a).join(b);if(txt.includes(b))return txt.split(b).join(a);}return null;}
 function cfaShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function cfaGenExam(level,topic,n){
-  // بانک ماژول‌ها: (سطح، مبحث، ماژول)
+  // بانک ماژول‌ها: فقط از مبحث انتخابی سؤال ساخته می‌شود
   const pool=[];
   const topics=topic?[topic]:Object.keys(CFA_KB[level]||{});
   topics.forEach(t=>{(cfaKbOf(level,t)||[]).forEach(md=>pool.push({t,md}));});
   if(!pool.length)return [];
-  // بانک همه گزاره‌ها و فرمول‌ها برای پرت‌سازها
-  const allSt=[],allFr=[];
-  Object.keys(CFA_KB[level]||{}).forEach(t=>{(CFA_KB[level][t]||[]).forEach(md=>{
-    (md.pts||[]).concat(md.rules||[]).forEach(p=>allSt.push({t,m:md.m,txt:p}));
-    (md.frm||[]).forEach(f=>allFr.push({t,m:md.m,txt:f}));});});
+  // بانک‌های پرت‌ساز لایه‌ای: همان مبحث ← سپس سطح (فقط در نبود کافی)
+  const stOf=ts=>{const arr=[];ts.forEach(t=>{(CFA_KB[level][t]||[]).forEach(md=>{(md.pts||[]).concat(md.rules||[]).forEach(p=>arr.push({t,m:md.m,txt:p}));});});return arr;};
+  const frOf=ts=>{const arr=[];ts.forEach(t=>{(CFA_KB[level][t]||[]).forEach(md=>{(md.frm||[]).forEach(f=>arr.push({t,m:md.m,txt:f}));});});return arr;};
+  const lvlTopics=Object.keys(CFA_KB[level]||{});
   const qs=[];let guard=0;
   while(qs.length<n&&guard++<n*30){
     const pick=pool[Math.floor(Math.random()*pool.length)];
     const md=pick.md;
-    const useFrm=(md.frm&&md.frm.length)&&Math.random()<0.3&&allFr.length>=6;
+    const sameTopicSt=stOf([pick.t]);
+    const sameTopicFr=frOf([pick.t]);
+    const useFrm=(md.frm&&md.frm.length)&&Math.random()<0.3;
     if(useFrm){
       const correct=md.frm[Math.floor(Math.random()*md.frm.length)];
-      const dis=cfaShuffle(allFr.filter(f=>f.m!==md.m&&f.txt!==correct)).slice(0,2).map(f=>f.txt);
+      // پرت‌ساز فرمولی: اول از همان مبحث (ماژول‌های دیگر)، بعد از سطح
+      let cand=sameTopicFr.filter(f=>f.m!==md.m&&f.txt!==correct);
+      if(cand.length<2)cand=cand.concat(frOf(lvlTopics).filter(f=>f.m!==md.m&&f.txt!==correct));
+      const dis=cfaShuffle(cand.slice()).slice(0,2).map(f=>f.txt);
       if(dis.length<2)continue;
       const opts=cfaShuffle([{txt:correct,ok:1},{txt:dis[0],ok:0},{txt:dis[1],ok:0}]);
       qs.push({q:'کدام فرمول مربوط به ماژول «'+md.m+'» (مبحث '+pick.t+') است؟',opts,type:'frm',mod:md.m,topic:pick.t});
@@ -14128,12 +14132,24 @@ function cfaGenExam(level,topic,n){
       if(!sts.length)continue;
       const correct=sts[Math.floor(Math.random()*sts.length)];
       const dis=[];
-      // پرت‌ساز ۱: نسخه وارونه یک گزاره دیگر از همان ماژول (غلطِ باورپذیر)
-      const flippables=sts.filter(x=>x!==correct&&cfaFlip(x));
-      if(flippables.length)dis.push(cfaFlip(flippables[Math.floor(Math.random()*flippables.length)]));
-      // پرت‌ساز(ها): گزاره از ماژول‌های دیگر (بی‌ربط به این ماژول)
-      const others=cfaShuffle(allSt.filter(x=>x.m!==md.m)).slice(0,3);
-      for(const o of others){if(dis.length>=2)break;dis.push(o.txt);}
+      // لایه ۱ (بهترین): نسخه وارونه‌شده گزاره‌های خود همین ماژول — غلطِ باورپذیر و هم‌موضوع
+      const flipSelf=cfaShuffle(sts.filter(x=>x!==correct).map(x=>cfaFlip(x)).filter(Boolean));
+      flipSelf.forEach(f=>{if(dis.length<2&&f!==correct)dis.push(f);});
+      // لایه ۲: نسخه وارونه‌شده گزاره‌های ماژول‌های دیگرِ «همان مبحث»
+      if(dis.length<2){
+        const flipTopic=cfaShuffle(sameTopicSt.filter(x=>x.m!==md.m).map(x=>cfaFlip(x.txt)).filter(Boolean));
+        flipTopic.forEach(f=>{if(dis.length<2&&f!==correct&&!dis.includes(f))dis.push(f);});
+      }
+      // لایه ۳: گزاره سالم از ماژول دیگرِ «همان مبحث» (درباره این ماژول نیست ⇒ در متن سؤال غلط است)
+      if(dis.length<2){
+        const others=cfaShuffle(sameTopicSt.filter(x=>x.m!==md.m));
+        others.forEach(o=>{if(dis.length<2&&o.txt!==correct&&!dis.includes(o.txt))dis.push(o.txt);});
+      }
+      // لایه ۴ (فقط اضطراری — مبحث تک‌ماژوله بدون گزاره وارونه‌پذیر): از سطح
+      if(dis.length<2){
+        const anySt=cfaShuffle(stOf(lvlTopics).filter(x=>x.m!==md.m));
+        anySt.forEach(o=>{if(dis.length<2&&o.txt!==correct&&!dis.includes(o.txt))dis.push(o.txt);});
+      }
       if(dis.length<2)continue;
       const opts=cfaShuffle([{txt:correct,ok:1},{txt:dis[0],ok:0},{txt:dis[1],ok:0}]);
       qs.push({q:'کدام گزاره دربارهٔ ماژول «'+md.m+'» (مبحث '+pick.t+') درست است؟',opts,type:'st',mod:md.m,topic:pick.t});
