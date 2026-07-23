@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.91</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.92</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.91</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.92</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -11320,6 +11320,139 @@ const CFA_SRC={
   {v:'V5',topic:'اخلاق و استانداردهای حرفه‌ای',loaded:true,mods:4,ver:'مادر-۱۷۵'},
   {v:'هر سه مسیر',topic:'مسیر تخصصی (یکی از سه)',loaded:true,mods:22,ver:'مادر-۱۸۰'}]};
 /* 📚 لایه «درس کامل» — آموزش عمیق ماژول‌به‌ماژول (پله‌پله تکمیل می‌شود) */
+/* 📑 فهرست رسمی منابع CFA (ترجمه دقیق فهرست ابتدای هر جلد) — مرجع پوشش مطالب */
+const CFA_TOC={'سطح ۱':{'روش‌های کمی':[
+{en:'Rates and Returns',sub:[
+ {f:'مقدمه',p:0},
+ {f:'نرخ‌های بهره و ارزش زمانی پول',p:0},
+ {f:'عوامل تعیین‌کننده نرخ بهره',p:1},
+ {f:'نرخ‌های بازده',p:0},
+ {f:'بازده دورهٔ نگهداری',p:1},
+ {f:'میانگین حسابی (میانگین ساده)',p:1},
+ {f:'میانگین هندسی',p:1},
+ {f:'میانگین هارمونیک',p:1},
+ {f:'بازده پولی‌وزنی و زمانی‌وزنی',p:0},
+ {f:'محاسبهٔ بازده پولی‌وزنی',p:1},
+ {f:'بازده سالانه‌شده',p:0},
+ {f:'مرکب‌شدن غیرسالانه',p:1},
+ {f:'سالانه‌سازی بازده‌ها',p:1},
+ {f:'بازده‌های مرکب پیوسته',p:1},
+ {f:'سایر معیارهای مهم بازده و کاربردهای آن‌ها',p:0},
+ {f:'بازده ناخالص و خالص',p:1},
+ {f:'بازده اسمی پیش از مالیات و پس از مالیات',p:1},
+ {f:'بازده‌های واقعی',p:1},
+ {f:'بازده اهرمی',p:1}]},
+{en:'Time Value of Money in Finance',sub:[
+ {f:'مقدمه',p:0},
+ {f:'ارزش زمانی پول در درآمد ثابت و سهام',p:0},
+ {f:'ابزارهای درآمد ثابت و ارزش زمانی پول',p:1},
+ {f:'ابزارهای سهام و ارزش زمانی پول',p:1},
+ {f:'بازده و رشد ضمنی',p:0},
+ {f:'بازده ضمنی برای ابزارهای درآمد ثابت',p:1},
+ {f:'ابزارهای سهام، بازده ضمنی و رشد ضمنی',p:1},
+ {f:'جمع‌پذیری جریان نقدی',p:0},
+ {f:'نرخ‌های فوروارد ضمنی با جمع‌پذیری جریان نقدی',p:1},
+ {f:'نرخ‌های ارز فوروارد با اصل عدم آربیتراژ',p:1},
+ {f:'قیمت‌گذاری اختیار معامله با جمع‌پذیری جریان نقدی',p:1}]},
+{en:'Statistical Measures of Asset Returns',sub:[
+ {f:'مقدمه',p:0},
+ {f:'معیارهای گرایش مرکزی و مکان',p:0},
+ {f:'معیارهای گرایش مرکزی',p:1},
+ {f:'برخورد با داده‌های پرت',p:1},
+ {f:'معیارهای مکان',p:1},
+ {f:'معیارهای پراکندگی',p:0},
+ {f:'دامنه',p:1},
+ {f:'انحراف مطلق میانگین',p:1},
+ {f:'واریانس نمونه و انحراف معیار نمونه',p:1},
+ {f:'انحراف نزولی و ضریب تغییرات',p:1},
+ {f:'معیارهای شکل توزیع',p:0},
+ {f:'همبستگی بین دو متغیر',p:0},
+ {f:'نمودار پراکنش',p:1},
+ {f:'کوواریانس و همبستگی',p:1},
+ {f:'ویژگی‌های همبستگی',p:1},
+ {f:'محدودیت‌های تحلیل همبستگی',p:1}]},
+{en:'Probability Trees and Conditional Expectations',sub:[
+ {f:'مقدمه',p:0},
+ {f:'ارزش مورد انتظار و واریانس',p:0},
+ {f:'درخت‌های احتمال و امیدهای شرطی',p:0},
+ {f:'قاعدهٔ احتمال کل برای ارزش مورد انتظار',p:1},
+ {f:'فرمول بیز و به‌روزرسانی برآوردهای احتمال',p:0},
+ {f:'فرمول بیز',p:1}]},
+{en:'Portfolio Mathematics',sub:[
+ {f:'مقدمه',p:0},
+ {f:'بازده مورد انتظار و واریانس بازده پرتفوی',p:0},
+ {f:'کوواریانس',p:1},
+ {f:'همبستگی',p:1},
+ {f:'پیش‌بینی همبستگی بازده‌ها: کوواریانس با تابع احتمال توأم',p:0},
+ {f:'معیارهای ریسک پرتفوی: کاربردهای توزیع نرمال',p:0}]},
+{en:'Simulation Methods',sub:[
+ {f:'مقدمه',p:0},
+ {f:'توزیع لگ‌نرمال و مرکب‌شدن پیوسته',p:0},
+ {f:'توزیع لگ‌نرمال',p:1},
+ {f:'نرخ‌های بازده مرکب پیوسته',p:1},
+ {f:'شبیه‌سازی مونت‌کارلو',p:0},
+ {f:'بوت‌استرپینگ (بازنمونه‌گیری)',p:0}]},
+{en:'Estimation and Inference',sub:[
+ {f:'مقدمه',p:0},
+ {f:'روش‌های نمونه‌گیری',p:0},
+ {f:'نمونه‌گیری تصادفی ساده',p:1},
+ {f:'نمونه‌گیری تصادفی طبقه‌ای',p:1},
+ {f:'نمونه‌گیری خوشه‌ای',p:1},
+ {f:'نمونه‌گیری غیراحتمالی',p:1},
+ {f:'نمونه‌گیری از توزیع‌های مختلف',p:1},
+ {f:'قضیهٔ حد مرکزی و استنباط',p:0},
+ {f:'قضیهٔ حد مرکزی',p:1},
+ {f:'خطای معیار میانگین نمونه',p:1},
+ {f:'بوت‌استرپینگ و توزیع‌های نمونه‌گیری تجربی',p:0}]},
+{en:'Hypothesis Testing',sub:[
+ {f:'مقدمه',p:0},
+ {f:'آزمون‌های فرضیه برای مالی',p:0},
+ {f:'فرآیند آزمون فرضیه',p:1},
+ {f:'آزمون‌های بازده و ریسک در مالی',p:0},
+ {f:'آزمون تفاوت میانگین‌ها با نمونه‌های وابسته',p:1},
+ {f:'آزمون برابری دو واریانس',p:1},
+ {f:'آزمون‌های پارامتری در برابر ناپارامتری',p:0},
+ {f:'کاربردهای آزمون‌های ناپارامتری',p:1},
+ {f:'استنباط ناپارامتری: جمع‌بندی',p:1}]},
+{en:'Parametric and Non-Parametric Tests of Independence',sub:[
+ {f:'مقدمه',p:0},
+ {f:'آزمون‌های مربوط به همبستگی',p:0},
+ {f:'آزمون پارامتری همبستگی',p:1},
+ {f:'آزمون ناپارامتری همبستگی: ضریب همبستگی رتبه‌ای اسپیرمن',p:1},
+ {f:'آزمون استقلال با داده‌های جدول توافقی',p:0}]},
+{en:'Simple Linear Regression',sub:[
+ {f:'مقدمه',p:0},
+ {f:'برآورد مدل رگرسیون خطی ساده',p:0},
+ {f:'مقدمه‌ای بر رگرسیون خطی',p:1},
+ {f:'برآورد پارامترهای رگرسیون خطی ساده',p:1},
+ {f:'مفروضات مدل رگرسیون خطی ساده',p:0},
+ {f:'مفروضهٔ ۱: خطی بودن',p:1},
+ {f:'مفروضهٔ ۲: همسانی واریانس',p:1},
+ {f:'مفروضهٔ ۳: استقلال',p:1},
+ {f:'مفروضهٔ ۴: نرمال بودن',p:1},
+ {f:'آزمون‌های فرضیه در مدل رگرسیون خطی ساده',p:0},
+ {f:'تحلیل واریانس (ANOVA)',p:1},
+ {f:'معیارهای نکویی برازش',p:1},
+ {f:'آزمون فرضیهٔ ضرایب رگرسیون منفرد',p:1},
+ {f:'پیش‌بینی در مدل رگرسیون خطی ساده',p:0},
+ {f:'ANOVA و خطای معیار برآورد در رگرسیون خطی ساده',p:1},
+ {f:'پیش‌بینی با رگرسیون خطی ساده و بازه‌های پیش‌بینی',p:1},
+ {f:'فرم‌های تابعی رگرسیون خطی ساده',p:0},
+ {f:'مدل لگ-خطی (Log-Lin)',p:1},
+ {f:'مدل خطی-لگ (Lin-Log)',p:1},
+ {f:'مدل لگ-لگ (Log-Log)',p:1},
+ {f:'انتخاب فرم تابعی درست',p:1}]},
+{en:'Introduction to Big Data Techniques',sub:[
+ {f:'مقدمه',p:0},
+ {f:'فینتک چگونه در تحلیل سرمایه‌گذاری کمی به کار می‌رود؟',p:0},
+ {f:'داده‌های بزرگ (Big Data)',p:1},
+ {f:'ابزارهای تحلیلی پیشرفته: هوش مصنوعی و یادگیری ماشین',p:0},
+ {f:'مواجهه با داده‌های بزرگ با علم داده',p:0},
+ {f:'روش‌های پردازش داده',p:1},
+ {f:'مصورسازی داده',p:1},
+ {f:'تحلیل متن و پردازش زبان طبیعی',p:1}]}
+]}};
+
 const CFA_DEEP={'سطح ۱':{'روش‌های کمی':[
 {sec:[
 ['۱. نرخ بهره چیست و چرا مهم است؟','تصور کنید دوستی از شما ۱۰۰ میلیون تومان قرض می‌خواهد و قول می‌دهد یک سال بعد پس بدهد. آیا حاضرید همان ۱۰۰ میلیون را پس بگیرید؟ قطعاً نه — چون در این یک سال هم قیمت‌ها بالا رفته، هم می‌توانستید با این پول کار دیگری بکنید، هم ممکن بود دوستتان اصلاً پس ندهد. مبلغ اضافه‌ای که بابت این‌ها طلب می‌کنید، همان «بهره» است و نسبت آن به اصل پول، «نرخ بهره». پس نرخ بهره در واقع قیمتِ زمان است: قیمت جابه‌جا کردن پول بین امروز و آینده. حالا نکته مهم: همین یک عدد، بسته به اینکه کجا ایستاده‌اید، سه اسم مختلف پیدا می‌کند. اسم اول «نرخ بازده موردنیاز» است: کمترین سودی که باید به شما بدهند تا حاضر شوید پول‌تان را جایی بگذارید — کمتر از آن، نه. اسم دوم «نرخ تنزیل» است: وقتی می‌خواهید بدانید ۱۰۰ میلیونی که قرار است دو سال دیگر به دست‌تان برسد، امروز چقدر می‌ارزد، با همین نرخ آن را کوچک می‌کنید و به امروز برمی‌گردانید. اسم سوم «هزینه فرصت» است: وقتی پول را در گزینه‌ای می‌گذارید، سودِ بهترین گزینه‌ی دیگری که رهایش کردید (مثلاً سپرده ۲۳٪) از دست‌تان رفته؛ پس هر سرمایه‌گذاری باید دست‌کم از این عدد بهتر باشد وگرنه عملاً ضرر کرده‌اید. این سه اسم، یک چیزند از سه زاویه — و در همه فرمول‌های این فصل، حرف r همین است.',
@@ -14186,7 +14319,9 @@ window.cfaLqPick=function(key,qi,oi){window._lq[key+'|'+qi]=oi;render();};
 function mfx(t){return esc(t).replace(/[A-Za-z0-9\u06F0-\u06F9\u0660-\u0669][A-Za-z0-9\u06F0-\u06F9\u0660-\u0669()\[\]+\-\u2212\u00d7\u00f7\u221a^.,\u066b\u066c\u0304\u03c3\u03a3\u2080-\u2089\u00b2\u00b3\u00b9\u2070\u2074-\u2079\/ ]*[=+\-\u2212\u00d7\u00f7\/\u221a^\u2248\u2264\u2265][A-Za-z0-9\u06F0-\u06F9\u0660-\u0669()\[\]+\-\u2212\u00d7\u00f7\u221a^.,\u066b\u066c\u0304\u03c3\u03a3\u2080-\u2089\u00b2\u00b3\u00b9\u2070\u2074-\u2079\u2248\u2264\u2265=%\u066a\/ ]*[A-Za-z0-9\u06F0-\u06F9\u0660-\u0669%\u066a)\]]/g,m=>`<span class="mx">${m}</span>`);}
 function cfaSecMap(){try{return JSON.parse(localStorage.getItem('cfa_secdone')||'{}');}catch(e){return {};}}
 window.cfaSecToggle=function(l,t,i,si){const m2=cfaSecMap();const k=l+'|'+t+'|'+i+'|'+si;if(m2[k])delete m2[k];else m2[k]=1;localStorage.setItem('cfa_secdone',JSON.stringify(m2));render();};
-function cfaSecPct(l,t,i){const DP=cfaDeepOf(l,t,i);if(!DP||!DP.sec)return cfaIsLearned(l,t,i)?100:0;const m2=cfaSecMap();let n=0;DP.sec.forEach((_,si)=>{if(m2[l+'|'+t+'|'+i+'|'+si])n++;});return Math.round(n/DP.sec.length*100);}
+function cfaTocOf(l,t,i){try{return (((CFA_TOC[l]||{})[t]||[])[i]||{}).sub||null;}catch(e){return null;}}
+function cfaSecList(l,t,i){const toc=cfaTocOf(l,t,i);if(toc)return toc.map((x,si)=>({fa:x.f,p:x.p||0,si}));const DP=cfaDeepOf(l,t,i);if(DP&&DP.sec)return DP.sec.map((sc,si)=>({fa:sc[0],p:0,si}));return null;}
+function cfaSecPct(l,t,i){const list=cfaSecList(l,t,i);if(!list)return cfaIsLearned(l,t,i)?100:0;const m2=cfaSecMap();let n=0;list.forEach(x=>{if(m2[l+'|'+t+'|'+i+'|'+x.si])n++;});return list.length?Math.round(n/list.length*100):0;}
 function cfaLearnPct(l,t){const kb=cfaKbOf(l,t);if(!kb||!kb.length)return null;let n=0;kb.forEach((_,i)=>{if(cfaIsLearned(l,t,i))n++;});return Math.round(n/kb.length*100);}
 function cfaLearnLvlPct(l){const ks=Object.keys(CFA_KB[l]||{});if(!ks.length)return null;let tot=0,got=0;ks.forEach(t=>{const kb=CFA_KB[l][t];tot+=kb.length;kb.forEach((_,i)=>{if(cfaIsLearned(l,t,i))got++;});});return tot?Math.round(got/tot*100):0;}
 /* 📝 موتور آزمون‌ساز استاندارد از پایگاه دانش */
@@ -15859,7 +15994,7 @@ function invdashHTML(){
                     <b style="font-size:10.5px;width:32px;text-align:left">${sp.toLocaleString('fa-IR')}٪</b>
                     <button class="btn sm" style="font-size:10px" onclick="view.cfaLvl='${lv}';view.cfaKbT='${tp2.replace(/'/g,"\\'")}';view.cfaKbM=${i3};document.getElementById('content').scrollTop=0;render()">📖 آموزش</button>
                     <span title="کل فصل آموخته شد" style="cursor:pointer;font-size:13px" onclick="cfaMarkLearn('${lv}','${tp2.replace(/'/g,"\\'")}',${i3})">${cfaIsLearned(lv,tp2,i3)?'✅':'☐'}</span></div>
-                  ${DP2&&DP2.sec?`<div style="margin-top:5px;font-size:10.8px;line-height:2.1;color:var(--tx2)">${DP2.sec.map((sc2,si2)=>{const sd=!!cfaSecMap()[lv+'|'+tp2+'|'+i3+'|'+si2];return `<div style="display:flex;align-items:center;gap:6px"><span style="flex:1">${esc(sc2[0])}</span><span style="cursor:pointer" onclick="cfaSecToggle('${lv}','${tp2.replace(/'/g,"\\'")}',${i3},${si2})">${sd?'✅':'☐'}</span></div>`;}).join('')}</div>`:`<div style="margin-top:4px;font-size:10px;color:var(--tx2)">درس کامل بخش‌بندی‌شده این فصل هنوز نوشته نشده — تیک کلی فصل را استفاده کن.</div>`}
+                  ${(()=>{const lst=cfaSecList(lv,tp2,i3);if(!lst)return `<div style="margin-top:4px;font-size:10px;color:var(--tx2)">فهرست رسمی این فصل هنوز وارد نشده — تیک کلی فصل را استفاده کن.</div>`;const mm=cfaSecMap();return `<div style="margin-top:5px;font-size:10.6px;line-height:2;color:var(--tx2);border-top:1px dashed var(--line);padding-top:5px">${lst.map(x=>{const sd=!!mm[lv+'|'+tp2+'|'+i3+'|'+x.si];return `<div style="display:flex;align-items:center;gap:6px;padding-inline-start:${x.p?16:0}px"><span style="flex:1;${x.p?'':'font-weight:600;color:var(--tx)'}">${x.p?'– ':''}${esc(x.fa)}</span><span style="cursor:pointer;font-size:12px" onclick="cfaSecToggle('${lv}','${tp2.replace(/'/g,"\\'")}',${i3},${x.si})">${sd?'✅':'☐'}</span></div>`;}).join('')}</div>`;})()}
                 </div>`;
               });
             }
@@ -15890,6 +16025,8 @@ function invdashHTML(){
           <button class="btn gh sm" onclick="view.cfaKbT='';document.getElementById('content').scrollTop=0;render()">◂ بازگشت به مباحث</button></div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${KBB.map((md,i2)=>`<button class="btn sm ${i2===mi?'':'gh'}" style="font-size:10.5px;padding:4px 9px" onclick="view.cfaKbM=${i2};document.getElementById('content').scrollTop=0;render()">${esc(md.m.split('.')[0])}</button>`).join('')}</div>
         <b style="font-size:12.5px;color:#ecd98f">${esc(MD.m)}</b>
+        ${(()=>{const lst=cfaSecList(view.cfaLvl,view.cfaKbT,mi);if(!lst||!cfaTocOf(view.cfaLvl,view.cfaKbT,mi))return '';const mm=cfaSecMap();const done=lst.filter(x=>mm[view.cfaLvl+'|'+view.cfaKbT+'|'+mi+'|'+x.si]).length;
+          return `<div style="margin-top:8px;padding:9px 12px;background:var(--bg2);border:1px solid color-mix(in srgb,var(--ac) 30%,transparent);border-radius:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="flex:1;font-size:11.5px">📑 نقشهٔ پوشش رسمی این فصل (مطابق فهرست کتاب)</b><span style="font-size:10.5px;color:var(--tx2)">${done.toLocaleString('fa-IR')}/${lst.length.toLocaleString('fa-IR')}</span></div><div style="font-size:10.8px;line-height:2">${lst.map(x=>{const sd=!!mm[view.cfaLvl+'|'+view.cfaKbT+'|'+mi+'|'+x.si];return `<div style="display:flex;align-items:center;gap:6px;padding-inline-start:${x.p?16:0}px"><span style="flex:1;${x.p?'color:var(--tx2)':'font-weight:600'}">${x.p?'– ':''}${esc(x.fa)}</span><span style="cursor:pointer;font-size:12px" onclick="cfaSecToggle('${view.cfaLvl}','${view.cfaKbT.replace(/'/g,"\'")}',${mi},${x.si})">${sd?'✅':'☐'}</span></div>`;}).join('')}</div></div>`;})()}
         ${(()=>{const DP=cfaDeepOf(view.cfaLvl,view.cfaKbT,mi);if(!DP)return `<div style="margin-top:6px;font-size:10.5px;color:var(--tx2)">📘 درس کامل این ماژول در نسخه‌های بعدی نوشته می‌شود؛ فعلاً چکیده ساخت‌یافته:</div>`;
           let dh='<div style="margin-top:8px">';
           const cfaFrm=t=>{let x=esc(t).replace(/[\u0600-\u06FF][\u0600-\u06FF\u200c\s]*[\u0600-\u06FF]|[\u0600-\u06FF]/g,m=>`<bdi>${m}</bdi>`);
@@ -15899,7 +16036,7 @@ function invdashHTML(){
   for(let i=0;i<6&&/\{[^{}|]*\|[^{}]*\}/.test(x);i++)
     x=x.replace(/\{([^{}|]*)\|([^{}]*)\}/g,(m,a,b)=>`<span class="frx"><span>${a.trim()}</span><span>${b.trim()}</span></span>`);
   return x;};
-DP.sec.forEach((sc,si)=>{const sdone=!!cfaSecMap()[view.cfaLvl+'|'+view.cfaKbT+'|'+mi+'|'+si];dh+=`<div style="margin-top:12px"><div style="display:flex;align-items:center;gap:7px"><b style="flex:1;font-size:12.3px;color:var(--ac)">◈ ${esc(sc[0])}</b><span title="مطالعه شد؟" onclick="cfaSecToggle('${view.cfaLvl}','${view.cfaKbT.replace(/'/g,"\\'")}',${mi},${si})" style="cursor:pointer;font-size:14px">${sdone?'✅':'☐'}</span></div><div style="font-size:12.3px;line-height:2.5;text-align:justify;margin-top:4px">${esc(sc[1])}</div>${sc[2]&&sc[2].length?sc[2].map(f2=>{const px=f2.split('::');const lb=px.length>1?px[0]:'';const fx=px.length>1?px[1]:px[0];return `<div style="margin-top:6px;padding:9px 12px;background:var(--bg3);border-radius:10px;border-inline-start:3px solid var(--ac)">${lb?`<div style="font-size:11px;color:var(--mut);margin-bottom:4px">📐 ${esc(lb)}</div>`:''}<div dir="ltr" class="fml" style="text-align:center;font-size:15px;font-weight:700;line-height:2.2;font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;letter-spacing:.3px;padding:2px 0">${cfaFrm(fx)}</div></div>`;}).join(''):''}${sc[3]?`<div style="margin-top:6px;padding:7px 11px;background:color-mix(in srgb,var(--ok) 7%,transparent);border-radius:8px;font-size:11.8px;line-height:2.3">💡 ${mfx(sc[3])}</div>`:''}</div>`;});
+DP.sec.forEach(sc=>{dh+=`<div style="margin-top:12px"><b style="font-size:12.3px;color:var(--ac)">◈ ${esc(sc[0])}</b><div style="font-size:12.3px;line-height:2.5;text-align:justify;margin-top:4px">${esc(sc[1])}</div>${sc[2]&&sc[2].length?sc[2].map(f2=>{const px=f2.split('::');const lb=px.length>1?px[0]:'';const fx=px.length>1?px[1]:px[0];return `<div style="margin-top:6px;padding:9px 12px;background:var(--bg3);border-radius:10px;border-inline-start:3px solid var(--ac)">${lb?`<div style="font-size:11px;color:var(--mut);margin-bottom:4px">📐 ${esc(lb)}</div>`:''}<div dir="ltr" class="fml" style="text-align:center;font-size:15px;font-weight:700;line-height:2.2;font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;letter-spacing:.3px;padding:2px 0">${cfaFrm(fx)}</div></div>`;}).join(''):''}${sc[3]?`<div style="margin-top:6px;padding:7px 11px;background:color-mix(in srgb,var(--ok) 7%,transparent);border-radius:8px;font-size:11.8px;line-height:2.3">💡 ${mfx(sc[3])}</div>`:''}</div>`;});
           if(DP.ex)dh+=`<div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--ok) 8%,transparent);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent);border-radius:10px;font-size:12px;line-height:2.3"><b>🧮 ${esc(DP.ex.split(':')[0])}:</b>${mfx(DP.ex.slice(DP.ex.indexOf(':')+1))}</div>`;
           if(DP.mist&&DP.mist.length)dh+=`<div style="margin-top:10px"><b style="font-size:11.5px;color:var(--bad)">⚠️ اشتباهات رایج:</b><div style="font-size:11.5px;line-height:2.2">${DP.mist.map(m3=>`<div>✗ ${esc(m3)}</div>`).join('')}</div></div>`;
           if(DP.qz&&DP.qz.length){
