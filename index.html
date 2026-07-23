@@ -239,6 +239,8 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
   .mrow{grid-template-columns:1fr}
 }
 
+.fml bdi{font-family:Vazirmatn,Tahoma,sans-serif}
+.mx{direction:ltr;unicode-bidi:isolate;display:inline-block}
 .frx{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 5px;line-height:1.55}
 .frx>span{display:flex;align-items:center;justify-content:center;padding:1px 9px}
 .frx>span:first-child{border-bottom:2.2px solid currentColor;align-self:stretch;padding-bottom:4px}
@@ -271,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.90</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.91</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.90</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 1.91</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -1075,7 +1077,7 @@ position:{ic:'👜',n:'سبد دارایی و مدیریت ثروت',grp:'سرم
  {k:'bdate',n:'تاریخ خرید',t:DAT},
  {k:'note',n:'توضیح',t:TXT}],
  cols:['title','kind','value','risk'],comp:'posBrief'},
-cfastudy:{ic:'🎓',n:'پیشرفت مطالعه CFA',grp:'سرمایه‌گذاری و ثروت',f:[
+cfastudy:{ic:'🎓',n:'پیشرفت مطالعه CFA',grp:'سرمایه‌گذاری و ثروت',sub:true,f:[
  {k:'title',n:'عنوان (خودکار: سطح — مبحث)',t:TXT},
  {k:'kind',n:'نوع رکورد',t:SEL,o:['پیشرفت مطالعه','آزمون آزمایشی']},
  {k:'level',n:'سطح',t:SEL,o:['سطح ۱','سطح ۲','سطح ۳']},
@@ -14181,6 +14183,10 @@ function cfaIsLearned(l,t,i){return !!cfaLearnMap()[l+'|'+t+'|'+i];}
 window.cfaMarkLearn=function(l,t,i){const m2=cfaLearnMap();const k=l+'|'+t+'|'+i;if(m2[k])delete m2[k];else m2[k]=1;cfaLearnSave(m2);render();};
 window._lq={};
 window.cfaLqPick=function(key,qi,oi){window._lq[key+'|'+qi]=oi;render();};
+function mfx(t){return esc(t).replace(/[A-Za-z0-9\u06F0-\u06F9\u0660-\u0669][A-Za-z0-9\u06F0-\u06F9\u0660-\u0669()\[\]+\-\u2212\u00d7\u00f7\u221a^.,\u066b\u066c\u0304\u03c3\u03a3\u2080-\u2089\u00b2\u00b3\u00b9\u2070\u2074-\u2079\/ ]*[=+\-\u2212\u00d7\u00f7\/\u221a^\u2248\u2264\u2265][A-Za-z0-9\u06F0-\u06F9\u0660-\u0669()\[\]+\-\u2212\u00d7\u00f7\u221a^.,\u066b\u066c\u0304\u03c3\u03a3\u2080-\u2089\u00b2\u00b3\u00b9\u2070\u2074-\u2079\u2248\u2264\u2265=%\u066a\/ ]*[A-Za-z0-9\u06F0-\u06F9\u0660-\u0669%\u066a)\]]/g,m=>`<span class="mx">${m}</span>`);}
+function cfaSecMap(){try{return JSON.parse(localStorage.getItem('cfa_secdone')||'{}');}catch(e){return {};}}
+window.cfaSecToggle=function(l,t,i,si){const m2=cfaSecMap();const k=l+'|'+t+'|'+i+'|'+si;if(m2[k])delete m2[k];else m2[k]=1;localStorage.setItem('cfa_secdone',JSON.stringify(m2));render();};
+function cfaSecPct(l,t,i){const DP=cfaDeepOf(l,t,i);if(!DP||!DP.sec)return cfaIsLearned(l,t,i)?100:0;const m2=cfaSecMap();let n=0;DP.sec.forEach((_,si)=>{if(m2[l+'|'+t+'|'+i+'|'+si])n++;});return Math.round(n/DP.sec.length*100);}
 function cfaLearnPct(l,t){const kb=cfaKbOf(l,t);if(!kb||!kb.length)return null;let n=0;kb.forEach((_,i)=>{if(cfaIsLearned(l,t,i))n++;});return Math.round(n/kb.length*100);}
 function cfaLearnLvlPct(l){const ks=Object.keys(CFA_KB[l]||{});if(!ks.length)return null;let tot=0,got=0;ks.forEach(t=>{const kb=CFA_KB[l][t];tot+=kb.length;kb.forEach((_,i)=>{if(cfaIsLearned(l,t,i))got++;});});return tot?Math.round(got/tot*100):0;}
 /* 📝 موتور آزمون‌ساز استاندارد از پایگاه دانش */
@@ -15742,13 +15748,15 @@ function invdashHTML(){
   }
   if(T==='cfa'){
     if(!view.cfaLvl)view.cfaLvl='سطح ۱';
+    const lessonOpen=!!(view.cfaKbT&&cfaKbOf(view.cfaLvl,view.cfaKbT));
     const L=CFA_CUR[view.cfaLvl];
     const ready=cfaReadiness(view.cfaLvl);
     const rc=ready>=80?'var(--ok)':ready>=40?'#ecd98f':'var(--bad)';
     const mocks=byE('cfastudy').filter(r=>r.d.kind==='آزمون آزمایشی'&&r.d.level===view.cfaLvl).sort((a,b)=>(ds(b.d.sdate)||'').localeCompare(ds(a.d.sdate)||''));
     if(!view.cfaView)view.cfaView='study';
-    h+=`<div class="sec"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    if(!lessonOpen)h+=`<div class="sec"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <b style="font-size:13.5px">🎓 آکادمی CFA — برنامه سه‌سطحی مؤسسه CFA</b>
+      <button class="btn sm ${view.cfaView==='prog'?'':'gh'}" onclick="view.cfaView=view.cfaView==='prog'?'study':'prog';render()">📊 پیشرفت یادگیری</button>
       <button class="btn sm ${view.cfaView==='brain'?'':'gh'}" onclick="view.cfaView=view.cfaView==='brain'?'study':'brain';render()">🧠 وضعیت مغز و منابع</button>
       <button class="btn sm ${view.cfaView==='exam'?'':'gh'}" onclick="view.cfaView=view.cfaView==='exam'?'study':'exam';render()">📝 آزمون‌ساز</button>
       <span style="flex:1"></span>
@@ -15765,7 +15773,7 @@ function invdashHTML(){
         </div>
         <div style="flex:1;min-width:220px;font-size:11.5px;color:var(--tx2);line-height:2">آمادگی = میانگین پیشرفت مباحث، وزن‌شده با وزن هر مبحث در آزمون. مباحث پروزن (${esc(L.topics.slice().sort((a,b)=>b.mid-a.mid).slice(0,2).map(t2=>t2.t).join('، '))}) بیشترین اثر را دارند — اول همان‌ها را قوی کن.${mocks.length?` · آخرین آزمون آزمایشی: <b style="color:var(--tx)">${(+mocks[0].d.score||0).toLocaleString('fa-IR')}٪</b>`:''}</div>
       </div></div>`;
-    if(view.cfaView==='brain'){
+    if(view.cfaView==='brain'&&!lessonOpen){
       // 🧠 زیرساخت سطح‌بندی: هر سطح با منابع خودش + نمای کلان
       const lvls=Object.keys(CFA_CUR);
       h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:12px">`;
@@ -15796,6 +15804,7 @@ function invdashHTML(){
         <p style="font-size:10.5px;color:var(--tx2);margin-top:6px">💡 با افزودن هر جلد جدید، دانش و ابزارهایش به همین سطح اضافه و اینجا «بارگذاری‌شده» می‌شود. داشبرد کلان نهایی، جمع این سه سطح خواهد بود.</p></div>`;
       }
     }
+    if(!lessonOpen&&view.cfaView!=='prog'){
     h+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px">`;
     L.topics.forEach(tp=>{
       const pg=cfaProg(view.cfaLvl,tp.t);
@@ -15811,18 +15820,75 @@ function invdashHTML(){
           <div onclick="cfaSetProg('${view.cfaLvl}','${tp.t.replace(/'/g,"\\'")}');" title="کلیک: +۲۵٪" style="flex:1;height:12px;border-radius:6px;background:var(--bg3);overflow:hidden;cursor:pointer"><div style="height:100%;width:${pg}%;background:${pc}"></div></div>
           <b style="width:40px;text-align:left;font-size:12px;color:${pg>=100?'var(--ok)':'var(--tx)'}">${pg.toLocaleString('fa-IR')}٪</b></div>
         ${open?`<div style="margin-top:9px;font-size:11.5px;line-height:2.1;color:var(--tx2)">📚 سرفصل‌های مطالعه:${tp.ms.map(m2=>`<div>• ${esc(m2)}</div>`).join('')}
-          ${cfaKbOf(view.cfaLvl,tp.t)?`<button class="btn sm" style="margin-top:6px" onclick="event.stopPropagation();view.cfaKbT='${tp.t.replace(/'/g,"\\'")}';view.cfaKbM=0;render()">📖 دانش فنی کامل (${cfaKbOf(view.cfaLvl,tp.t).length.toLocaleString('fa-IR')} ماژول)</button>`:''}</div>`:''}
+          ${cfaKbOf(view.cfaLvl,tp.t)?`<button class="btn sm" style="margin-top:6px" onclick="event.stopPropagation();view.cfaKbT='${tp.t.replace(/'/g,"\\'")}';view.cfaKbM=0;document.getElementById('content').scrollTop=0;render()">📖 دانش فنی کامل (${cfaKbOf(view.cfaLvl,tp.t).length.toLocaleString('fa-IR')} ماژول)</button>`:''}</div>`:''}
       </div>`;
     });
     h+=`</div>`;
+    }
+    /* 📊 داشبورد پیشرفت یادگیری — آبشاری: سطح → مبحث → فصل → بخش */
+    if(view.cfaView==='prog'&&!lessonOpen){
+      const gA=(p,c)=>`<svg width=64 height=64 viewBox="0 0 64 64"><circle cx=32 cy=32 r=26 fill=none stroke="var(--bg3)" stroke-width=7/><circle cx=32 cy=32 r=26 fill=none stroke="${c}" stroke-width=7 stroke-linecap=round stroke-dasharray="${(p/100*163.4).toFixed(1)} 163.4" transform="rotate(-90 32 32)"/><text x=32 y=37 text-anchor=middle font-size=14 font-weight=800 fill="${c}">${p.toLocaleString('fa-IR')}</text></svg>`;
+      const pcOf=p=>p>=100?'var(--ok)':p>=70?'#2ecc71':p>=40?'#ecd98f':p>0?'#ff9f0a':'var(--bg3)';
+      h+=`<div class="sec" style="margin-top:2px"><h3>📊 داشبورد پیشرفت یادگیری — روی هر سطح بزن تا باز شود</h3><div style="font-size:10.5px;color:var(--tx2);margin-bottom:8px">سطح → مبحث → فصل (ماژول) → بخش‌های درس. تیک هر بخش را در همین‌جا یا داخل خود درس بزن؛ گیج‌ها بر همین اساس پر می‌شوند.</div>`;
+      Object.keys(CFA_CUR).forEach(lv=>{
+        const lp=cfaLearnLvlPct(lv)||0;const openL=view.pgLvl===lv;
+        const kbT2=Object.keys(CFA_KB[lv]||{});
+        h+=`<div style="border:1px solid ${openL?'var(--ac)':'var(--line)'};border-radius:12px;padding:10px 12px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="view.pgLvl=view.pgLvl==='${lv}'?'':'${lv}';view.pgTop='';render()">
+            ${gA(lp,pcOf(lp))}
+            <div style="flex:1"><b style="font-size:13px">🎓 ${esc(lv)}</b><div style="font-size:10.5px;color:var(--tx2);margin-top:3px">${kbT2.length.toLocaleString('fa-IR')} مبحث · ${kbT2.reduce((a2,t3)=>a2+(CFA_KB[lv][t3]||[]).length,0).toLocaleString('fa-IR')} فصل</div></div>
+            <span style="color:var(--ac);font-size:15px">${openL?'▾':'◂'}</span></div>`;
+        if(openL){
+          kbT2.forEach(tp2=>{
+            const tpct=cfaLearnPct(lv,tp2)||0;const openT=view.pgTop===tp2;
+            const mods=CFA_KB[lv][tp2]||[];
+            h+=`<div style="margin-top:9px;border:1px solid ${openT?'var(--ac)':'var(--line)'};border-radius:10px;padding:8px 11px">
+              <div style="display:flex;align-items:center;gap:9px;cursor:pointer" onclick="view.pgTop=view.pgTop==='${tp2.replace(/'/g,"\\'")}'?'':'${tp2.replace(/'/g,"\\'")}';render()">
+                <b style="flex:1;font-size:12px">${esc(tp2)}</b>
+                <div style="width:110px;height:9px;border-radius:5px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${tpct}%;background:${pcOf(tpct)}"></div></div>
+                <b style="font-size:11px;width:34px;text-align:left">${tpct.toLocaleString('fa-IR')}٪</b>
+                <button class="btn gh sm" style="font-size:10px" onclick="event.stopPropagation();view.exTopPre='${tp2.replace(/'/g,"\\'")}';view.cfaLvl='${lv}';view.cfaView='exam';window._exam=null;render()">📝 آزمون</button>
+                <span style="color:var(--ac)">${openT?'▾':'◂'}</span></div>`;
+            if(openT){
+              mods.forEach((md2,i3)=>{
+                const sp=cfaSecPct(lv,tp2,i3);const DP2=cfaDeepOf(lv,tp2,i3);
+                h+=`<div style="margin-top:7px;padding:7px 10px;background:var(--bg2);border-radius:9px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <b style="flex:1;font-size:11.3px">${esc(md2.m)}</b>
+                    <div style="width:80px;height:8px;border-radius:4px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${sp}%;background:${pcOf(sp)}"></div></div>
+                    <b style="font-size:10.5px;width:32px;text-align:left">${sp.toLocaleString('fa-IR')}٪</b>
+                    <button class="btn sm" style="font-size:10px" onclick="view.cfaLvl='${lv}';view.cfaKbT='${tp2.replace(/'/g,"\\'")}';view.cfaKbM=${i3};document.getElementById('content').scrollTop=0;render()">📖 آموزش</button>
+                    <span title="کل فصل آموخته شد" style="cursor:pointer;font-size:13px" onclick="cfaMarkLearn('${lv}','${tp2.replace(/'/g,"\\'")}',${i3})">${cfaIsLearned(lv,tp2,i3)?'✅':'☐'}</span></div>
+                  ${DP2&&DP2.sec?`<div style="margin-top:5px;font-size:10.8px;line-height:2.1;color:var(--tx2)">${DP2.sec.map((sc2,si2)=>{const sd=!!cfaSecMap()[lv+'|'+tp2+'|'+i3+'|'+si2];return `<div style="display:flex;align-items:center;gap:6px"><span style="flex:1">${esc(sc2[0])}</span><span style="cursor:pointer" onclick="cfaSecToggle('${lv}','${tp2.replace(/'/g,"\\'")}',${i3},${si2})">${sd?'✅':'☐'}</span></div>`;}).join('')}</div>`:`<div style="margin-top:4px;font-size:10px;color:var(--tx2)">درس کامل بخش‌بندی‌شده این فصل هنوز نوشته نشده — تیک کلی فصل را استفاده کن.</div>`}
+                </div>`;
+              });
+            }
+            h+=`</div>`;
+          });
+          /* 🎯 کارنامه آزمون‌ها — سبک کارنامه استاندارد CFA */
+          const mocks2=byE('cfastudy').filter(r=>r.d.kind==='آزمون آزمایشی'&&r.d.level===lv);
+          const avg=mocks2.length?Math.round(mocks2.reduce((a2,r)=>a2+(+r.d.score||0),0)/mocks2.length):null;
+          const byTop={};mocks2.forEach(r=>{const t4=r.d.topic||'کل سطح';(byTop[t4]=byTop[t4]||[]).push(+r.d.score||0);});
+          h+=`<div style="margin-top:10px;padding:9px 12px;background:var(--bg2);border-radius:10px">
+            <div style="display:flex;align-items:center;gap:12px"><b style="font-size:11.5px">🎯 کارنامه آزمون‌های ${esc(lv)}</b><span style="flex:1"></span>${avg!=null?gA(avg,avg>=70?'var(--ok)':avg>=50?'#ecd98f':'var(--bad)'):'<span style="font-size:10.5px;color:var(--tx2)">هنوز آزمونی ثبت نشده</span>'}</div>
+            ${Object.keys(byTop).map(t4=>{const arr=byTop[t4];const last=arr[arr.length-1];const c2=last>=70?'var(--ok)':last>=50?'#ecd98f':'var(--bad)';
+              return `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:10.8px"><span style="flex:1">${esc(t4)}</span>
+              <div style="width:130px;height:8px;border-radius:4px;background:var(--bg3);overflow:hidden;position:relative"><div style="height:100%;width:${Math.min(100,last)}%;background:${c2}"></div><div style="position:absolute;top:0;bottom:0;left:70%;width:1.5px;background:var(--tx2);opacity:.6"></div></div>
+              <b style="width:32px;text-align:left;color:${c2}">${last.toLocaleString('fa-IR')}٪</b><span style="color:var(--tx2)">(${arr.length.toLocaleString('fa-IR')} آزمون)</span></div>`;}).join('')}
+            <div style="font-size:9.8px;color:var(--tx2);margin-top:6px">خط عمودی = مرز ~۷۰٪ قبولی. مثل کارنامه CFA: قرمز زیر ۵۰٪، زرد ۵۰–۷۰٪، سبز بالای ۷۰٪.</div></div>`;
+        }
+        h+=`</div>`;
+      });
+      h+=`</div>`;
+    }
     // 📖 پنل دانش فنی
     if(view.cfaKbT&&cfaKbOf(view.cfaLvl,view.cfaKbT)){
       const KBB=cfaKbOf(view.cfaLvl,view.cfaKbT);const mi=Math.max(0,Math.min(KBB.length-1,+view.cfaKbM||0));const MD=KBB[mi];
       h+=`<div class="sec" style="margin-top:12px;border:1px solid var(--ac)">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
           <b style="font-size:13px">📖 دانش فنی — ${esc(view.cfaKbT)} (${esc(view.cfaLvl)})</b><span style="flex:1"></span>
-          <button class="btn gh sm" onclick="view.cfaKbT='';render()">✕ بستن</button></div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${KBB.map((md,i2)=>`<button class="btn sm ${i2===mi?'':'gh'}" style="font-size:10.5px;padding:4px 9px" onclick="view.cfaKbM=${i2};render()">${esc(md.m.split('.')[0])}</button>`).join('')}</div>
+          <button class="btn gh sm" onclick="view.cfaKbT='';document.getElementById('content').scrollTop=0;render()">◂ بازگشت به مباحث</button></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${KBB.map((md,i2)=>`<button class="btn sm ${i2===mi?'':'gh'}" style="font-size:10.5px;padding:4px 9px" onclick="view.cfaKbM=${i2};document.getElementById('content').scrollTop=0;render()">${esc(md.m.split('.')[0])}</button>`).join('')}</div>
         <b style="font-size:12.5px;color:#ecd98f">${esc(MD.m)}</b>
         ${(()=>{const DP=cfaDeepOf(view.cfaLvl,view.cfaKbT,mi);if(!DP)return `<div style="margin-top:6px;font-size:10.5px;color:var(--tx2)">📘 درس کامل این ماژول در نسخه‌های بعدی نوشته می‌شود؛ فعلاً چکیده ساخت‌یافته:</div>`;
           let dh='<div style="margin-top:8px">';
@@ -15833,30 +15899,30 @@ function invdashHTML(){
   for(let i=0;i<6&&/\{[^{}|]*\|[^{}]*\}/.test(x);i++)
     x=x.replace(/\{([^{}|]*)\|([^{}]*)\}/g,(m,a,b)=>`<span class="frx"><span>${a.trim()}</span><span>${b.trim()}</span></span>`);
   return x;};
-DP.sec.forEach(sc=>{dh+=`<div style="margin-top:12px"><b style="font-size:12.3px;color:var(--ac)">◈ ${esc(sc[0])}</b><div style="font-size:12.3px;line-height:2.5;text-align:justify;margin-top:4px">${esc(sc[1])}</div>${sc[2]&&sc[2].length?sc[2].map(f2=>{const px=f2.split('::');const lb=px.length>1?px[0]:'';const fx=px.length>1?px[1]:px[0];return `<div style="margin-top:6px;padding:9px 12px;background:var(--bg3);border-radius:10px;border-inline-start:3px solid var(--ac)">${lb?`<div style="font-size:11px;color:var(--mut);margin-bottom:4px">📐 ${esc(lb)}</div>`:''}<div dir="ltr" style="text-align:center;font-size:15px;font-weight:700;line-height:2.2;font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;letter-spacing:.3px;padding:2px 0">${cfaFrm(fx)}</div></div>`;}).join(''):''}${sc[3]?`<div style="margin-top:6px;padding:7px 11px;background:color-mix(in srgb,var(--ok) 7%,transparent);border-radius:8px;font-size:11.8px;line-height:2.3">💡 ${esc(sc[3])}</div>`:''}</div>`;});
-          if(DP.ex)dh+=`<div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--ok) 8%,transparent);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent);border-radius:10px;font-size:12px;line-height:2.3"><b>🧮 ${esc(DP.ex.split(':')[0])}:</b>${esc(DP.ex.slice(DP.ex.indexOf(':')+1))}</div>`;
+DP.sec.forEach((sc,si)=>{const sdone=!!cfaSecMap()[view.cfaLvl+'|'+view.cfaKbT+'|'+mi+'|'+si];dh+=`<div style="margin-top:12px"><div style="display:flex;align-items:center;gap:7px"><b style="flex:1;font-size:12.3px;color:var(--ac)">◈ ${esc(sc[0])}</b><span title="مطالعه شد؟" onclick="cfaSecToggle('${view.cfaLvl}','${view.cfaKbT.replace(/'/g,"\\'")}',${mi},${si})" style="cursor:pointer;font-size:14px">${sdone?'✅':'☐'}</span></div><div style="font-size:12.3px;line-height:2.5;text-align:justify;margin-top:4px">${esc(sc[1])}</div>${sc[2]&&sc[2].length?sc[2].map(f2=>{const px=f2.split('::');const lb=px.length>1?px[0]:'';const fx=px.length>1?px[1]:px[0];return `<div style="margin-top:6px;padding:9px 12px;background:var(--bg3);border-radius:10px;border-inline-start:3px solid var(--ac)">${lb?`<div style="font-size:11px;color:var(--mut);margin-bottom:4px">📐 ${esc(lb)}</div>`:''}<div dir="ltr" class="fml" style="text-align:center;font-size:15px;font-weight:700;line-height:2.2;font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;letter-spacing:.3px;padding:2px 0">${cfaFrm(fx)}</div></div>`;}).join(''):''}${sc[3]?`<div style="margin-top:6px;padding:7px 11px;background:color-mix(in srgb,var(--ok) 7%,transparent);border-radius:8px;font-size:11.8px;line-height:2.3">💡 ${mfx(sc[3])}</div>`:''}</div>`;});
+          if(DP.ex)dh+=`<div style="margin-top:12px;padding:10px 12px;background:color-mix(in srgb,var(--ok) 8%,transparent);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent);border-radius:10px;font-size:12px;line-height:2.3"><b>🧮 ${esc(DP.ex.split(':')[0])}:</b>${mfx(DP.ex.slice(DP.ex.indexOf(':')+1))}</div>`;
           if(DP.mist&&DP.mist.length)dh+=`<div style="margin-top:10px"><b style="font-size:11.5px;color:var(--bad)">⚠️ اشتباهات رایج:</b><div style="font-size:11.5px;line-height:2.2">${DP.mist.map(m3=>`<div>✗ ${esc(m3)}</div>`).join('')}</div></div>`;
           if(DP.qz&&DP.qz.length){
             const lkey=view.cfaLvl+'|'+view.cfaKbT+'|'+mi;
             dh+=`<div style="margin-top:14px;padding:10px 12px;background:color-mix(in srgb,var(--ac) 6%,transparent);border:1px solid color-mix(in srgb,var(--ac) 30%,transparent);border-radius:10px"><b style="font-size:12px">📝 سؤالات پایان فصل — اول پاسخ بده، بعد جواب صحیح نمایان می‌شود</b>`;
             DP.qz.forEach((qz,qi)=>{
               const picked=window._lq[lkey+'|'+qi];
-              dh+=`<div style="margin-top:10px"><div style="font-size:11.8px;font-weight:700;line-height:2.1">${(qi+1).toLocaleString('fa-IR')}. ${esc(qz.q)}</div>`;
+              dh+=`<div style="margin-top:10px"><div style="font-size:11.8px;font-weight:700;line-height:2.1">${(qi+1).toLocaleString('fa-IR')}. ${mfx(qz.q)}</div>`;
               qz.o.forEach((op,oi)=>{
                 let bg='var(--bg3)',bd='var(--line)';
                 if(picked!=null){
                   if(oi===qz.a){bg='color-mix(in srgb,#2ecc71 16%,transparent)';bd='#2ecc71';}
                   else if(oi===picked){bg='color-mix(in srgb,#e74c3c 16%,transparent)';bd='#e74c3c';}
                 }
-                dh+=`<div onclick="${picked==null?`cfaLqPick('${lkey.replace(/'/g,"\\'")}',${qi},${oi})`:''}" style="margin-top:5px;padding:6px 10px;border-radius:8px;background:${bg};border:1px solid ${bd};cursor:${picked==null?'pointer':'default'};font-size:11.3px;line-height:2">${['الف','ب','ج'][oi]}) ${esc(op)}</div>`;
+                dh+=`<div onclick="${picked==null?`cfaLqPick('${lkey.replace(/'/g,"\\'")}',${qi},${oi})`:''}" style="margin-top:5px;padding:6px 10px;border-radius:8px;background:${bg};border:1px solid ${bd};cursor:${picked==null?'pointer':'default'};font-size:11.3px;line-height:2">${['الف','ب','ج'][oi]}) ${mfx(op)}</div>`;
               });
-              if(picked!=null)dh+=`<div style="margin-top:6px;padding:7px 10px;background:var(--bg2);border-radius:8px;font-size:11px;line-height:2.1;color:var(--tx2)"><b style="color:${picked===qz.a?'#2ecc71':'#e74c3c'}">${picked===qz.a?'✅ درست!':'❌ نادرست — پاسخ صحیح: '+['الف','ب','ج'][qz.a]}</b> · ${esc(qz.e)}</div>`;
+              if(picked!=null)dh+=`<div style="margin-top:6px;padding:7px 10px;background:var(--bg2);border-radius:8px;font-size:11px;line-height:2.1;color:var(--tx2)"><b style="color:${picked===qz.a?'#2ecc71':'#e74c3c'}">${picked===qz.a?'✅ درست!':'❌ نادرست — پاسخ صحیح: '+['الف','ب','ج'][qz.a]}</b> · ${mfx(qz.e)}</div>`;
             });
             dh+=`</div>`;
           }
           dh+='<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px"><b style="font-size:11px;color:var(--tx2)">📌 چکیده نکات (مرور سریع):</b></div>';
           return dh+'</div>';})()}
-        <div style="font-size:12.5px;line-height:2.3;margin-top:6px">${MD.pts.map(p2=>`<div>🔹 ${esc(p2)}</div>`).join('')}</div>
+        <div style="font-size:12.5px;line-height:2.3;margin-top:6px">${MD.pts.map(p2=>`<div>🔹 ${mfx(p2)}</div>`).join('')}</div>
         ${MD.frm&&MD.frm.length?`<div style="margin-top:8px;padding:8px 10px;background:var(--bg3);border-radius:8px;font-size:12px" dir="ltr">${MD.frm.map(f2=>`<div style="padding:2px 0">📐 ${esc(f2)}</div>`).join('')}</div>`:''}
         ${MD.rules&&MD.rules.length?`<div style="margin-top:8px"><b style="font-size:11.5px;color:var(--ac)">⚖️ قواعد تصمیم حرفه‌ای:</b><div style="font-size:12px;line-height:2.2">${MD.rules.map(r3=>`<div>• ${esc(r3)}</div>`).join('')}</div></div>`:''}
         <div style="margin-top:8px;font-size:10.5px;color:var(--tx2)">🧪 تمرین عملی: همین متد را در «🧠 آزمایشگاه تحلیل کمی» با داده خودت اجرا کن.</div>
@@ -15877,7 +15943,7 @@ DP.sec.forEach(sc=>{dh+=`<div style="margin-top:12px"><b style="font-size:12.3px
         <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">سؤال‌ها به سبک آزمون CFA (سه‌گزینه‌ای) مستقیماً از ${Object.values(CFA_KB[view.cfaLvl]||{}).reduce((a,x)=>a+x.length,0).toLocaleString('fa-IR')} ماژول دانشِ همین سطح ساخته می‌شوند. نمره در سوابق آزمون‌های آزمایشی ثبت و در آمادگی وزنی لحاظ می‌شود. خط قبولی: ~۷۰٪.</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
           <div><label style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px">سطح</label><select id="ex_lvl" style="width:100%">${Object.keys(CFA_CUR).map(l=>`<option value="${l}" ${l===view.cfaLvl?'selected':''}>${l}</option>`).join('')}</select></div>
-          <div><label style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px">مبحث (خالی = کل سطح)</label><select id="ex_top" style="width:100%"><option value="">— کل سطح —</option>${kbTopics.map(t=>`<option value="${t}">${t}</option>`).join('')}</select></div>
+          <div><label style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px">مبحث (خالی = کل سطح)</label><select id="ex_top" style="width:100%"><option value="">— کل سطح —</option>${kbTopics.map(t=>`<option value="${t}" ${t===view.exTopPre?'selected':''}>${t}</option>`).join('')}</select></div>
           <div><label style="font-size:11px;color:var(--tx2);display:block;margin-bottom:3px">تعداد سؤال</label><input id="ex_n" dir="ltr" value="10"></div></div>
         <div style="margin-top:10px"><button class="btn" onclick="cfaExamStart()">🚀 شروع آزمون</button></div></div>`;
       } else {
