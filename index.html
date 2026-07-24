@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.59</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.60</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.59</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.60</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -23697,8 +23697,9 @@ function newRel(k){
   const name=(inp&&inp.value||'').trim()||prompt('نام مورد جدید در «'+E[f.r].n+'»:');
   if(!name)return;
   if(!can('c',f.r)){alert('اجازه ایجاد در «'+E[f.r].n+'» را ندارید');return;}
-  // اگر رکوردی با همین نام هست، همان را انتخاب کن
-  const ex=byE(f.r).find(r=>(r.d.title||'').trim()===name);
+  // موجودیت‌های ساختار سازمانی می‌توانند هم‌نام باشند (مثل «معاونت مالی» در چند شرکت) — همیشه رکورد جدید بساز
+  const allowDup=['orgunit','team','company','business'].includes(f.r);
+  const ex=allowDup?null:byE(f.r).find(r=>(r.d.title||'').trim()===name);
   const id=ex?ex.id:uid();
   if(!ex)put({id,e:f.r,d:{title:name,_by:myEmail()},u:Date.now()});
   if(!(Array.isArray(cur.d[k])&&cur.d[k].includes(id)))toggleRel(k,id,f.s?1:0);
