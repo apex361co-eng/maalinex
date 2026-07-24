@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.54</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.55</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.54</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.55</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -9808,7 +9808,9 @@ function meHTML(){
     <span style="font-size:11px">(اگر قبلاً در HR ثبت شده‌اید، کافی است فیلد «ایمیل» همان رکورد برابر <b dir="ltr">${esc(myEmail())}</b> باشد.)</span></div>`;
   }
   h+=`</div>`;
-  const tasks=[...new Set([...mine('task','owner'),...byMe('task')])].filter(t=>t.d.status!=='Done')
+  // 🗂️ میز کار شخصی: فقط کارهایی که به «شخص من» سپرده شده (نه کارهایی که به‌عنوان ادمین ساخته‌ام).
+  // اگر پروفایل HR وصل نباشد، به‌عنوان جایگزین کارهای ساختهٔ خودم نشان داده می‌شود.
+  const tasks=(hrIds.size?mine('task','owner'):byMe('task')).filter(t=>t.d.status!=='Done')
     .sort((a,b)=>(ds(a.d.due)||'9999').localeCompare(ds(b.d.due)||'9999'));
   const od=tasks.filter(t=>ds(t.d.due)&&ds(t.d.due)<today());
   const myBsc=hrIds.size?byE('bsc').filter(b=>relIds(b,'owner').some(id=>hrIds.has(id))||relIds(b,'person').some(id=>hrIds.has(id))):[];
@@ -9824,6 +9826,7 @@ function meHTML(){
     ${card('🎚️ سنجه‌های من',myMs.length,msOd.length?'var(--bad)':null,jmp('sec_my_ms'))}
     ${card('🍅 پومودورو امروز',pomoCount(),null,"togglePomo()")}
   </div>`;
+  h+=`<div style="font-size:11px;color:var(--tx2);background:var(--bg2);border:1px dashed var(--line);border-radius:9px;padding:8px 11px;margin-bottom:10px">🗂️ این میز کار فقط کارهای <b>سپرده‌شده به شخص شما</b> را نشان می‌دهد${canView('dash')?' — کارهای کلی سازمان و همهٔ تسک‌های سیستم در «🎛️ اتاق کنترل سازمان» پایین همین صفحه است.':'.'}</div>`;
   // ⚖️ اهداف BSC تحت مسئولیت من — با زنجیره کامل پاسخ‌گویی
   if(myBsc.length){
     h+=`<div class="sec relsec" id="sec_my_bsc"><h3>⚖️ اهداف BSC تحت مسئولیت من <span class="c">${myBsc.length.toLocaleString('fa-IR')}</span></h3>
@@ -9887,8 +9890,8 @@ function meHTML(){
     ['🏗️ پروژه‌های تحت مدیریت من','project',mine('project','pm')],
     ['🗃️ جلسات من','meeting',mine('meeting','internal')],
     ['✉️ مکاتبات در کارتابل من','letter',mine('letter','owner').filter(l=>l.d.astatus!=='Done')],
-    ['💡 ایده‌های من','idea',[...new Set([...mine('idea','owner'),...byMe('idea')])]],
-    ['⛳ مرخصی‌های من','leave',[...new Set([...mine('leave','person'),...byMe('leave')])]],
+    ['💡 ایده‌های من','idea',hrIds.size?mine('idea','owner'):byMe('idea')],
+    ['⛳ مرخصی‌های من','leave',hrIds.size?mine('leave','person'):byMe('leave')],
   ];
   secs.forEach(([t,ek,rows])=>{
     if(ek!=='task'&&!rows.length)return;
