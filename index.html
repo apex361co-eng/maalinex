@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.53</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.54</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.53</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.54</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -434,7 +434,8 @@ company:{ic:'🏢',n:'شرکت‌ها',grp:'سازمان',f:[
  {k:'title',n:'نام شرکت',t:TXT},
  {k:'type',n:'نوع',t:SEL,o:['هلدینگ','زیرمجموعه','وابسته','مستقل']},
  {k:'legal',n:'نوع شخصیت حقوقی',t:SEL,o:['سهامی خاص','سهامی عام','مسئولیت محدود','تعاونی','موسسه غیرتجاری','حقیقی']},
- {k:'industry',n:'صنعت',t:MUL,o:['تامین مالی','فناوری','بازرگانی','ساختمانی','فرهنگی','مشاوره']},
+ {k:'industry',n:'صنعت',t:MUL,o:['انرژی','معدن','پتروشیمی','نیروگاهی','صنایع فلزی','بانکداری','خدمات مالی','سرمایه‌گذاری','مدیریت ثروت','بازارهای مالی','صرافی رمزارز','بانکداری دیجیتال','خودرو','لوازم خانگی','صنایع غذایی','رباتیک','هوافضا','راه‌سازی','ساختمان','هوش مصنوعی','نرم‌افزار','بلاکچین','ارتباطات و شبکه‌های اجتماعی','آنلاین‌شاپ','بازرگانی','کشتیرانی','هواپیمایی و گردشگری','حمل‌ونقل','تهاتر','مشاوره و کوچینگ','شتاب‌دهی','تامین مالی','فناوری','فرهنگی','مشاوره']},
+ {k:'cluster',n:'خوشه استراتژیک صنعت',t:SEL,o:['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات']},
  {k:'astatus',n:'وضعیت فعالیت',t:SEL,o:['فعال','در حال تاسیس','راکد']},
  {k:'own',n:'درصد مالکیت هلدینگ',t:NUM},
  {k:'cmeth',n:'روش تلفیق مالی',t:SEL,o:['خودکار (طبق ٪ مالکیت)','کامل + سهم اقلیت','نسبی','ارزش ویژه']},
@@ -1196,7 +1197,7 @@ costctr:{ic:'🏭',n:'مراکز هزینه (حسابداری صنعتی)',grp:'
  {k:'note',n:'توضیح',t:TXT}],
  cols:['title','ctype','company'],comp:'costBrief'},
 /* ---------- فرآیندها و کیفیت (ISO) ---------- */
-process:{ic:'🔁',n:'فرآیندهای کاری',grp:'فرآیندها (ISO)',f:[
+process:{ic:'🔁',n:'فرآیندهای کاری',grp:'استراتژی و تعالی',f:[
  {k:'title',n:'نام فرآیند',t:TXT},
  {k:'code',n:'شناسه فرآیند (مثل PR-SAL-01)',t:TXT},
  {k:'cat',n:'دسته ISO',t:SEL,o:['مدیریتی','اصلی (عملیاتی)','پشتیبانی']},
@@ -1222,7 +1223,7 @@ process:{ic:'🔁',n:'فرآیندهای کاری',grp:'فرآیندها (ISO)',
  {k:'rev',n:'شماره ویرایش / تاریخ بازنگری',t:TXT},
  {k:'note',n:'مستندات و توضیحات',t:LNG}],
  cols:['title','code','cat','scope','owner'],comp:'procBrief'},
-procstep:{ic:'📋',n:'گام‌های فرآیند',grp:'فرآیندها (ISO)',f:[
+procstep:{ic:'📋',n:'گام‌های فرآیند',grp:'استراتژی و تعالی',f:[
  {k:'title',n:'شرح گام',t:TXT},
  {k:'process',n:'فرآیند',t:REL,r:'process',s:1},
  {k:'ord',n:'ترتیب (۱، ۲، ۳…)',t:NUM},
@@ -1233,6 +1234,26 @@ procstep:{ic:'📋',n:'گام‌های فرآیند',grp:'فرآیندها (ISO)
  {k:'note',n:'توضیح',t:LNG}],
  cols:['ord','title','process','kind','who']},
 /* ---------- استراتژی و تعالی سازمانی ---------- */
+swot:{ic:'🧭',n:'تحلیل استراتژیک (SWOT/PESTEL)',grp:'استراتژی و تعالی',f:[
+ {k:'title',n:'عنوان عامل (مثل: رشد تقاضای انرژی پاک)',t:TXT},
+ {k:'frame',n:'چارچوب',t:SEL,o:['SWOT','PESTEL']},
+ {k:'kind',n:'نوع عامل',t:SEL,o:['قوت (S)','ضعف (W)','فرصت (O)','تهدید (T)','سیاسی (P)','اقتصادی (E)','اجتماعی (S)','فناورانه (T)','محیط‌زیستی (E)','قانونی (L)']},
+ {k:'desc',n:'شرح و شواهد',t:LNG},
+ {k:'scope',n:'سطح',t:SEL,o:['هلدینگ','خوشه صنعت','کسب‌وکار','شرکت','واحد']},
+ {k:'cluster',n:'خوشه صنعت (در صورت تحلیل خوشه‌ای)',t:SEL,o:['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات']},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'impact',n:'شدت اثر (۱ تا ۵)',t:NUM},
+ {k:'prob',n:'احتمال/قطعیت (۱ تا ۵)',t:NUM},
+ {k:'scen',n:'سناریو',t:MUL,o:['خوش‌بینانه','محتمل','بدبینانه']},
+ {k:'trend',n:'روند',t:SEL,o:['در حال تقویت','پایدار','در حال تضعیف']},
+ {k:'bsc',n:'اهداف/استراتژی‌های پاسخ (BSC)',t:REL,r:'bsc'},
+ {k:'projects',n:'پروژه‌های پاسخ',t:REL,r:'project'},
+ {k:'status',n:'وضعیت',t:SEL,o:['فعال','بایگانی']},
+ {k:'rev',n:'تاریخ آخرین بازبینی',t:DAT},
+ {k:'owner',n:'تحلیل‌گر / مسئول',t:REL,r:'hr',s:1}],
+ cols:['title','frame','kind','scope','impact','prob'],comp:'swotBrief'},
+
 bsc:{ic:'⚖️',n:'استراتژی و اهداف (BSC)',grp:'استراتژی و تعالی',f:[
  {k:'title',n:'عنوان (هدف استراتژیک / استراتژی)',t:TXT},
  {k:'kind',n:'نوع',t:SEL,o:['هدف استراتژیک','استراتژی کلان']},
@@ -2485,8 +2506,7 @@ const MODULES=[
  {id:'M09',n:'حسابداری کامل و انبار',ents:['acct','voucher','vline','item','stockmv','cheque','payroll','costctr'],views:['gldash','glnew','chqdash']},
  {id:'M11',n:'صورت‌های مالی و تلفیق (IFRS)',ents:['finis','finbs','fincf'],views:['findash']},
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy','dataseries'],views:['invdash']},
- {id:'M13',n:'فرآیندها (ISO)',ents:['process','procstep'],views:['procmap']},
- {id:'M14',n:'استراتژی و تعالی',ents:['bsc','measure','efqm'],views:['bscmap','bsccanvas']},
+ {id:'M14',n:'استراتژی، فرآیندها و تعالی',ents:['bsc','measure','efqm','swot','process','procstep'],views:['stratdash','bscmap','bsccanvas','procmap']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef','waste'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','mbuilder','mydash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash']},
@@ -2502,9 +2522,9 @@ const NEW_MODULES={M17:true,M18:true,M19:true,M20:true};
 /* 🚀 قالب‌های آماده‌ی راه‌اندازی مشتری (وقتی مشتری از صفر می‌آد) */
 const PRESETS=[
  {k:'retail',n:'🛍️ خرده‌فروشی / فروشگاه',on:['M04','M09','M15']},
- {k:'holding',n:'🏢 هلدینگ کامل',on:['M02','M04','M08','M09','M11','M12','M13','M14','M15','M16']},
+ {k:'holding',n:'🏢 هلدینگ کامل',on:['M02','M04','M08','M09','M11','M12','M14','M15','M16']},
  {k:'finance',n:'💼 فقط مالی و حسابداری',on:['M08','M09','M11','M12']},
- {k:'strategy',n:'🗺️ مدیریت و استراتژی',on:['M02','M13','M14','M16']},
+ {k:'strategy',n:'🗺️ مدیریت و استراتژی',on:['M02','M14','M16']},
  {k:'personal',n:'🌱 شخصی / سبک',on:['M16']},
  {k:'all',n:'✅ همه‌ی ماژول‌ها',on:MODULES.map(m=>m.id)}
 ];
@@ -6846,7 +6866,8 @@ function nav(){
     if(g==='توسعه نرم‌افزار'&&canSee('astory')&&canView('agiledash'))items+=`<div class="nav-i ${view.type==='agiledash'?'on':''}" onclick="go('agiledash')">💻 داشبورد Agile</div>`;
     if(g==='توکن‌سازی'&&canSee('token')&&canView('tokendash'))items+=`<div class="nav-i ${view.type==='tokendash'?'on':''}" onclick="go('tokendash')">🪙 داشبورد توکن</div>`;
     if(g==='ساخت و ساز'&&canSee('cboq')&&canView('cdash'))items+=`<div class="nav-i ${view.type==='cdash'?'on':''}" onclick="go('cdash')">🏢 داشبورد ساخت‌وساز</div>`;
-    if(g==='فرآیندها (ISO)'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
+    if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('stratdash'))items+=`<div class="nav-i ${view.type==='stratdash'?'on':''}" onclick="go('stratdash')">🏛️ داشبورد استراتژیک</div>`;
+    if(g==='استراتژی و تعالی'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bscmap'))items+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bsccanvas'))items+=`<div class="nav-i ${view.type==='bsccanvas'?'on':''}" onclick="go('bsccanvas')">🧭 بوم استراتژی</div>`;
     navSubSort(g,ents).forEach(([k,v])=>{
@@ -6959,6 +6980,7 @@ function render(){
     view.type==='glnew'?'🖊️ ثبت سند حسابداری':
     view.type==='procmap'?'🔁 نقشه فرآیندها (ISO)':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
+    view.type==='stratdash'?'🏛️ داشبورد استراتژیک هلدینگ':
     view.type==='bscmap'?'🗺️ نقشه استراتژی و BSC':
     view.type==='bsccanvas'?'🧭 بوم استراتژی':
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
@@ -6979,6 +7001,7 @@ function render(){
     else if(view.type==='cal')c.innerHTML=calHTML();
     else if(view.type==='bizdash')c.innerHTML=bizdashHTML();
     else if(view.type==='charts')c.innerHTML=chartsHTML();
+    else if(view.type==='stratdash')c.innerHTML=stratdashHTML();
     else if(view.type==='bscmap')c.innerHTML=bscmapHTML();
     else if(view.type==='bsccanvas')c.innerHTML=bsccanvasHTML();
     else if(view.type==='findash')c.innerHTML=findashHTML();
@@ -22366,6 +22389,259 @@ function bsccanvasHTML(){
   </div>`;
   return h;
 }
+/* ===================================================================================
+   🏛️ داشبورد استراتژیک هلدینگ — ادغام استراتژی + فرآیند + تعالی (EFQM 2025)
+   زنجیره: چشم‌انداز→ماموریت→تحلیل→نقشه→اهداف→BSC→پروژه‌ها→اقدامات فردی
+   =================================================================================== */
+function swotBrief(x){
+  const sc=(+x.d.impact||0)*(+x.d.prob||0);
+  return{label:'اثر×احتمال',v:sc?sc.toLocaleString('fa-IR')+' از ۲۵':'—',bad:sc>=16&&/تهدید|ضعف/.test(x.d.kind||'')};
+}
+window.swotBrief=swotBrief;
+function bscPath(b){ // مسیر آبشار تا ریشه (برای ردیابی اثر از پایین به بالا)
+  const path=[];let cur=b,g=0;
+  while(cur&&g++<12){path.push(cur);const p=cur.d.parent&&cur.d.parent[0];cur=p&&recs[p]&&!recs[p].del?recs[p]:null;}
+  return path;
+}
+function domKeyOf(x){return bscDomain(x);}
+function domObjectives(T){ // اهداف BSC یک دامنه (همان منطق نقشه استراتژی)
+  const DMAP={c:'company',b:'biz',u:'orgu',p:'person'};
+  return byE('bsc').filter(x=>{
+    if(T==='_h')return x.d.scope==='هلدینگ'||bscDomain(x)==='_h';
+    return relIds(x,DMAP[T[0]]).includes(T.slice(2));
+  });
+}
+function domScore(T){const os=domObjectives(T);if(!os.length)return null;return avg(os.map(o=>bscProg(o)));}
+const STRAT_CLUSTERS=['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات'];
+function personImpact(h){ // اثر یک فرد بر استراتژی: اهداف فردی + سنجه‌ها + تسک‌های متصل
+  const objs=byE('bsc').filter(x=>relIds(x,'person').includes(h.id)||relIds(x,'owner').includes(h.id));
+  const ms=byE('measure').filter(m=>relIds(m,'owner').includes(h.id));
+  const tks=byE('task').filter(t=>relIds(t,'owner').includes(h.id)&&(relIds(t,'objective').length||relIds(t,'project').length));
+  const parts=[];
+  if(objs.length)parts.push(avg(objs.map(o=>bscProg(o))));
+  if(ms.length)parts.push(avg(ms.map(m=>measureProg(m))));
+  if(tks.length)parts.push(avg(tks.map(t=>taskProg(t))));
+  return {objs,ms,tks,score:parts.length?Math.round(avg(parts)):null};
+}
+function stratRev(){const m=recs[MO];return (m&&!m.del&&m.d._stratrev)||{};}
+window.stratRevMark=function(k){
+  const m=recs[MO]||{id:MO,e:'_opts',d:{}};
+  m.d={...m.d,_stratrev:{...stratRev(),[k]:new Date().toISOString().slice(0,10)}};m.u=Date.now();m.del=false;put(m);render();
+};
+function revDue(last,days){ // وضعیت آهنگ بازنگری
+  if(!last)return{t:'ثبت نشده',c:'var(--bad)',due:true};
+  const d=Math.floor((Date.now()-new Date(last).getTime())/86400000);
+  if(d>days)return{t:d.toLocaleString('fa-IR')+' روز پیش — موعد گذشته',c:'var(--bad)',due:true};
+  if(d>days*0.8)return{t:d.toLocaleString('fa-IR')+' روز پیش — نزدیک موعد',c:'#ecd98f',due:false};
+  return{t:d.toLocaleString('fa-IR')+' روز پیش',c:'var(--ok)',due:false};
+}
+function efqmLayerScore(chars){
+  const list=byE('efqm');const vals=chars.map(c=>efqmCritScore(list,c)).filter(v=>v!=null);
+  return vals.length?Math.round(avg(vals)):null;
+}
+window.sdTog=function(k){view.sdOpen=view.sdOpen||{};view.sdOpen[k]=!view.sdOpen[k];render();};
+function sdBar(p,w){const v=p==null?0:Math.max(0,Math.min(100,Math.round(p)));
+  return `<div style="display:flex;align-items:center;gap:6px;min-width:${w||120}px"><div style="flex:1;height:8px;border-radius:4px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:${v}%;background:${p==null?'var(--bg3)':pctColor(v)}"></div></div><b style="font-size:10.5px;width:32px;text-align:left;color:${p==null?'var(--tx2)':pctColor(v)}">${p==null?'—':v.toLocaleString('fa-IR')+'٪'}</b></div>`;}
+function sdChips(T){ // چیپ‌های شمارشی یک دامنه
+  const os=domObjectives(T);
+  const msN=os.reduce((a,o)=>a+bscMeasures(o).length,0);
+  const prN=new Set(os.flatMap(o=>bscLinkedPrjs(o).map(p=>p.id))).size;
+  return `<span class="chip" style="background:var(--bg3);font-size:9.5px">🎯 ${os.length.toLocaleString('fa-IR')}</span><span class="chip" style="background:var(--bg3);font-size:9.5px">🎚️ ${msN.toLocaleString('fa-IR')}</span><span class="chip" style="background:var(--bg3);font-size:9.5px">🏗️ ${prN.toLocaleString('fa-IR')}</span>`;
+}
+function sdNode(T,ic,title,depth,extraChips,openKey,kidsHTML){ // یک گره آبشار
+  const sc=domScore(T);const open=(view.sdOpen||{})[openKey];
+  return `<div style="margin-top:7px;margin-inline-start:${depth*18}px;border:1px solid ${open?'var(--ac)':'var(--line)'};border-radius:11px;background:var(--bg2)">
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;flex-wrap:wrap" onclick="sdTog('${openKey}')">
+      <span style="color:var(--ac);font-size:12px">${kidsHTML!=null?(open?'▾':'◂'):'·'}</span>
+      <b style="font-size:${depth===0?'13px':'12px'}">${ic} ${esc(title)}</b>
+      ${extraChips||''}
+      <span style="flex:1"></span>
+      ${sdChips(T)}
+      ${sdBar(sc,130)}
+      <button class="btn gh sm" style="font-size:9.5px" onclick="event.stopPropagation();view.bscT='${T}';go('bscmap')">🗺️ نقشه</button>
+    </div>
+    ${open?`<div style="padding:4px 11px 10px">${sdObjRows(T)}${kidsHTML||''}</div>`:''}
+  </div>`;
+}
+function sdObjRows(T){ // اهداف دامنه با اتصال بالادست/هم‌راستا
+  const os=domObjectives(T);if(!os.length)return `<div style="font-size:10.5px;color:var(--tx2);padding:4px 0">هدفی در این دامنه ثبت نشده — از «＋ هدف BSC» بساز.</div>`;
+  return os.slice(0,12).map(o=>{
+    const p=bscProg(o),par=o.d.parent&&o.d.parent[0]&&recs[o.d.parent[0]];
+    const align=relIds(o,'objective').map(id=>recs[id]).filter(r=>r&&!r.del);
+    const path=bscPath(o);const top=path[path.length-1];
+    return `<div onclick="event.stopPropagation();go('rec','bsc','${o.id}')" style="display:flex;align-items:center;gap:7px;padding:5px 8px;margin-top:4px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:11px;cursor:pointer;flex-wrap:wrap">
+      <span style="background:${pctColor(p)};color:${pctInk(p)};font-weight:800;border-radius:5px;padding:1px 6px;font-size:10px;min-width:36px;text-align:center">${Math.round(p).toLocaleString('fa-IR')}٪</span>
+      <span style="flex:1;min-width:140px">${scopeIc(o)} ${esc(o.d.title)}</span>
+      ${o.d.persp?`<span class="tag" style="font-size:9px">${esc(o.d.persp)}</span>`:''}
+      ${par?`<span class="tag y" style="font-size:9px" title="متصل به بالادست">⬆ ${esc(par.d.title.slice(0,22))}</span>`:''}
+      ${align.length?`<span class="tag" style="font-size:9px" title="${align.map(a=>esc(a.d.title)).join(' │ ')}">⇄ ${align.length.toLocaleString('fa-IR')} هم‌راستا</span>`:''}
+      ${top&&top.id!==o.id&&top.d.scope==='هلدینگ'?`<span class="tag g" style="font-size:9px" title="ردیابی تا هلدینگ: ${bscPath(o).map(x=>esc(x.d.title)).join(' ← ')}">🏦 تا هلدینگ</span>`:''}
+    </div>`;}).join('')+(os.length>12?`<div style="font-size:10px;color:var(--tx2);margin-top:4px">… و ${(os.length-12).toLocaleString('fa-IR')} هدف دیگر در نقشه استراتژی</div>`:'');
+}
+function stratdashHTML(){
+  view.sdOpen=view.sdOpen||{};
+  const hd=bscHead('_h');
+  const allB=byE('bsc'),allM=byE('measure'),allP=byE('project'),allT=byE('task').filter(t=>relIds(t,'objective').length),allS=byE('swot').filter(s=>s.d.status!=='بایگانی'),allE=byE('efqm'),allPr=byE('process');
+  const holdingScore=domScore('_h');
+  /* ---------- ۱) زنجیره ارزش استراتژیک ---------- */
+  const chain=[
+    ['🔭','چشم‌انداز',hd.v?'✓':'—',`onclick="view.bscT='_h';go('bscmap')"`],
+    ['🎯','ماموریت',hd.m?'✓':'—',`onclick="view.bscT='_h';go('bscmap')"`],
+    ['🧭','تحلیل SWOT/PESTEL',allS.length.toLocaleString('fa-IR'),`onclick="go('list','swot')"`],
+    ['🗺️','نقشه استراتژی',allB.filter(x=>x.d.kind==='استراتژی کلان').length.toLocaleString('fa-IR'),`onclick="go('bscmap')"`],
+    ['⚖️','اهداف استراتژیک',allB.filter(x=>x.d.kind!=='استراتژی کلان').length.toLocaleString('fa-IR'),`onclick="go('list','bsc')"`],
+    ['🎚️','سنجه‌های BSC',allM.length.toLocaleString('fa-IR'),`onclick="go('list','measure')"`],
+    ['🏗️','پروژه‌های بهبود',allP.filter(p=>relIds(p,'objective').length||relIds(p,'strategy').length).length.toLocaleString('fa-IR'),`onclick="go('list','project')"`],
+    ['👤','اقدامات فردی',allT.length.toLocaleString('fa-IR'),`onclick="go('list','task')"`]
+  ];
+  let h=`<div class="sec" style="background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(31,111,80,.10))">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="font-size:14px">🏛️ داشبورد استراتژیک هلدینگ</b>
+      <span style="font-size:10.5px;color:var(--tx2)">چشم‌انداز → ماموریت → تحلیل → نقشه → اهداف → BSC → پروژه‌ها → اقدامات فردی</span>
+      <span style="flex:1"></span>
+      ${sdBar(holdingScore,170)}
+      <span style="font-size:10px;color:var(--tx2)">تحقق استراتژی هلدینگ (آبشار خودکار از پایین)</span>
+    </div>
+    ${hd.v||hd.m?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-top:9px;font-size:12px">
+      ${hd.v?`<div><b style="color:#ecd98f">🔭 چشم‌انداز:</b> <span style="color:var(--tx2)">${esc(hd.v)}</span></div>`:''}
+      ${hd.m?`<div><b style="color:#ecd98f">🎯 ماموریت:</b> <span style="color:var(--tx2)">${esc(hd.m)}</span></div>`:''}
+      ${hd.th?`<div><b style="color:#ecd98f">🧱 محورها:</b> ${hd.th.split('،').map(x=>`<span class="tag y" style="font-size:9.5px;margin:1px">${esc(x.trim())}</span>`).join(' ')}</div>`:''}
+    </div>`:`<div style="font-size:11px;color:var(--tx2);margin-top:8px">هنوز چشم‌انداز/ماموریت هلدینگ ثبت نشده — از «نقشه استراتژی» ثبت کن.</div>`}
+    <div style="display:flex;gap:0;margin-top:11px;overflow-x:auto;padding-bottom:4px">
+      ${chain.map((c,i)=>`${i?'<div style="align-self:center;color:var(--ac);padding:0 2px">←</div>':''}<div ${c[3]} style="cursor:pointer;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:7px 10px;text-align:center;min-width:86px"><div style="font-size:15px">${c[0]}</div><div style="font-size:9.5px;color:var(--tx2);white-space:nowrap">${c[1]}</div><b style="font-size:12px;color:var(--ac)">${c[2]}</b></div>`).join('')}
+    </div></div>`;
+  /* ---------- ۲) سه لایه EFQM 2025 ---------- */
+  const layers=[
+    ['🧭','Direction │ جهت‌گیری','چرا وجود داریم و به کجا می‌رویم؟',['۱','۲'],'چشم‌انداز، ماموریت، ارزش‌ها، SWOT/PESTEL',`view.bscT='_h';go('bscmap')`],
+    ['⚙️','Execution │ اجرا','چگونه ارزش خلق و متحول می‌کنیم؟',['۳','۴','۵'],'نقشه استراتژی، اهداف، فرآیندها، پروژه‌های بهبود',`go('procmap')`],
+    ['📊','Results │ نتایج','چه نتایجی گرفتیم؟',['۶','۷'],'کارت امتیازی متوازن (BSC)، نتایج ادراکی و عملکردی',`go('list','measure')`]
+  ];
+  h+=`<div class="sec"><h3>🏅 سه لایه EFQM 2025 — حلقه «پیشبرد عملکرد و تحول»</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">
+    ${layers.map(L=>{const sc=efqmLayerScore(L[3]);
+      return `<div onclick="${L[5]}" style="cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--bg2)">
+        <div style="display:flex;align-items:center;gap:8px"><b style="font-size:12.5px">${L[0]} ${L[1]}</b><span style="flex:1"></span>${sc!=null?`<b style="color:${pctColor(sc)}">${sc.toLocaleString('fa-IR')}٪</b>`:'<span style="font-size:9.5px;color:var(--tx2)">بدون ارزیابی</span>'}</div>
+        <div style="font-size:10.5px;color:var(--tx2);margin-top:4px">${L[2]}</div>
+        <div style="font-size:10px;color:var(--ac);margin-top:5px">🧰 ${L[4]}</div>
+        <div style="font-size:9.5px;color:var(--tx2);margin-top:3px">معیارهای ${L[3].join('، ')} │ ${byE('efqm').filter(x=>L[3].includes((x.d.crit||'').trim()[0])).length.toLocaleString('fa-IR')} ارزیابی</div>
+      </div>`;}).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+      ${can('c','efqm')?`<button class="btn gh sm" onclick="openRec('efqm')">＋ ارزیابی EFQM</button>`:''}
+      <button class="btn gh sm" onclick="go('list','efqm')">🏅 همه ارزیابی‌ها</button>
+    </div></div>`;
+  /* ---------- ۳) پویایی: آهنگ بازنگری غلتان ---------- */
+  const rv=stratRev();
+  const cad=[['op','🔄 بازنگری عملیاتی','ماهانه',30],['strat','🧭 بازنگری استراتژیک','فصلی',91],['vision','🔭 بازنگری چشم‌انداز','سالانه',365]];
+  h+=`<div class="sec"><h3>🌀 استراتژی پویا — بازنگری غلتان (Rolling)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+    ${cad.map(c=>{const st=revDue(rv[c[0]],c[3]);
+      return `<div style="border:1px solid ${st.due?'var(--bad)':'var(--line)'};border-radius:12px;padding:10px;background:var(--bg2)">
+        <div style="display:flex;align-items:center;gap:7px"><b style="font-size:12px">${c[1]}</b><span class="tag" style="font-size:9px">${c[2]}</span><span style="flex:1"></span></div>
+        <div style="font-size:10.5px;margin-top:5px;color:${st.c}">⏱ آخرین بازنگری: ${st.t}</div>
+        ${isAdmin()?`<button class="btn gh sm" style="margin-top:6px;font-size:10px" onclick="stratRevMark('${c[0]}')">✓ ثبت بازنگری امروز</button>`:''}
+      </div>`;}).join('')}
+    </div>
+    <div style="font-size:10px;color:var(--tx2);margin-top:7px">💡 برنامه‌ریزی غلتان: در هر بازنگری سالانه، افق بلندمدت یک سال جلو کشیده می‌شود و سناریوهای SWOT/PESTEL به‌روز می‌شوند.</div></div>`;
+  /* ---------- ۴) تحلیل زنده SWOT/PESTEL + سناریوها ---------- */
+  view.sdFrame=view.sdFrame||'SWOT';view.sdScen=view.sdScen||'';
+  const KINDS={SWOT:[['قوت (S)','💪','#2ecc71'],['ضعف (W)','🩹','#e74c3c'],['فرصت (O)','🌅','#5b93d3'],['تهدید (T)','⚡','#e08b3d']],
+    PESTEL:[['سیاسی (P)','🏛️','#c58cd8'],['اقتصادی (E)','💹','#e2b93b'],['اجتماعی (S)','👥','#5ca94f'],['فناورانه (T)','🤖','#5b93d3'],['محیط‌زیستی (E)','🌿','#3aa87c'],['قانونی (L)','⚖️','#d3705b']]};
+  const sFiltered=allS.filter(s=>(s.d.frame||'SWOT')===view.sdFrame&&(!view.sdScen||(s.d.scen||[]).includes(view.sdScen)));
+  h+=`<div class="sec"><h3>🧭 تحلیل استراتژیک زنده — ${view.sdFrame}</h3>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px">
+      ${['SWOT','PESTEL'].map(f=>`<button class="btn sm ${view.sdFrame===f?'':'gh'}" onclick="view.sdFrame='${f}';render()">${f}</button>`).join('')}
+      <span style="width:12px"></span>
+      ${['','خوش‌بینانه','محتمل','بدبینانه'].map(sc=>`<button class="btn sm ${view.sdScen===sc?'':'gh'}" style="font-size:10px" onclick="view.sdScen='${sc}';render()">${sc||'همه سناریوها'}</button>`).join('')}
+      <span style="flex:1"></span>
+      ${can('c','swot')?`<button class="btn sm" onclick="openRec('swot')">＋ عامل تحلیل</button>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px">
+    ${KINDS[view.sdFrame].map(K=>{const rows=sFiltered.filter(s=>s.d.kind===K[0]).sort((a,b)=>((+b.d.impact||0)*(+b.d.prob||0))-((+a.d.impact||0)*(+a.d.prob||0)));
+      return `<div style="border:1px solid ${K[2]}55;border-radius:11px;overflow:hidden">
+        <div style="background:${K[2]}22;padding:6px 10px;font-size:11.5px;font-weight:700">${K[1]} ${K[0]} <span style="color:var(--tx2);font-weight:400">(${rows.length.toLocaleString('fa-IR')})</span></div>
+        <div style="padding:6px 8px">
+        ${rows.length?rows.slice(0,5).map(s=>{const scv=(+s.d.impact||0)*(+s.d.prob||0);
+          return `<div onclick="go('rec','swot','${s.id}')" style="display:flex;align-items:center;gap:6px;padding:4px 6px;margin-top:3px;background:var(--bg2);border-radius:7px;font-size:10.5px;cursor:pointer">
+            <b style="min-width:26px;text-align:center;color:${scv>=16?'var(--bad)':scv>=9?'#ecd98f':'var(--tx2)'}">${scv?scv.toLocaleString('fa-IR'):'—'}</b>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.d.title)}</span>
+            ${relIds(s,'bsc').length?`<span title="پاسخ استراتژیک متصل">🎯</span>`:''}
+          </div>`;}).join(''):`<div style="font-size:10px;color:var(--tx2);padding:4px">عاملی ثبت نشده</div>`}
+        </div></div>`;}).join('')}
+    </div></div>`;
+  /* ---------- ۵) آبشار استراتژی: هلدینگ ← خوشه ← شرکت ← واحد/کسب‌وکار ← فرد ---------- */
+  const comps=byE('company'),bizs=byE('business'),orgus=byE('orgunit');
+  const clOf=c=>c.d.cluster||'';
+  h+=`<div class="sec"><h3>🌊 آبشار استراتژی — از هلدینگ تا فرد (کلیک کن و پایین برو)</h3>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:6px">هر گره: تعداد اهداف 🎯، سنجه‌ها 🎚️، پروژه‌ها 🏗️ و درصد تحقق (میانگین وزنی آبشاریِ خودکار از پایین‌ترین سطح). دکمه «نقشه» همان دامنه را در نقشه استراتژی باز می‌کند.</div>`;
+  // هلدینگ
+  let clHTML='';
+  STRAT_CLUSTERS.forEach(cl=>{
+    const cs=comps.filter(c=>clOf(c)===cl);if(!cs.length)return;
+    const compsHTML=cs.map(c=>{
+      const bs=bizs.filter(b=>relIds(b,'companies').includes(c.id));
+      const us=orgus.filter(u=>relIds(u,'company').includes(c.id));
+      const ppl=byE('hr').filter(hh=>byE('bsc').some(x=>relIds(x,'person').includes(hh.id)&&relIds(x,'company').includes(c.id)));
+      const kids=[
+        ...bs.map(b=>sdNode('b:'+b.id,'🧢',b.d.title,3,'','b'+b.id,null)),
+        ...us.map(u=>sdNode('u:'+u.id,'🧩',u.d.title,3,'','u'+u.id,null)),
+        ...ppl.map(p2=>sdNode('p:'+p2.id,'👤',p2.d.title,3,'','p'+p2.id,null))
+      ].join('');
+      return sdNode('c:'+c.id,'🏢',c.d.title,2,c.d.own?`<span class="tag" style="font-size:9px">${(+c.d.own).toLocaleString('fa-IR')}٪ مالکیت</span>`:'','c'+c.id,kids||`<div style="font-size:10px;color:var(--tx2);padding:3px 0">کسب‌وکار/واحد/فرد متصلی ندارد</div>`);
+    }).join('');
+    // میانگین خوشه
+    const clScores=cs.map(c=>domScore('c:'+c.id)).filter(v=>v!=null);
+    const clAvg=clScores.length?avg(clScores):null;
+    clHTML+=`<div style="margin-top:7px;margin-inline-start:18px;border:1px solid ${(view.sdOpen||{})['cl'+cl]?'var(--ac)':'var(--line)'};border-radius:11px;background:var(--bg2)">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;flex-wrap:wrap" onclick="sdTog('cl${cl}')">
+        <span style="color:var(--ac)">${(view.sdOpen||{})['cl'+cl]?'▾':'◂'}</span>
+        <b style="font-size:12.5px">🗂️ خوشه ${esc(cl)}</b>
+        <span class="tag" style="font-size:9px">${cs.length.toLocaleString('fa-IR')} شرکت</span>
+        <span style="flex:1"></span>${sdBar(clAvg,130)}
+      </div>
+      ${(view.sdOpen||{})['cl'+cl]?`<div style="padding:2px 11px 10px">${compsHTML}</div>`:''}
+    </div>`;
+  });
+  const noCl=comps.filter(c=>!clOf(c));
+  if(noCl.length)clHTML+=`<div style="margin-top:7px;margin-inline-start:18px;font-size:10.5px;color:var(--tx2);border:1px dashed var(--line);border-radius:10px;padding:8px 11px">⬜ ${noCl.length.toLocaleString('fa-IR')} شرکت هنوز خوشه ندارند: ${noCl.slice(0,6).map(c=>`<a style="color:var(--ac);cursor:pointer" onclick="go('rec','company','${c.id}')">${esc(c.d.title)}</a>`).join('، ')}${noCl.length>6?' و …':''} — در فرم شرکت، «خوشه استراتژیک صنعت» را انتخاب کن.</div>`;
+  h+=sdNode('_h','🏦','کل هلدینگ',0,'','_h',clHTML||`<div style="font-size:10.5px;color:var(--tx2)">هنوز شرکتی با خوشه ثبت نشده.</div>`);
+  h+=`</div>`;
+  /* ---------- ۶) اثر افراد بر استراتژی ---------- */
+  const people=byE('hr').map(hh=>({h:hh,im:personImpact(hh)})).filter(x=>x.im.objs.length||x.im.ms.length||x.im.tks.length)
+    .sort((a,b)=>(b.im.objs.length+b.im.ms.length)-(a.im.objs.length+a.im.ms.length)).slice(0,14);
+  h+=`<div class="sec"><h3>👥 اثر افراد بر استراتژی — از مدیرعامل تا کارشناس</h3>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:6px">هر فرد با اهداف فردی/مسئولیت‌هایش سنجیده می‌شود؛ ستون «ردیابی» نشان می‌دهد اثر او به کدام هدف کلان هلدینگ می‌رسد.</div>`;
+  if(!people.length)h+=`<div class="empty">هنوز هدف/سنجه/تسکی به افراد متصل نشده. در فرم هدف BSC فیلد «فرد» یا «مسئول» را پر کن.</div>`;
+  else{
+    h+=`<div class="tblwrap"><table style="font-size:11px"><thead><tr><th style="text-align:right">فرد</th><th>🎯 اهداف</th><th>🎚️ سنجه‌ها</th><th>📘 اقدامات</th><th>تحقق</th><th style="text-align:right">ردیابی تا هلدینگ</th></tr></thead><tbody>`;
+    people.forEach(x=>{
+      const tops=[...new Set(x.im.objs.map(o=>{const pth=bscPath(o);const t=pth[pth.length-1];return t&&t.d.scope==='هلدینگ'?t.d.title:null;}).filter(Boolean))];
+      h+=`<tr style="cursor:pointer" onclick="go('rec','hr','${x.h.id}')">
+        <td style="text-align:right"><b>${esc(x.h.d.title)}</b></td>
+        <td style="text-align:center">${x.im.objs.length.toLocaleString('fa-IR')}</td>
+        <td style="text-align:center">${x.im.ms.length.toLocaleString('fa-IR')}</td>
+        <td style="text-align:center">${x.im.tks.length.toLocaleString('fa-IR')}</td>
+        <td style="text-align:center">${x.im.score!=null?`<b style="color:${pctColor(x.im.score)}">${x.im.score.toLocaleString('fa-IR')}٪</b>`:'—'}</td>
+        <td style="text-align:right;font-size:10px;color:var(--tx2)">${tops.length?'🏦 '+tops.slice(0,2).map(esc).join(' │ '):'<span style="color:var(--bad)">⛓ به هلدینگ نمی‌رسد — والد تعریف کن</span>'}</td>
+      </tr>`;});
+    h+=`</tbody></table></div>`;
+  }
+  h+=`</div>`;
+  /* ---------- ۷) اتصال فرآیندها ---------- */
+  const prLinked=allPr.filter(p=>relIds(p,'bsc').length);
+  h+=`<div class="sec"><h3>🔁 اتصال فرآیندها به استراتژی</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-bottom:7px">
+      <span class="chip" style="background:var(--bg3)">کل فرآیندها: ${allPr.length.toLocaleString('fa-IR')}</span>
+      <span class="chip" style="background:var(--bg3)">متصل به BSC: ${prLinked.length.toLocaleString('fa-IR')}</span>
+      <span class="chip" style="background:${allPr.length&&prLinked.length<allPr.length?'color-mix(in srgb,var(--bad) 20%,transparent)':'var(--bg3)'}">بدون اتصال: ${(allPr.length-prLinked.length).toLocaleString('fa-IR')}</span>
+      <span style="flex:1"></span>
+      <button class="btn gh sm" onclick="go('procmap')">🔁 نقشه فرآیندها</button>
+    </div>
+    ${allPr.length-prLinked.length>0?`<div style="font-size:10px;color:var(--tx2)">فرآیندهای بدون اتصال استراتژیک: ${allPr.filter(p=>!relIds(p,'bsc').length).slice(0,5).map(p=>`<a style="color:var(--ac);cursor:pointer" onclick="go('rec','process','${p.id}')">${esc(p.d.title)}</a>`).join('، ')} — در فرم فرآیند «اهداف استراتژیک مرتبط» را پر کن.</div>`:''}
+  </div>`;
+  return h;
+}
+
 function bscmapHTML(){
   const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
     ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+b.d.title})),
