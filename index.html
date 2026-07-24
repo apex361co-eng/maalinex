@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.60</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.61</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.60</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.61</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -23786,6 +23786,16 @@ function saveRec(){
   cur.u=Date.now();delete cur._new;
   const _saved=cur;
   put(cur);closeModal();
+  // 👁️ اگر رکورد تازه‌ساخته/ویرایش‌شده به‌خاطر «فیلتر شرکت/کسب‌وکار فعال» در لیست پنهان می‌شود، فیلتر را بردار تا دیده شود
+  try{
+    const _def=E[_saved.e];
+    const _cf=_def.f.find(f=>f.t===REL&&f.r==='company');
+    const _bf=_def.f.find(f=>f.t===REL&&f.r==='business');
+    let _cleared=false;
+    if(gCo()&&_cf&&_saved.e!=='company'&&_saved.e!=='business'){const ids=relIds(_saved,_cf.k);if(ids.length&&!ids.includes(gCo())){setGCo('');_cleared=true;}}
+    if(gBiz()&&_bf&&_saved.e!=='business'){const ids=relIds(_saved,_bf.k);if(ids.length&&!ids.includes(gBiz())){setGBiz('');_cleared=true;}}
+    if(_cleared&&typeof _cfaToast==='function')_cfaToast('«'+(_saved.d.title||'رکورد')+'» ساخته شد — فیلتر شرکت/کسب‌وکار فعال برداشته شد تا دیده شود');
+  }catch(e){}
   // اتصال خودکار حسابداری در این بیلد غیرفعال است
 }
 /* 🗑 حذف گروهی — همه رکوردهای فیلترشده‌ی فعلیِ لیست را یکجا حذف می‌کند */
