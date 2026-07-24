@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.55</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.58</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.55</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.58</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -427,6 +427,7 @@ hr:{ic:'👥',n:'منابع انسانی',grp:'سازمان',f:[
  {k:'hire',n:'تاریخ استخدام',t:DAT},{k:'quota',n:'سهمیه مرخصی سالانه',t:NUM},
  {k:'manager',n:'مدیر مستقیم',t:REL,r:'hr',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'team',n:'تیم',t:REL,r:'team',s:1},
  {k:'biz',n:'کسب‌وکارهای محل خدمت',t:REL,r:'business'},
  {k:'company',n:'شرکت محل خدمت',t:REL,r:'company'}],
  cols:['title','role','unit','wstatus','company']},
@@ -435,7 +436,7 @@ company:{ic:'🏢',n:'شرکت‌ها',grp:'سازمان',f:[
  {k:'type',n:'نوع',t:SEL,o:['هلدینگ','زیرمجموعه','وابسته','مستقل']},
  {k:'legal',n:'نوع شخصیت حقوقی',t:SEL,o:['سهامی خاص','سهامی عام','مسئولیت محدود','تعاونی','موسسه غیرتجاری','حقیقی']},
  {k:'industry',n:'صنعت',t:MUL,o:['انرژی','معدن','پتروشیمی','نیروگاهی','صنایع فلزی','بانکداری','خدمات مالی','سرمایه‌گذاری','مدیریت ثروت','بازارهای مالی','صرافی رمزارز','بانکداری دیجیتال','خودرو','لوازم خانگی','صنایع غذایی','رباتیک','هوافضا','راه‌سازی','ساختمان','هوش مصنوعی','نرم‌افزار','بلاکچین','ارتباطات و شبکه‌های اجتماعی','آنلاین‌شاپ','بازرگانی','کشتیرانی','هواپیمایی و گردشگری','حمل‌ونقل','تهاتر','مشاوره و کوچینگ','شتاب‌دهی','تامین مالی','فناوری','فرهنگی','مشاوره']},
- {k:'cluster',n:'خوشه استراتژیک صنعت',t:SEL,o:['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات']},
+ {k:'cluster',n:'خوشه / زیرهلدینگ',t:SEL,o:['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات']},
  {k:'astatus',n:'وضعیت فعالیت',t:SEL,o:['فعال','در حال تاسیس','راکد']},
  {k:'own',n:'درصد مالکیت هلدینگ',t:NUM},
  {k:'cmeth',n:'روش تلفیق مالی',t:SEL,o:['خودکار (طبق ٪ مالکیت)','کامل + سهم اقلیت','نسبی','ارزش ویژه']},
@@ -459,11 +460,11 @@ business:{ic:'🧢',n:'کسب‌وکارها',grp:'سازمان',f:[
  {k:'title',n:'نام کسب‌وکار',t:TXT},{k:'desc',n:'شرح',t:LNG},
  {k:'model',n:'مدل درآمدی',t:SEL,o:['کارمزدی','فروش','اشتراک','پروژه‌ای']},
  {k:'stage',n:'مرحله',t:SEL,o:['ایده','راه اندازی','رشد','بلوغ','افول']},
- {k:'companies',n:'شرکت‌های مجری',t:REL,r:'company'},
+ {k:'company',n:'⬆ شرکت مادر (این کسب‌وکار ذیل آن است)',t:REL,r:'company',s:1},
  {k:'own',n:'درصد مالکیت هلدینگ (٪ در تلفیق مالی)',t:NUM},
  {k:'cmeth',n:'روش تلفیق مالی',t:SEL,o:['خودکار (طبق ٪ مالکیت)','کامل + سهم اقلیت','نسبی','ارزش ویژه']},
  {k:'parent',n:'کسب‌وکار والد',t:REL,r:'business',s:1}],
- cols:['title','model','stage','companies']},
+ cols:['title','model','stage','company']},
 orgunit:{ic:'🧩',n:'واحدهای سازمانی',grp:'سازمان',f:[
  {k:'title',n:'نام واحد',t:TXT},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
@@ -473,6 +474,15 @@ orgunit:{ic:'🧩',n:'واحدهای سازمانی',grp:'سازمان',f:[
  {k:'parent',n:'واحد والد',t:REL,r:'orgunit',s:1},
  {k:'note',n:'توضیح',t:TXT}],
  cols:['title','company','head','parent']},
+team:{ic:'👨‍👩‍👦',n:'تیم‌ها',grp:'سازمان',f:[
+ {k:'title',n:'نام تیم',t:TXT},
+ {k:'orgu',n:'⬆ واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'company',n:'شرکت',t:REL,r:'company',s:1},
+ {k:'lead',n:'سرپرست تیم',t:REL,r:'hr',s:1},
+ {k:'members',n:'اعضای تیم',t:REL,r:'hr'},
+ {k:'note',n:'توضیح',t:TXT}],
+ cols:['title','orgu','lead']},
 project:{ic:'🏗️',n:'پروژه‌ها',grp:'سازمان',f:[
  {k:'title',n:'نام پروژه',t:TXT},{k:'desc',n:'شرح',t:LNG},
  {k:'status',n:'وضعیت',t:SEL,o:['شروع نشده','در حال اجرا','متوقف','تمام شده']},
@@ -966,7 +976,7 @@ acctx:{ic:'💸',n:'تراکنش صندوق/بانک',grp:'مدیریت کسب �
 /* ---------- مالی تخصصی (IFRS) ---------- */
 finis:{ic:'📈',n:'صورت سود و زیان (IFRS)',grp:'مالی تخصصی (IFRS)',f:[
  {k:'title',n:'عنوان (مثل: سود و زیان ۱۴۰۴)',t:TXT},
- {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار','واحد']},
+ {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
@@ -985,7 +995,7 @@ finis:{ic:'📈',n:'صورت سود و زیان (IFRS)',grp:'مالی تخصصی
  cols:['title','scope','company','year','ptype'],comp:'finBrief'},
 finbs:{ic:'🏛️',n:'ترازنامه — صورت وضعیت مالی (IFRS)',grp:'مالی تخصصی (IFRS)',f:[
  {k:'title',n:'عنوان (مثل: ترازنامه ۱۴۰۴)',t:TXT},
- {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار','واحد']},
+ {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
@@ -1010,7 +1020,7 @@ finbs:{ic:'🏛️',n:'ترازنامه — صورت وضعیت مالی (IFRS)'
  cols:['title','scope','company','year','ptype'],comp:'finBrief'},
 fincf:{ic:'💧',n:'صورت جریان وجوه نقد (IAS 7)',grp:'مالی تخصصی (IFRS)',f:[
  {k:'title',n:'عنوان (مثل: جریان نقد ۱۴۰۴)',t:TXT},
- {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار','واحد']},
+ {k:'scope',n:'سطح (آبشار تلفیق)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
@@ -1111,7 +1121,7 @@ voucher:{ic:'🧾',n:'اسناد حسابداری',grp:'حسابداری',f:[
  {k:'num',n:'شماره سند',t:TXT},
  {k:'vdate',n:'تاریخ سند',t:DAT},
  {k:'vtype',n:'نوع سند',t:SEL,o:['عادی','افتتاحیه','تعدیلی','اختتامیه','بستن حساب‌های موقت']},
- {k:'scope',n:'سطح (آبشار)',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار','واحد']},
+ {k:'scope',n:'سطح (آبشار)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
@@ -1201,7 +1211,7 @@ process:{ic:'🔁',n:'فرآیندهای کاری',grp:'استراتژی و تع
  {k:'title',n:'نام فرآیند',t:TXT},
  {k:'code',n:'شناسه فرآیند (مثل PR-SAL-01)',t:TXT},
  {k:'cat',n:'دسته ISO',t:SEL,o:['مدیریتی','اصلی (عملیاتی)','پشتیبانی']},
- {k:'scope',n:'سطح (آبشار عمودی)',t:SEL,o:['هلدینگ','شرکت','کسب‌وکار','واحد']},
+ {k:'scope',n:'سطح (آبشار عمودی)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
@@ -1239,10 +1249,14 @@ swot:{ic:'🧭',n:'تحلیل استراتژیک (SWOT/PESTEL)',grp:'استرا�
  {k:'frame',n:'چارچوب',t:SEL,o:['SWOT','PESTEL']},
  {k:'kind',n:'نوع عامل',t:SEL,o:['قوت (S)','ضعف (W)','فرصت (O)','تهدید (T)','سیاسی (P)','اقتصادی (E)','اجتماعی (S)','فناورانه (T)','محیط‌زیستی (E)','قانونی (L)']},
  {k:'desc',n:'شرح و شواهد',t:LNG},
- {k:'scope',n:'سطح',t:SEL,o:['هلدینگ','خوشه صنعت','کسب‌وکار','شرکت','واحد']},
+ {k:'scope',n:'سطح',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم','فرد']},
  {k:'cluster',n:'خوشه صنعت (در صورت تحلیل خوشه‌ای)',t:SEL,o:['۱. انرژی و منابع','۲. مالی و سرمایه','۳. صنعت و تولید','۴. فناوری و دیجیتال','۵. تجارت و خدمات']},
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'team',n:'تیم',t:REL,r:'team',s:1},
+ {k:'person',n:'فرد (تحلیل فردی)',t:REL,r:'hr',s:1},
+ {k:'parent',n:'⬆ عامل سطح بالاتر (آبشار)',t:REL,r:'swot',s:1},
  {k:'impact',n:'شدت اثر (۱ تا ۵)',t:NUM},
  {k:'prob',n:'احتمال/قطعیت (۱ تا ۵)',t:NUM},
  {k:'scen',n:'سناریو',t:MUL,o:['خوش‌بینانه','محتمل','بدبینانه']},
@@ -1259,7 +1273,7 @@ bsc:{ic:'⚖️',n:'استراتژی و اهداف (BSC)',grp:'استراتژی 
  {k:'kind',n:'نوع',t:SEL,o:['هدف استراتژیک','استراتژی کلان']},
  {k:'desc',n:'شرح',t:LNG},
  {k:'persp',n:'منظر BSC',t:SEL,o:['مالی','مشتری','فرآیندهای داخلی','یادگیری و رشد']},
- {k:'scope',n:'سطح (آبشار ۵ سطحی)',t:SEL,o:['هلدینگ','کسب‌وکار','شرکت','واحد','فرد']},
+ {k:'scope',n:'سطح (آبشار ۵ سطحی)',t:SEL,o:['هلدینگ','خوشه/زیرهلدینگ','شرکت','کسب‌وکار','واحد','تیم','فرد']},
  {k:'status',n:'وضعیت',t:STA,o:STATUS},
  {k:'horizon',n:'افق زمانی',t:SEL,o:['پنج ساله','سه ساله','دوساله','سالانه','فصلی']},
  {k:'year',n:'سال',t:MUL,o:['1404','1405','1406','1407','1408','1409','1410']},
@@ -1267,6 +1281,7 @@ bsc:{ic:'⚖️',n:'استراتژی و اهداف (BSC)',grp:'استراتژی 
  {k:'company',n:'شرکت',t:REL,r:'company',s:1},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'orgu',n:'واحد سازمانی',t:REL,r:'orgunit',s:1},
+ {k:'team',n:'تیم',t:REL,r:'team',s:1},
  {k:'person',n:'فرد (BSC فردی)',t:REL,r:'hr',s:1},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
  {k:'team',n:'تیم و نفرات کلیدی',t:REL,r:'hr'},
@@ -1278,6 +1293,8 @@ bsc:{ic:'⚖️',n:'استراتژی و اهداف (BSC)',grp:'استراتژی 
  {k:'manual',n:'درصد تحقق دستی (هدف کیفی)',t:NUM},
  {k:'crit',n:'معیار موفقیت',t:LNG},
  {k:'initiative',n:'برنامه‌های اجرایی (پروژه‌ها)',t:REL,r:'project'},
+ {k:'swot',n:'عوامل SWOT/PESTEL پایه',t:REL,r:'swot'},
+ {k:'towstype',n:'نوع استراتژی TOWS',t:SEL,o:['SO','ST','WO','WT']},
  {k:'objective',n:'اهداف هم‌راستا',t:REL,r:'bsc'},
  {k:'parent',n:'⬆ سطح بالاتر (آبشار)',t:REL,r:'bsc',s:1}],
  cols:['title','kind','persp','scope','company','owner'],prog:'bscProg'},
@@ -1924,6 +1941,15 @@ function migrateUuidIds(){
   invalidateByE();saveLocal&&saveLocal();
 }
 /* --- 🔁 مهاجرت یک‌باره: استراتژی + اهداف سازمانی ← استراتژی و اهداف (BSC) --- */
+function migrateOrg(){ // 🏗️ کسب‌وکار ذیل شرکت: companies(چند) → company(یک)؛ فقط یک‌بار
+  let n=0;
+  byE('business').forEach(b=>{
+    if(b.d.companies&&b.d.companies.length&&!(b.d.company&&b.d.company.length)){
+      b.d.company=[b.d.companies[0]]; delete b.d.companies; b.u=Date.now(); put(b,false); n++;
+    }
+  });
+  return n;
+}
 function migrateChain(){
   // رکوردهای قدیمی strategy/objective در جا به bsc تبدیل می‌شوند — id ثابت می‌ماند تا همه لینک‌ها کار کنند
   if(!byE('strategy').length&&!byE('objective').length)return 0;
@@ -2500,13 +2526,13 @@ const VIEWS_ACL=[
    تنظیم روی همین دیتابیس (رکورد متا MO) ذخیره می‌شود و بین دستگاه‌ها سینک می‌شود. */
 const OWNER_PIN='6813'; // فقط مالک محصول می‌داند؛ در هر بیلد مشتری قابل تغییر است
 const MODULES=[
- {id:'M02',n:'سازمان و منابع انسانی',ents:['hr','company','share','business','orgunit']},
+ {id:'M02',n:'سازمان و منابع انسانی',ents:['hr','company','share','business','orgunit','team']},
  {id:'M04',n:'روابط و مشتریان (CRM)',ents:['customer','crm','contact','meeting','letter']},
  {id:'M08',n:'مالی و حقوقی',ents:['hrcontract','bizcontract','bank','tx','budget','leave']},
  {id:'M09',n:'حسابداری کامل و انبار',ents:['acct','voucher','vline','item','stockmv','cheque','payroll','costctr'],views:['gldash','glnew','chqdash']},
  {id:'M11',n:'صورت‌های مالی و تلفیق (IFRS)',ents:['finis','finbs','fincf'],views:['findash']},
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy','dataseries'],views:['invdash']},
- {id:'M14',n:'استراتژی، فرآیندها و تعالی',ents:['bsc','measure','efqm','swot','process','procstep'],views:['stratdash','bscmap','bsccanvas','procmap']},
+ {id:'M14',n:'استراتژی، فرآیندها و تعالی',ents:['bsc','measure','efqm','swot','process','procstep'],views:['stratdash','swotmap','bscmap','bsccanvas','procmap']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef','waste'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','mbuilder','mydash','pfdash']},
  {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash']},
@@ -4668,9 +4694,9 @@ function pinvnewHTML(){
   h+=`</tbody></table></div>
   <button class="btn gh sm" style="margin-top:8px" onclick="pinvAddLine()">➕ ردیف</button>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px">
-    <div><label ${lbl}>تخفیف کل</label><input inputmode="numeric" value="${pinvDraft.disc||''}" oninput="pinvDraft.disc=this.value;render()" placeholder="۰"></div>
-    <div><label ${lbl}>مالیات ٪</label><input inputmode="numeric" value="${pinvDraft.taxpct||''}" oninput="pinvDraft.taxpct=this.value;render()" placeholder="۰"></div>
-    <div><label ${lbl}>هزینه حمل/گمرک</label><input inputmode="numeric" value="${pinvDraft.ship||''}" oninput="pinvDraft.ship=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>تخفیف کل</label><input data-k="pinv_disc" inputmode="numeric" value="${pinvDraft.disc||''}" oninput="pinvDraft.disc=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>مالیات ٪</label><input data-k="pinv_taxpct" inputmode="numeric" value="${pinvDraft.taxpct||''}" oninput="pinvDraft.taxpct=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>هزینه حمل/گمرک</label><input data-k="pinv_ship" inputmode="numeric" value="${pinvDraft.ship||''}" oninput="pinvDraft.ship=this.value;render()" placeholder="۰"></div>
   </div>
   <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--bg3);line-height:2.1">
     <div style="display:flex"><span style="flex:1;color:var(--tx2)">جمع ردیف‌ها</span><b>${money(t.sub)}</b></div>
@@ -4701,7 +4727,7 @@ function tgtMatch(inv,t){ // آیا این فاکتور به سطحِ این ت�
   if(org){if(relIds(inv,'orgu').includes(org))return true;
     const s=relIds(inv,'seller')[0];return !!(s&&recs[s]&&!recs[s].del&&relIds(recs[s],'orgu').includes(org));}
   if(bz)return relIds(inv,'biz').includes(bz);
-  if(co){const b=relIds(inv,'biz')[0];const bizComp=b&&recs[b]?relIds(recs[b],'companies').includes(co):false;
+  if(co){const b=relIds(inv,'biz')[0];const bizComp=b&&recs[b]?relIds(recs[b],'company').includes(co):false;
      const s=relIds(inv,'seller')[0];const selComp=s&&recs[s]?relIds(recs[s],'company').includes(co):false;
      return bizComp||selComp;}
   return true; // هلدینگ / بدون فیلتر
@@ -5092,9 +5118,9 @@ function invnewHTML(){
   h+=`</tbody></table></div>
   <button class="btn gh sm" style="margin-top:8px" onclick="invAddLine()">➕ ردیف</button>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px">
-    <div><label ${lbl}>تخفیف کل فاکتور</label><input inputmode="numeric" value="${invDraft.disc||''}" oninput="invDraft.disc=this.value;render()" placeholder="۰"></div>
-    <div><label ${lbl}>مالیات ارزش افزوده ٪</label><input inputmode="numeric" value="${invDraft.taxpct||''}" oninput="invDraft.taxpct=this.value;render()" placeholder="۰ (مثلاً ۱۰)"></div>
-    <div><label ${lbl}>هزینه ارسال</label><input inputmode="numeric" value="${invDraft.ship||''}" oninput="invDraft.ship=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>تخفیف کل فاکتور</label><input data-k="inv_disc" inputmode="numeric" value="${invDraft.disc||''}" oninput="invDraft.disc=this.value;render()" placeholder="۰"></div>
+    <div><label ${lbl}>مالیات ارزش افزوده ٪</label><input inputmode="numeric" data-k="inv_taxpct" value="${invDraft.taxpct||''}" oninput="invDraft.taxpct=this.value;render()" placeholder="۰ (مثلاً ۱۰)"></div>
+    <div><label ${lbl}>هزینه ارسال</label><input data-k="inv_ship" inputmode="numeric" value="${invDraft.ship||''}" oninput="invDraft.ship=this.value;render()" placeholder="۰"></div>
   </div>
   <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--bg3);line-height:2.1">
     <div style="display:flex"><span style="flex:1;color:var(--tx2)">جمع ردیف‌ها</span><b>${money(t.sub)}</b></div>
@@ -6617,7 +6643,7 @@ function gPrj(){try{const id=localStorage.getItem('xr_prjsel')||'';return (id&&r
 function setGPrj(id){try{if(id)localStorage.setItem('xr_prjsel',id);else localStorage.removeItem('xr_prjsel');}catch(e){}view.epP=id||'';render();}
 window.setGPrj=setGPrj;
 function setGBiz(id){try{if(id)localStorage.setItem('xr_bizsel',id);else localStorage.removeItem('xr_bizsel');}catch(e){}
-  try{if(id&&recs[id]){const co=relIds(recs[id],'companies')[0]||relIds(recs[id],'company')[0];if(co)localStorage.setItem('xr_cosel',co);}}catch(e){}
+  try{if(id&&recs[id]){const co=relIds(recs[id],'company')[0]||relIds(recs[id],'company')[0];if(co)localStorage.setItem('xr_cosel',co);}}catch(e){}
   render();}
 function gCo(){try{const v=localStorage.getItem('xr_cosel');return v&&recs[v]&&!recs[v].del?v:'';}catch(e){return '';}}
 function setGCo(id){try{if(id)localStorage.setItem('xr_cosel',id);else localStorage.removeItem('xr_cosel');}catch(e){}render();}
@@ -6867,6 +6893,7 @@ function nav(){
     if(g==='توکن‌سازی'&&canSee('token')&&canView('tokendash'))items+=`<div class="nav-i ${view.type==='tokendash'?'on':''}" onclick="go('tokendash')">🪙 داشبورد توکن</div>`;
     if(g==='ساخت و ساز'&&canSee('cboq')&&canView('cdash'))items+=`<div class="nav-i ${view.type==='cdash'?'on':''}" onclick="go('cdash')">🏢 داشبورد ساخت‌وساز</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('stratdash'))items+=`<div class="nav-i ${view.type==='stratdash'?'on':''}" onclick="go('stratdash')">🏛️ داشبورد استراتژیک</div>`;
+    if(g==='استراتژی و تعالی'&&canSee('swot')&&canView('swotmap'))items+=`<div class="nav-i ${view.type==='swotmap'?'on':''}" onclick="go('swotmap')">🧭 بوم SWOT / PESTEL</div>`;
     if(g==='استراتژی و تعالی'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bscmap'))items+=`<div class="nav-i ${view.type==='bscmap'?'on':''}" onclick="go('bscmap')">🗺️ نقشه استراتژی</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('bsccanvas'))items+=`<div class="nav-i ${view.type==='bsccanvas'?'on':''}" onclick="go('bsccanvas')">🧭 بوم استراتژی</div>`;
@@ -6901,11 +6928,12 @@ window.goSuppliers=goSuppliers;window.newSupplier=newSupplier;
 function render(){
   let _foc=null;try{const a=document.activeElement;
     if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&a.closest('#content')){
-      _foc={id:a.id||'',dk:a.getAttribute('data-k')||'',ds:a.getAttribute('data-search')||'',ss:a.selectionStart,se:a.selectionEnd};}
+      _foc={id:a.id||'',dk:a.getAttribute('data-k')||'',ds:a.getAttribute('data-search')||'',oi:a.getAttribute('oninput')||'',oc:a.getAttribute('onchange')||'',ss:a.selectionStart,se:a.selectionEnd};}
   }catch(e){}
   _domCache={}; // کش محدوده داده در هر رندر تازه می‌شود
   // 🐎 کش‌ها بین رندرها زنده می‌مانند؛ فقط put/pull/realtime آن‌ها را نامعتبر می‌کنند
   try{migrateChain();}catch(e){} // تبدیل رکوردهای قدیمی استراتژی/هدف به BSC
+  try{migrateOrg();}catch(e){} // کسب‌وکار ذیل شرکت
   try{migrateUuidIds();}catch(e){} // idهای غیر uuid → uuid (رفع خطای سینک)
   try{applyBrand();}catch(e){} // نام/لوگو/رنگ سفارشی نسخه
   try{rebuildSchema();}catch(e){} // فیلدها و بخش‌های سفارشی ادمین
@@ -6980,6 +7008,7 @@ function render(){
     view.type==='glnew'?'🖊️ ثبت سند حسابداری':
     view.type==='procmap'?'🔁 نقشه فرآیندها (ISO)':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
+    view.type==='swotmap'?'🧭 بوم SWOT و PESTEL':
     view.type==='stratdash'?'🏛️ داشبورد استراتژیک هلدینگ':
     view.type==='bscmap'?'🗺️ نقشه استراتژی و BSC':
     view.type==='bsccanvas'?'🧭 بوم استراتژی':
@@ -7001,6 +7030,7 @@ function render(){
     else if(view.type==='cal')c.innerHTML=calHTML();
     else if(view.type==='bizdash')c.innerHTML=bizdashHTML();
     else if(view.type==='charts')c.innerHTML=chartsHTML();
+    else if(view.type==='swotmap')c.innerHTML=swotmapHTML();
     else if(view.type==='stratdash')c.innerHTML=stratdashHTML();
     else if(view.type==='bscmap')c.innerHTML=bscmapHTML();
     else if(view.type==='bsccanvas')c.innerHTML=bsccanvasHTML();
@@ -7058,6 +7088,8 @@ function render(){
     if(_foc.id)el=document.getElementById(_foc.id);
     if(!el&&_foc.ds)el=document.querySelector('#content [data-search="'+_foc.ds+'"]');
     if(!el&&_foc.dk)el=document.querySelector('#content [data-k="'+CSS.escape(_foc.dk)+'"]');
+    // 🎯 بازگردانی عمومی فوکوس: هر اینپوت/تکست‌اریا با همان هندلر oninput/onchange (بدون نیاز به شناسهٔ خاص)
+    if(!el&&(_foc.oi||_foc.oc)){const cand=document.querySelectorAll('#content input,#content textarea');for(let i=0;i<cand.length;i++){const x=cand[i];if((_foc.oi&&x.getAttribute('oninput')===_foc.oi)||(_foc.oc&&x.getAttribute('onchange')===_foc.oc)){el=x;break;}}}
     if(el&&el.closest('#content')){el.focus();try{if(_foc.ss!=null&&el.setSelectionRange)el.setSelectionRange(_foc.ss,_foc.se);}catch(e){}}}
   }catch(e){}
   whoami();
@@ -9613,7 +9645,7 @@ function listHTML(e){
             ${opts.map(o=>`<option ${cur===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
       } else {
         h+=`<div><label style="font-size:11px;color:var(--tx2)">${esc(f.n)}</label>
-          <input value="${esc(cur)}" placeholder="شامل…" oninput="view.cf=Object.assign({},view.cf,{'${f.k}':this.value});view.page=0;clearTimeout(window._cfT);window._cfT=setTimeout(render,250)"></div>`;
+          <input data-search="cf_${f.k}" value="${esc(cur)}" placeholder="شامل…" oninput="view.cf=Object.assign({},view.cf,{'${f.k}':this.value});view.page=0;clearTimeout(window._cfT);window._cfT=setTimeout(render,250)"></div>`;
       }
     });
     h+=`</div></div>`;
@@ -10457,7 +10489,7 @@ function bizdashHTML(){
 }
 
 /* ================= 🗺️ نقشه استراتژی (BSC کاپلان-نورتون) ================= */
-function scopeIc(x){return {'هلدینگ':'🏦','کسب‌وکار':'🧢','شرکت':'🏢','واحد':'🧩','فرد':'👤'}[x&&x.d&&x.d.scope]||'⚖️';}
+function scopeIc(x){return {'هلدینگ':'🏦','خوشه/زیرهلدینگ':'🗂️','شرکت':'🏢','کسب‌وکار':'🧢','واحد':'🧩','تیم':'👨‍👩‍👦','فرد':'👤'}[x&&x.d&&x.d.scope]||'⚖️';}
 function bscDomain(x){ // دامنه یک هدف BSC بر اساس رابطه‌ها
   if(relIds(x,'person').length)return 'p:'+relIds(x,'person')[0];
   if(relIds(x,'orgu').length)return 'u:'+relIds(x,'orgu')[0];
@@ -10516,9 +10548,9 @@ function glnewHTML(){
     h+=`<tr>
       <td>${(i+1).toLocaleString('fa-IR')}</td>
       <td><select onchange="glSetLine(${i},'acct',this.value)" style="min-width:180px">${acctOpt(l.acct)}</select></td>
-      <td><input value="${esc(l.desc||'')}" oninput="glDraft.lines[${i}].desc=this.value" style="min-width:120px" placeholder="شرح ردیف"></td>
-      <td><input inputmode="numeric" value="${l.debit||''}" oninput="glSetLine(${i},'debit',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
-      <td><input inputmode="numeric" value="${l.credit||''}" oninput="glSetLine(${i},'credit',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
+      <td><input data-k="glln_${i}_desc" value="${esc(l.desc||'')}" oninput="glDraft.lines[${i}].desc=this.value" style="min-width:120px" placeholder="شرح ردیف"></td>
+      <td><input data-k="glln_${i}_debit" inputmode="numeric" value="${l.debit||''}" oninput="glSetLine(${i},'debit',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
+      <td><input data-k="glln_${i}_credit" inputmode="numeric" value="${l.credit||''}" oninput="glSetLine(${i},'credit',this.value)" style="max-width:120px;text-align:left" placeholder="۰"></td>
       <td><button class="btn bad sm" onclick="glDelLine(${i})">✕</button></td></tr>`;
   });
   h+=`</tbody><tfoot><tr style="font-weight:800">
@@ -22313,7 +22345,7 @@ function bsccanvasHTML(){
     ...byE('hr').filter(h=>byE('bsc').some(x=>relIds(x,'person').includes(h.id))).map(h=>({id:'p:'+h.id,t:'👤 '+(h.d.title||'—')}))];
   if(!view.cvT)view.cvT='_h';
   const T=view.cvT;
-  const DMAP={c:'company',b:'biz',u:'orgu',p:'person'};
+  const DMAP={c:'company',b:'biz',u:'orgu',t:'team',p:'person'};
   const items=byE('bsc').filter(x=>T==='_h'?(x.d.scope==='هلدینگ'||bscDomain(x)==='_h'):relIds(x,DMAP[T[0]]).includes(T.slice(2)));
   const hd=bscHead(T);
   // چهار ربع: [منظر، توضیح، رنگ استیکی، رنگ متن]
@@ -22408,7 +22440,7 @@ function bscPath(b){ // مسیر آبشار تا ریشه (برای ردیابی
 }
 function domKeyOf(x){return bscDomain(x);}
 function domObjectives(T){ // اهداف BSC یک دامنه (همان منطق نقشه استراتژی)
-  const DMAP={c:'company',b:'biz',u:'orgu',p:'person'};
+  const DMAP={c:'company',b:'biz',u:'orgu',t:'team',p:'person'};
   return byE('bsc').filter(x=>{
     if(T==='_h')return x.d.scope==='هلدینگ'||bscDomain(x)==='_h';
     return relIds(x,DMAP[T[0]]).includes(T.slice(2));
@@ -22581,16 +22613,28 @@ function stratdashHTML(){
   let clHTML='';
   STRAT_CLUSTERS.forEach(cl=>{
     const cs=comps.filter(c=>clOf(c)===cl);if(!cs.length)return;
+    const teams=byE('team'), allhr=byE('hr');
+    const teamKids=tm=>allhr.filter(hh=>relIds(tm,'members').includes(hh.id)||relIds(tm,'lead').includes(hh.id))
+        .map(p2=>sdNode('p:'+p2.id,'👤',p2.d.title,6,'','p'+p2.id,null)).join('');
+    const unitKids=u=>{
+      const tms=teams.filter(t=>relIds(t,'orgu').includes(u.id));
+      const ppl=allhr.filter(hh=>relIds(hh,'orgu').includes(u.id)&&!teams.some(t=>relIds(t,'orgu').includes(u.id)&&(relIds(t,'members').includes(hh.id)||relIds(t,'lead').includes(hh.id))));
+      return [...tms.map(t=>sdNode('t:'+t.id,'👨‍👩‍👦',t.d.title,5,'','t'+t.id,teamKids(t)||`<div style="font-size:9.5px;color:var(--tx2);padding:2px">عضوی ندارد</div>`)),
+              ...ppl.map(p2=>sdNode('p:'+p2.id,'👤',p2.d.title,5,'','p'+p2.id,null))].join('');
+    };
+    const bizKids=b=>{
+      const us=orgus.filter(u=>relIds(u,'biz').includes(b.id));
+      return us.map(u=>sdNode('u:'+u.id,'🧩',u.d.title,4,'','u'+u.id,unitKids(u)||`<div style="font-size:9.5px;color:var(--tx2);padding:2px">تیم/فرد ندارد</div>`)).join('')
+        ||`<div style="font-size:9.5px;color:var(--tx2);padding:2px 0">واحدی ندارد</div>`;
+    };
     const compsHTML=cs.map(c=>{
-      const bs=bizs.filter(b=>relIds(b,'companies').includes(c.id));
-      const us=orgus.filter(u=>relIds(u,'company').includes(c.id));
-      const ppl=byE('hr').filter(hh=>byE('bsc').some(x=>relIds(x,'person').includes(hh.id)&&relIds(x,'company').includes(c.id)));
+      const bs=bizs.filter(b=>relIds(b,'company').includes(c.id));
+      const usDirect=orgus.filter(u=>relIds(u,'company').includes(c.id)&&!relIds(u,'biz').length);
       const kids=[
-        ...bs.map(b=>sdNode('b:'+b.id,'🧢',b.d.title,3,'','b'+b.id,null)),
-        ...us.map(u=>sdNode('u:'+u.id,'🧩',u.d.title,3,'','u'+u.id,null)),
-        ...ppl.map(p2=>sdNode('p:'+p2.id,'👤',p2.d.title,3,'','p'+p2.id,null))
+        ...bs.map(b=>sdNode('b:'+b.id,'🧢',b.d.title,3,'','b'+b.id,bizKids(b))),
+        ...usDirect.map(u=>sdNode('u:'+u.id,'🧩',u.d.title,3,'','u'+u.id,unitKids(u)))
       ].join('');
-      return sdNode('c:'+c.id,'🏢',c.d.title,2,c.d.own?`<span class="tag" style="font-size:9px">${(+c.d.own).toLocaleString('fa-IR')}٪ مالکیت</span>`:'','c'+c.id,kids||`<div style="font-size:10px;color:var(--tx2);padding:3px 0">کسب‌وکار/واحد/فرد متصلی ندارد</div>`);
+      return sdNode('c:'+c.id,'🏢',c.d.title,2,c.d.own?`<span class="tag" style="font-size:9px">${(+c.d.own).toLocaleString('fa-IR')}٪ مالکیت</span>`:'','c'+c.id,kids||`<div style="font-size:10px;color:var(--tx2);padding:3px 0">کسب‌وکار/واحد متصلی ندارد</div>`);
     }).join('');
     // میانگین خوشه
     const clScores=cs.map(c=>domScore('c:'+c.id)).filter(v=>v!=null);
@@ -22645,16 +22689,192 @@ function stratdashHTML(){
   return h;
 }
 
+/* ===================================================================================
+   🧭 بوم SWOT و PESTEL — آبشاری، سطح‌بندی‌شده، با ترکیب TOWS برای ساخت استراتژی
+   =================================================================================== */
+function swotTargets(){
+  return [{id:'_h',t:'🏦 کل هلدینگ'},
+    ...STRAT_CLUSTERS.map(cl=>({id:'cl:'+cl,t:'🗂️ خوشه/زیرهلدینگ '+cl})),
+    ...byE('company').map(c=>({id:'c:'+c.id,t:'🏢 '+c.d.title})),
+    ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+b.d.title})),
+    ...byE('orgunit').map(u=>({id:'u:'+u.id,t:'🧩 '+u.d.title})),
+    ...byE('team').map(tm=>({id:'t:'+tm.id,t:'👨‍👩‍👦 '+tm.d.title})),
+    ...byE('hr').filter(h=>byE('swot').some(x=>relIds(x,'person').includes(h.id))).map(h=>({id:'p:'+h.id,t:'👤 '+h.d.title}))];
+}
+function swotInLevel(x,T){ // آیا این عامل مستقیماً در این سطح است؟
+  if(T==='_h')return x.d.scope==='هلدینگ';
+  if(T.startsWith('cl:'))return x.d.cluster===T.slice(3);
+  const DMAP={c:'company',b:'biz',u:'orgu',t:'team',p:'person'};
+  return relIds(x,DMAP[T[0]]).includes(T.slice(2));
+}
+function swotParentChain(T){ // زنجیرهٔ سطوح بالادست: هلدینگ→خوشه→شرکت→کسب‌وکار→واحد→تیم→فرد
+  if(T==='_h')return [];
+  const up=[]; // از نزدیک‌ترین والد تا هلدینگ
+  const compChain=cid=>{const arr=[];const c=recs[cid];if(c){arr.push('c:'+cid);if(c.d.cluster)arr.push('cl:'+c.d.cluster);}arr.push('_h');return arr;};
+  const bizChain=bid=>{const arr=['b:'+bid];const b=recs[bid];const co=b&&relIds(b,'company')[0];if(co)arr.push(...compChain(co));else arr.push('_h');return arr;};
+  const unitChain=uid=>{const arr=[];const u=recs[uid];const bz=u&&relIds(u,'biz')[0];const co=u&&relIds(u,'company')[0];if(bz)arr.push(...bizChain(bz));else if(co)arr.push(...compChain(co));else arr.push('_h');return arr;};
+  const teamChain=tid=>{const arr=[];const tm=recs[tid];const u=tm&&relIds(tm,'orgu')[0];const bz=tm&&relIds(tm,'biz')[0];const co=tm&&relIds(tm,'company')[0];if(u)arr.push('u:'+u,...unitChain(u));else if(bz)arr.push(...bizChain(bz));else if(co)arr.push(...compChain(co));else arr.push('_h');return arr;};
+  if(T.startsWith('cl:'))return ['_h'];
+  if(T[0]==='c')return compChain(T.slice(2)).slice(1); // بدون خودِ شرکت
+  if(T[0]==='b')return bizChain(T.slice(2)).slice(1);
+  if(T[0]==='u')return unitChain(T.slice(2));
+  if(T[0]==='t')return teamChain(T.slice(2));
+  if(T[0]==='p'){const pid=T.slice(2);const tm=byE('team').find(x=>relIds(x,'members').includes(pid)||relIds(x,'lead').includes(pid));if(tm)return ['t:'+tm.id,...teamChain(tm.id)];const h=recs[pid];const u=h&&relIds(h,'orgu')[0];if(u)return ['u:'+u,...unitChain(u)];const co=h&&relIds(h,'company')[0];if(co)return compChain(co);return ['_h'];}
+  return ['_h'];
+}
+const SWOT_Q=[['قوت (S)','S','💪','#2ecc71','داخلی · مثبت'],['ضعف (W)','W','🩹','#e74c3c','داخلی · منفی'],['فرصت (O)','O','🌅','#5b93d3','بیرونی · مثبت'],['تهدید (T)','T','⚡','#e08b3d','بیرونی · منفی']];
+const PESTEL_Q=[['سیاسی (P)','P','🏛️','#c58cd8'],['اقتصادی (E)','E','💹','#e2b93b'],['اجتماعی (S)','S','👥','#5ca94f'],['فناورانه (T)','T','🤖','#5b93d3'],['محیط‌زیستی (E)','E','🌿','#3aa87c'],['قانونی (L)','L','⚖️','#d3705b']];
+function swotScore(x){return (+x.d.impact||0)*(+x.d.prob||0);}
+function swotmapHTML(){
+  if(!view.swT)view.swT='_h';
+  const T=view.swT;
+  if(!view.swFrame)view.swFrame='SWOT';
+  const all=byE('swot').filter(x=>x.d.status!=='بایگانی');
+  const targets=swotTargets();
+  const parents=swotParentChain(T);
+  const own=all.filter(x=>(x.d.frame||'SWOT')===view.swFrame&&swotInLevel(x,T));
+  const inherited=all.filter(x=>(x.d.frame||'SWOT')===view.swFrame&&!swotInLevel(x,T)&&parents.some(pt=>swotInLevel(x,pt)));
+  const levelName=(targets.find(t=>t.id===T)||{}).t||T;
+  let h=`<div class="tools">
+    <label style="margin:0">سطح آبشار:</label>
+    <select onchange="view.swT=this.value;render()" style="max-width:240px">${targets.map(x=>`<option value="${x.id}" ${x.id===T?'selected':''}>${esc(x.t)}</option>`).join('')}</select>
+    <span style="width:10px"></span>
+    ${['SWOT','PESTEL'].map(f=>`<button class="btn sm ${view.swFrame===f?'':'gh'}" onclick="view.swFrame='${f}';render()">${f}</button>`).join('')}
+    <span style="flex:1"></span>
+    ${can('c','swot')?`<button class="btn sm" onclick="swotAdd('${view.swFrame}','${T}')">＋ عامل ${view.swFrame}</button>`:''}
+    <button class="btn gh sm" onclick="go('stratdash')">🏛️ داشبورد استراتژیک</button>
+  </div>
+  <p style="font-size:12px;color:var(--tx2);margin-bottom:10px">🧭 بوم <b>${view.swFrame}</b> در سطح «${esc(levelName)}». عوامل همین سطح پررنگ‌اند و عوامل <b>به‌ارث‌رسیده از سطوح بالادست</b> با قاب خط‌چین نشان داده می‌شوند تا آبشار از هلدینگ تا پایین یکپارچه بماند. با «شدت اثر × احتمال» اولویت هر عامل مشخص می‌شود.</p>`;
+  const QS=view.swFrame==='SWOT'?SWOT_Q:PESTEL_Q;
+  const cell=(K)=>{
+    const label=K[0], code=K[1], ic=K[2], col=K[3];
+    const ownRows=own.filter(x=>x.d.kind===label).sort((a,b)=>swotScore(b)-swotScore(a));
+    const inhRows=inherited.filter(x=>x.d.kind===label).sort((a,b)=>swotScore(b)-swotScore(a));
+    const rowHTML=(x,gh)=>{const sc=swotScore(x);const dom=swScopeName(x);
+      return `<div onclick="go('rec','swot','${x.id}')" style="display:flex;align-items:center;gap:6px;padding:5px 7px;margin-top:4px;background:var(--bg2);border:1px ${gh?'dashed':'solid'} ${gh?col+'88':'var(--line)'};border-radius:8px;font-size:11px;cursor:pointer;${gh?'opacity:.82':''}">
+        <b style="min-width:26px;text-align:center;color:${sc>=16?'var(--bad)':sc>=9?'#ecd98f':'var(--tx2)'}" title="اثر×احتمال">${sc||'—'}</b>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.d.title)}</span>
+        ${gh?`<span class="tag" style="font-size:8.5px">⬆ ${esc(dom)}</span>`:''}
+        ${(x.d.scen||[]).length?`<span title="${(x.d.scen||[]).join('، ')}" style="font-size:9px">🎭</span>`:''}
+        ${relIds(x,'bsc').length?`<span title="استراتژی پاسخ متصل">🎯</span>`:''}
+      </div>`;};
+    return `<div style="border:1px solid ${col}66;border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="background:${col}22;padding:7px 11px;display:flex;align-items:center;gap:7px">
+        <span style="font-size:15px">${ic}</span><b style="font-size:12.5px">${label}</b>
+        ${K[4]?`<span style="font-size:9px;color:var(--tx2)">${K[4]}</span>`:''}
+        <span style="flex:1"></span><span class="tag" style="font-size:9px">${(ownRows.length+inhRows.length).toLocaleString('fa-IR')}</span></div>
+      <div style="padding:7px 9px;flex:1">
+        ${ownRows.length?ownRows.map(x=>rowHTML(x,false)).join(''):'<div style="font-size:10px;color:var(--tx2);padding:3px">عاملی در این سطح ثبت نشده</div>'}
+        ${inhRows.length?`<div style="font-size:9px;color:var(--tx2);margin-top:6px;border-top:1px dashed var(--line);padding-top:4px">به‌ارث از بالادست:</div>`+inhRows.map(x=>rowHTML(x,true)).join(''):''}
+        ${can('c','swot')?`<div style="margin-top:6px"><button class="btn gh sm" style="font-size:9.5px;width:100%" onclick="swotAdd('${view.swFrame}','${T}','${label.replace(/'/g,"")}')">＋ افزودن ${code}</button></div>`:''}
+      </div></div>`;
+  };
+  const cols=view.swFrame==='SWOT'?'repeat(auto-fit,minmax(230px,1fr))':'repeat(auto-fit,minmax(200px,1fr))';
+  h+=`<div style="display:grid;grid-template-columns:${cols};gap:10px">${QS.map(cell).join('')}</div>`;
+  // ===== ترکیب TOWS (فقط برای SWOT) — ساخت استراتژی از تلاقی عوامل =====
+  if(view.swFrame==='SWOT'){
+    const allOwnInh=[...own,...inherited];
+    const byK=lab=>allOwnInh.filter(x=>x.d.kind===lab);
+    const S=byK('قوت (S)'),W=byK('ضعف (W)'),O=byK('فرصت (O)'),Tt=byK('تهدید (T)');
+    const TOWS=[
+      ['SO','تهاجمی — از قوت‌ها برای بهره‌گیری از فرصت‌ها','#2ecc71',S,O,'قوت‌ها × فرصت‌ها'],
+      ['ST','دفاعی — از قوت‌ها برای خنثی‌کردن تهدیدها','#e08b3d',S,Tt,'قوت‌ها × تهدیدها'],
+      ['WO','بازنگری — رفع ضعف‌ها با استفاده از فرصت‌ها','#5b93d3',W,O,'ضعف‌ها × فرصت‌ها'],
+      ['WT','بقا — کمینه‌کردن ضعف‌ها و پرهیز از تهدیدها','#e74c3c',W,Tt,'ضعف‌ها × تهدیدها']
+    ];
+    // استراتژی‌های ساخته‌شده از این سطح که به عوامل متصل‌اند
+    const levelStrats=byE('bsc').filter(bg=>bg.d.kind==='استراتژی کلان'&&relIds(bg,'swot').length&&allOwnInh.some(f=>relIds(bg,'swot').includes(f.id)));
+    h+=`<div class="sec" style="margin-top:12px"><h3>🧮 ماتریس TOWS — ساخت استراتژی از ترکیب عوامل (سطح: ${esc(levelName)})</h3>
+      <p style="font-size:11px;color:var(--tx2);margin-bottom:9px">هر خانه، تلاقی دو دستهٔ عامل است. روی «＋ استراتژی» بزن تا یک استراتژی کلان در همین سطح ساخته و به‌صورت خودکار به عوامل و نقشهٔ استراتژی وصل شود — این‌گونه استراتژی مستقیماً از تحلیل SWOT زاده می‌شود.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px">
+      ${TOWS.map(M=>{const nA=M[3].length,nB=M[4].length,ready=nA&&nB;
+        return `<div style="border:1px solid ${M[2]}66;border-radius:12px;padding:11px;background:var(--bg2)">
+          <div style="display:flex;align-items:center;gap:7px"><b style="font-size:13px;color:${M[2]}">${M[0]}</b><span style="font-size:10.5px">${esc(M[1])}</span></div>
+          <div style="font-size:10px;color:var(--tx2);margin-top:5px">${esc(M[5])} · ${nA.toLocaleString('fa-IR')}×${nB.toLocaleString('fa-IR')} عامل موجود</div>
+          ${ready?`<button class="btn sm" style="margin-top:8px;font-size:10.5px" onclick="swotMakeStrategy('${M[0]}','${T}')">＋ استراتژی ${M[0]}</button>`
+            :`<div style="font-size:9.5px;color:var(--tx2);margin-top:8px">برای این ترکیب، هر دو دسته عامل لازم است</div>`}
+        </div>`;}).join('')}
+      </div>
+      ${levelStrats.length?`<div style="margin-top:11px;border-top:1px dashed var(--line);padding-top:9px"><b style="font-size:12px">🎯 استراتژی‌های زادهٔ SWOT در این سطح (${levelStrats.length.toLocaleString('fa-IR')})</b>
+        ${levelStrats.map(bg=>{const pct=bscProg(bg),t=traffic(pct);const fs=relIds(bg,'swot').map(id=>recs[id]).filter(Boolean);
+          return `<div onclick="go('rec','bsc','${bg.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 9px;margin-top:5px;background:var(--bg);border:1px solid var(--line);border-radius:9px;font-size:11px;cursor:pointer;flex-wrap:wrap">
+            <span style="background:${pctColor(pct)};color:${pctInk(pct)};font-weight:800;border-radius:5px;padding:1px 6px;font-size:10px">${Math.round(pct).toLocaleString('fa-IR')}٪</span>
+            <b style="flex:1;min-width:140px">${esc(bg.d.title)}</b>
+            ${bg.d.towstype?`<span class="tag y" style="font-size:9px">${esc(bg.d.towstype)}</span>`:''}
+            <span style="font-size:9px;color:var(--tx2)">از ${fs.length.toLocaleString('fa-IR')} عامل</span>
+          </div>`;}).join('')}</div>`:''}
+    </div>`;
+  } else {
+    // PESTEL: خلاصهٔ اثر محیط کلان بر استراتژی
+    h+=`<div class="sec" style="margin-top:12px"><h3>🌍 جمع‌بندی PESTEL این سطح</h3>
+      <p style="font-size:11px;color:var(--tx2)">عوامل کلانِ محیطی را رصد کن؛ هر عامل پرریسک را با «＋ استراتژی پاسخ» به یک استراتژی در نقشه وصل کن. PESTEL معمولاً ورودیِ بخش «فرصت/تهدید» در SWOT است.</p>
+      <div style="margin-top:8px">${[...own,...inherited].sort((a,b)=>swotScore(b)-swotScore(a)).slice(0,8).map(x=>{const sc=swotScore(x);
+        return `<div onclick="go('rec','swot','${x.id}')" style="display:flex;align-items:center;gap:8px;padding:5px 9px;margin-top:4px;background:var(--bg2);border-radius:8px;font-size:11px;cursor:pointer">
+          <b style="min-width:26px;text-align:center;color:${sc>=16?'var(--bad)':sc>=9?'#ecd98f':'var(--tx2)'}">${sc||'—'}</b>
+          <span class="tag" style="font-size:9px">${esc((x.d.kind||'').split(' ')[0])}</span>
+          <span style="flex:1">${esc(x.d.title)}</span>
+          ${relIds(x,'bsc').length?'<span title="پاسخ متصل">🎯</span>':`<button class="btn gh sm" style="font-size:9px" onclick="event.stopPropagation();swotMakeResponse('${x.id}','${T}')">＋ استراتژی پاسخ</button>`}
+        </div>`;}).join('')||'<div class="empty">عاملی ثبت نشده</div>'}</div></div>`;
+  }
+  return h;
+}
+function swScopeName(x){
+  if(relIds(x,'person')[0])return nameOf(relIds(x,'person')[0]);
+  if(relIds(x,'team')[0])return nameOf(relIds(x,'team')[0]);
+  if(relIds(x,'orgu')[0])return nameOf(relIds(x,'orgu')[0]);
+  if(relIds(x,'company')[0])return nameOf(relIds(x,'company')[0]);
+  if(relIds(x,'biz')[0])return nameOf(relIds(x,'biz')[0]);
+  if(x.d.cluster)return x.d.cluster;
+  return x.d.scope||'هلدینگ';
+}
+// پیش‌تنظیم فرم افزودن عامل بر اساس سطح انتخابی
+function swotAdd(frame,T,kind){
+  const d={frame:frame,status:'فعال'};
+  if(kind)d.kind=kind;
+  if(T==='_h')d.scope='هلدینگ';
+  else if(T.startsWith('cl:')){d.scope='خوشه صنعت';d.cluster=T.slice(3);}
+  else if(T[0]==='c'){d.scope='شرکت';d.company=[T.slice(2)];}
+  else if(T[0]==='b'){d.scope='کسب‌وکار';d.biz=[T.slice(2)];}
+  else if(T[0]==='u'){d.scope='واحد';d.orgu=[T.slice(2)];}
+  else if(T[0]==='p'){d.person=[T.slice(2)];}
+  openRecWith('swot',d);
+}
+// ساخت استراتژی از ترکیب TOWS
+function swotMakeStrategy(tows,T){
+  const all=byE('swot').filter(x=>x.d.status!=='بایگانی'&&(x.d.frame||'SWOT')==='SWOT');
+  const parents=swotParentChain(T);
+  const scoped=all.filter(x=>swotInLevel(x,T)||parents.some(pt=>swotInLevel(x,pt)));
+  const map={SO:['قوت (S)','فرصت (O)'],ST:['قوت (S)','تهدید (T)'],WO:['ضعف (W)','فرصت (O)'],WT:['ضعف (W)','تهدید (T)']}[tows];
+  const factors=scoped.filter(x=>map.includes(x.d.kind)).sort((a,b)=>swotScore(b)-swotScore(a)).slice(0,4);
+  const scopeMap={_h:'هلدینگ'};let scope='هلدینگ',company=null,biz=null,orgu=null,person=null,cluster=null;
+  if(T.startsWith('cl:')){scope='کسب‌وکار';cluster=T.slice(3);}
+  else if(T[0]==='c'){scope='شرکت';company=[T.slice(2)];}
+  else if(T[0]==='b'){scope='کسب‌وکار';biz=[T.slice(2)];}
+  else if(T[0]==='u'){scope='واحد';orgu=[T.slice(2)];}
+  else if(T[0]==='p'){scope='فرد';person=[T.slice(2)];}
+  const desc='استراتژی '+tows+' زادهٔ تحلیل SWOT. عوامل پایه: '+factors.map(f=>f.d.title).join(' + ');
+  const d={title:'استراتژی '+tows+' — '+(factors[0]?factors[0].d.title.slice(0,24):''),kind:'استراتژی کلان',desc:desc,scope:scope,towstype:tows,swot:factors.map(f=>f.id),status:'todo',persp:tows==='SO'||tows==='WO'?'یادگیری و رشد':'فرآیندهای داخلی'};
+  if(company)d.company=company; if(biz)d.biz=biz; if(orgu)d.orgu=orgu; if(person)d.person=person;
+  openRecWith('bsc',d);
+}
+function swotMakeResponse(factorId,T){
+  const f=recs[factorId];if(!f)return;
+  const d={title:'پاسخ به: '+f.d.title.slice(0,30),kind:'استراتژی کلان',desc:'استراتژی پاسخ به عامل PESTEL/محیطی: '+f.d.title,swot:[factorId],status:'todo',scope:f.d.scope||'هلدینگ'};
+  if(relIds(f,'company')[0])d.company=[relIds(f,'company')[0]];
+  openRecWith('bsc',d);
+}
+
 function bscmapHTML(){
   const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
-    ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+b.d.title})),
     ...byE('company').map(c=>({id:'c:'+c.id,t:'🏢 '+c.d.title})),
+    ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+b.d.title})),
     ...byE('orgunit').map(u=>({id:'u:'+u.id,t:'🧩 '+u.d.title})),
+    ...byE('team').map(tm=>({id:'t:'+tm.id,t:'👨‍👩‍👦 '+tm.d.title})),
     ...byE('hr').filter(h=>byE('bsc').some(x=>relIds(x,'person').includes(h.id))).map(h=>({id:'p:'+h.id,t:'👤 '+h.d.title}))];
   if(!view.bscT)view.bscT='_h';
   const T=view.bscT;
   // عضویت در دامنه: هر رابطه‌ای که به دامنه اشاره کند کافی است (نه فقط اولویت bscDomain)
-  const DMAP={c:'company',b:'biz',u:'orgu',p:'person'};
+  const DMAP={c:'company',b:'biz',u:'orgu',t:'team',p:'person'};
   const inT=x=>{
     if(T==='_h')return x.d.scope==='هلدینگ'||bscDomain(x)==='_h';
     return relIds(x,DMAP[T[0]]).includes(T.slice(2));
@@ -23190,6 +23410,12 @@ function openRec(e,id,preset){
   }
   drawModal();
 }
+function openRecWith(e,dObj){ // باز کردن فرم رکورد جدید با چند فیلد از پیش پرشده
+  if(!can('c',e)){alert('سطح دسترسی شما ('+myRole()+') اجازه این کار را نمی‌دهد');return;}
+  cur={id:uid(),e,d:Object.assign({},dObj||{}),u:0,_new:true};
+  drawModal();
+}
+window.openRecWith=openRecWith;
 function dateInputHTML(f){
   const d=dVal(cur.d[f.k])||{};
   return `<div style="display:grid;grid-template-columns:1fr 34px 100px;gap:5px">
