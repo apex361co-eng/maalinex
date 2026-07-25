@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.65</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.66</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.65</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.66</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -351,6 +351,10 @@ const SEL='sel',MUL='mul',TXT='text',LNG='long',NUM='num',DAT='date',REL='rel',S
 const STATUS=['Not started','In progress','Done'];
 const STATFA={'Not started':'شروع نشده','In progress':'در جریان','Done':'انجام شد'};
 const PRIO=['بحرانی','بالا','متوسط','پایین'];
+/* ═══ ISO 31000:2018 — مقیاس‌ها و سطوح آبشار ریسک (مادر-۲۶۶) ═══ */
+const RM_LEVELS=['🏛️ هلدینگ','🏢 شرکت','🧩 کسب‌وکار','🗂️ واحد سازمانی','🔁 فرآیند','🏗️ پروژه','👤 نفر'];
+const RM_PROB_O=['قطعی','محتمل','ممکن','بعید','نادر'];
+const RM_IMP_O=['بحرانی','زیاد','متوسط','کم','ناچیز'];
 const CTRL_TREE=[
  {c:'1',n:'شاخص مالی',ic:'💰',kids:[
   {c:'1-1',n:'فروش',kids:[
@@ -662,14 +666,76 @@ leave:{ic:'⛳',n:'مرخصی‌ها',grp:'سازمان',f:[
  cols:['title','kind','status','range','person']},
 risk:{ic:'🤨',n:'مدیریت ریسک',grp:'سازمان',f:[
  {k:'title',n:'عنوان ریسک',t:TXT},
- {k:'area',n:'حوزه',t:SEL,o:['بازار','رگولاتوری','فنی','نقدشوندگی','امنیت','نوسان نرخ ارز','ذینفعان']},
- {k:'prob',n:'احتمال وقوع',t:SEL,o:['قطعی','محتمل','ممکن','بعید','نادر']},
- {k:'impact',n:'شدت اثر',t:SEL,o:['زیاد','متوسط','کم']},
+ {k:'code',n:'کد ریسک',t:TXT},
+ {k:'level',n:'🏛️ سطح آبشار ریسک',t:SEL,o:RM_LEVELS},
+ {k:'nature',n:'ماهیت',t:SEL,o:['🔻 تهدید','🔺 فرصت','🔀 هر دو']},
+ {k:'area',n:'حوزه',t:SEL,o:['استراتژیک','بازار','رگولاتوری و انطباق','عملیاتی','فنی و فناوری','مالی و نقدشوندگی','امنیت و سایبری','نوسان نرخ ارز','منابع انسانی','زنجیره تأمین','HSE و محیط‌زیست','اقلیم و پایداری','شهرت و ذی‌نفعان','حقوقی و قراردادی','پروژه']},
+ /* ── بند ۶.۳ دامنه، زمینه و معیار ── */
+ {k:'scope',n:'📌 دامنه ریسک (بند ۶.۳.۲)',t:LNG},
+ {k:'context',n:'🌍 زمینه بیرونی و درونی (بند ۶.۳.۳)',t:LNG},
+ {k:'criteria',n:'📏 معیار پذیرش ریسک (بند ۶.۳.۴)',t:LNG},
+ {k:'appetite',n:'🎚️ اشتهای ریسک این حوزه',t:SEL,o:['بسیار محافظه‌کارانه','محافظه‌کارانه','متعادل','ریسک‌پذیر','بسیار ریسک‌پذیر']},
+ /* ── بند ۶.۴.۲ شناسایی ── */
+ {k:'source',n:'🧪 منبع ریسک (بند ۶.۴.۲)',t:LNG},
+ {k:'event',n:'⚡ رویداد محتمل',t:LNG},
+ {k:'cause',n:'🧷 علل و آسیب‌پذیری‌ها',t:LNG},
+ {k:'conseq',n:'💥 پیامد بر اهداف',t:LNG},
+ /* ── بند ۶.۴.۳ تحلیل ── */
+ {k:'prob',n:'احتمال وقوع (ذاتی)',t:SEL,o:RM_PROB_O},
+ {k:'impact',n:'شدت اثر (ذاتی)',t:SEL,o:RM_IMP_O},
+ {k:'ctrl',n:'🛡️ کنترل‌های موجود',t:LNG},
+ {k:'ctrleff',n:'📉 اثربخشی کنترل‌ها',t:SEL,o:['قوی','متوسط','ضعیف','بدون کنترل']},
+ {k:'rprob',n:'احتمال باقیمانده (پس از کنترل)',t:SEL,o:RM_PROB_O},
+ {k:'rimpact',n:'شدت باقیمانده (پس از کنترل)',t:SEL,o:RM_IMP_O},
+ {k:'exposure',n:'💰 مواجهه مالی تخمینی',t:NUM},
+ {k:'conf',n:'🎯 اطمینان به اطلاعات (بهترین اطلاعات موجود)',t:SEL,o:['زیاد','متوسط','کم']},
+ /* ── بند ۶.۴.۴ ارزیابی ── */
+ {k:'eval',n:'⚖️ تصمیم ارزیابی (بند ۶.۴.۴)',t:SEL,o:['اقدام بیشتری لازم نیست','بررسی گزینه‌های واکنش','تحلیل عمیق‌تر لازم است','حفظ کنترل‌های فعلی','بازنگری در اهداف']},
+ /* ── بند ۶.۵ واکنش ── */
+ {k:'topt',n:'🧭 گزینه واکنش (بند ۶.۵.۲)',t:SEL,o:['اجتناب — توقف فعالیت','پذیرش/افزایش ریسک برای فرصت','حذف منبع ریسک','کاهش احتمال','کاهش پیامد','تقسیم ریسک (بیمه/قرارداد)','پذیرش آگاهانه']},
+ {k:'plan',n:'📝 طرح واکنش (بند ۶.۵.۳)',t:LNG},
+ {k:'res',n:'🧰 منابع موردنیاز طرح',t:LNG},
+ {k:'kpi',n:'📈 شاخص اثربخشی واکنش',t:TXT},
+ {k:'due',n:'⏳ مهلت اجرای طرح',t:DAT},
+ {k:'prog',n:'درصد اجرای طرح',t:NUM},
+ {k:'secondary',n:'♻️ ریسک ثانویه ناشی از واکنش',t:LNG},
+ {k:'status',n:'وضعیت ریسک',t:SEL,o:['🆕 شناسایی‌شده','🔍 در حال تحلیل','🛠️ در حال واکنش','👁️ تحت پایش','✅ بسته‌شده','📈 محقق‌شده']},
+ /* ── بند ۶.۶ / ۶.۷ / ۶.۲ ── */
+ {k:'review',n:'🔁 دوره بازنگری (بند ۶.۶)',t:SEL,o:['ماهانه','فصلی','شش‌ماهه','سالانه']},
+ {k:'lastrev',n:'📅 آخرین بازنگری',t:DAT},
+ {k:'nextrev',n:'📅 بازنگری بعدی',t:DAT},
+ {k:'report',n:'📣 مخاطب و نحوه گزارش‌دهی (بند ۶.۷)',t:LNG},
+ {k:'stake',n:'🤝 ذی‌نفعان و مشورت (بند ۶.۲)',t:LNG},
+ /* ── اتصال آبشاری به ساختار و استراتژی ── */
  {k:'owner',n:'مالک ریسک',t:REL,r:'hr',s:1},
- {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
+ {k:'parent',n:'⬆️ ریسک والد (آبشار)',t:REL,r:'risk',s:1},
  {k:'company',n:'شرکت مرتبط',t:REL,r:'company'},
- {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'}],
- cols:['title','area','prob','impact','owner'],comp:'riskScore'},
+ {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
+ {k:'orgunit',n:'واحد سازمانی مرتبط',t:REL,r:'orgunit'},
+ {k:'objective',n:'🎯 هدف استراتژیک مرتبط',t:REL,r:'bsc'},
+ {k:'measure',n:'🎚️ سنجه مرتبط',t:REL,r:'measure'},
+ {k:'process',n:'🔁 فرآیند مرتبط',t:REL,r:'process'},
+ {k:'project',n:'پروژه مرتبط',t:REL,r:'project'}],
+ cols:['title','level','area','prob','impact','status','owner'],comp:'riskScore',prog:'riskProg'},
+riskpol:{ic:'🧭',n:'چارچوب ریسک (ISO 31000)',grp:'سازمان',f:[
+ {k:'title',n:'عنوان سیاست / چارچوب',t:TXT},
+ {k:'level',n:'سطح استقرار',t:SEL,o:RM_LEVELS},
+ {k:'company',n:'شرکت / هلدینگ',t:REL,r:'company',s:1},
+ {k:'princ',n:'💠 اصول هشت‌گانه رعایت‌شده (بند ۴)',t:MUL,o:['یکپارچه','ساخت‌یافته و جامع','سازگار با سازمان','فراگیر (مشارکت ذی‌نفعان)','پویا','مبتنی بر بهترین اطلاعات موجود','عوامل انسانی و فرهنگی','بهبود مستمر']},
+ {k:'lead',n:'🫱 رهبری و تعهد مدیریت ارشد (بند ۵.۲)',t:LNG},
+ {k:'policy',n:'📜 بیانیه سیاست ریسک',t:LNG},
+ {k:'integr',n:'🔗 یکپارچگی با حاکمیت و تصمیم‌گیری (بند ۵.۳)',t:LNG},
+ {k:'ctx',n:'🌍 درک سازمان و زمینه آن (بند ۵.۴.۱)',t:LNG},
+ {k:'roles',n:'👥 نقش‌ها، اختیارات و پاسخ‌گویی (بند ۵.۴.۳)',t:LNG},
+ {k:'resource',n:'🧰 تخصیص منابع (بند ۵.۴.۴)',t:LNG},
+ {k:'comm',n:'📣 ارتباطات و مشورت (بند ۵.۴.۵)',t:LNG},
+ {k:'impl',n:'🚀 برنامه استقرار (بند ۵.۵)',t:LNG},
+ {k:'evalf',n:'📊 ارزیابی اثربخشی چارچوب (بند ۵.۶)',t:LNG},
+ {k:'improve',n:'📈 انطباق و بهبود مستمر (بند ۵.۷)',t:LNG},
+ {k:'tol',n:'🎚️ سقف امتیاز ریسک قابل تحمل (از ۲۵)',t:NUM},
+ {k:'owner',n:'مسئول چارچوب',t:REL,r:'hr',s:1},
+ {k:'date',n:'تاریخ تصویب',t:DAT}],
+ cols:['title','level','company','owner','date'],comp:'riskpolScore'},
 idea:{ic:'💡',n:'بانک ایده‌ها',grp:'سازمان',f:[
  {k:'title',n:'عنوان ایده',t:TXT},{k:'desc',n:'شرح ایده',t:LNG},
  {k:'status',n:'وضعیت ارزیابی',t:SEL,o:['💭 خام','🔍 در حال ارزیابی','✅ تأیید شده','🚀 تبدیل به پروژه','❌ رد شده']},
@@ -2546,6 +2612,7 @@ const VIEWS_ACL=[
  ['chqdash','💳 تابلوی چک‌ها'],
  ['plreport','📈 سود و زیان فروش'],
  ['procmap','🔁 نقشه فرآیندها (ISO)'],
+ ['riskdash','🤨 داشبورد ریسک (ISO 31000)'],
  ['bscmap','🗺️ نقشه استراتژی و BSC'],
  ['bsccanvas','🧭 بوم استراتژی (چهار ربع)'],
  ['bscmap_head','🗺️ ↳ چشم‌انداز و ماموریت'],
@@ -2714,7 +2781,7 @@ function drawModcfg(){if(view&&view.type==='modcfg')document.getElementById('con
 window.openModcfg=openModcfg;window.toggleModule=toggleModule;window.saveBrand=saveBrand;
 const VIEW_GRP={bizkpi:'مدیریت کسب و کار',bizdash:'مدیریت کسب و کار',ceodash:'مدیریت کسب و کار',quickadd:'مدیریت کسب و کار',whdash:'مدیریت کسب و کار',pudash:'مدیریت کسب و کار',supdash:'مدیریت کسب و کار',custdash:'مدیریت کسب و کار',smdash:'مدیریت کسب و کار',pfdash:'مدیریت کسب و کار',salesdash:'مدیریت کسب و کار',invnew:'مدیریت کسب و کار',pinvnew:'مدیریت کسب و کار',targetdash:'مدیریت کسب و کار',settlenew:'مدیریت کسب و کار',arapdash:'مدیریت کسب و کار',cashdash:'مدیریت کسب و کار',plreport:'مدیریت کسب و کار',
  gldash:'حسابداری',glnew:'حسابداری',chqdash:'حسابداری',
- findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',
+ findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',procmap:'فرآیندها (ISO)',riskdash:'سازمان',
  epcfdash:'EPCF',portdash:'EPCF',perfdash:'EPCF',cdash:'ساخت و ساز',tokendash:'توکن‌سازی',agiledash:'توسعه نرم‌افزار',
  bscmap:'استراتژی و تعالی',bsccanvas:'استراتژی و تعالی',gdash:'رشد شخصی'};
 function grpHidden(g){if(isAdmin()||!g)return false;return (aclFor().grp||{})[g]==='hide';}
@@ -6506,11 +6573,68 @@ function money(n){ // مبنا: تومان؛ معادل دلار در صورت �
   const fx=fxRate();
   return abbrN(n)+' ت'+(fx?' ≈ $'+Math.round(n/fx).toLocaleString('fa-IR'):'');
 }
-function riskScore(r){
-  const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1}[r.d.prob]||0;
-  const I={'زیاد':3,'متوسط':2,'کم':1}[r.d.impact]||0;
-  return {label:'امتیاز ریسک',v:P*I? (P*I)+' از 15':'—',bad:P*I>=10};
+/* ═══════════ موتور ISO 31000:2018 (مادر-۲۶۶) ═══════════ */
+const RM_P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1};
+const RM_I={'بحرانی':5,'خیلی زیاد':5,'زیاد':4,'متوسط':3,'کم':2,'ناچیز':1,'خیلی کم':1};
+function rmP(v){return RM_P[v]||0;}
+function rmI(v){return RM_I[v]||0;}
+function rmInh(r){return rmP(r.d.prob)*rmI(r.d.impact);}
+function rmRes(r){const p=rmP(r.d.rprob)||rmP(r.d.prob),i=rmI(r.d.rimpact)||rmI(r.d.impact);return p*i;}
+function rmNet(r){return rmRes(r)||rmInh(r);}
+function rmBand(v){
+  if(!v)return {n:'—',c:'#64748b',k:0};
+  if(v>=17)return {n:'بحرانی',c:'#dc2626',k:4};
+  if(v>=10)return {n:'بالا',c:'#f97316',k:3};
+  if(v>=5) return {n:'متوسط',c:'#eab308',k:2};
+  return {n:'کم',c:'#22c55e',k:1};
 }
+function rmTol(){ // سقف قابل تحمل از چارچوب مصوب؛ پیش‌فرض ۱۰
+  const ps=byE('riskpol').map(p=>+p.d.tol||0).filter(x=>x>0);
+  return ps.length?Math.min.apply(null,ps):10;
+}
+function riskScore(r){
+  const inh=rmInh(r),res=rmRes(r),b=rmBand(res||inh);
+  return {label:'ریسک ذاتی / باقیمانده (از ۲۵)',
+    v:(inh?inh.toLocaleString('fa-IR'):'—')+' / '+(res?res.toLocaleString('fa-IR'):'—')+' — '+b.n,
+    bad:(res||inh)>rmTol()};
+}
+function riskProg(r){return Math.max(0,Math.min(100,+r.d.prog||0));}
+/* گام‌های فرآیند مدیریت ریسک — بند ۶ */
+const RM_PROC=[
+ {k:'com',n:'ارتباط و مشورت',        c:'۶.۲',  ic:'🤝',fs:['stake']},
+ {k:'ctx',n:'دامنه، زمینه و معیار',   c:'۶.۳',  ic:'📌',fs:['scope','context','criteria']},
+ {k:'idn',n:'شناسایی ریسک',          c:'۶.۴.۲',ic:'🧪',fs:['source','event','conseq']},
+ {k:'ana',n:'تحلیل ریسک',            c:'۶.۴.۳',ic:'📐',fs:['prob','impact','ctrl','ctrleff']},
+ {k:'evl',n:'ارزیابی ریسک',          c:'۶.۴.۴',ic:'⚖️',fs:['eval','rprob','rimpact']},
+ {k:'trt',n:'واکنش به ریسک',         c:'۶.۵',  ic:'🧭',fs:['topt','plan','due']},
+ {k:'mon',n:'پایش و بازنگری',        c:'۶.۶',  ic:'👁️',fs:['review','nextrev']},
+ {k:'rep',n:'ثبت و گزارش‌دهی',       c:'۶.۷',  ic:'📣',fs:['report']}];
+/* مؤلفه‌های چارچوب — بند ۵ */
+const RM_FRAME=[
+ {k:'lead',   n:'رهبری و تعهد',            c:'۵.۲',    ic:'🫱'},
+ {k:'policy', n:'بیانیه سیاست ریسک',       c:'۵.۴.۲',  ic:'📜'},
+ {k:'integr', n:'یکپارچگی با حاکمیت',      c:'۵.۳',    ic:'🔗'},
+ {k:'ctx',    n:'درک سازمان و زمینه',      c:'۵.۴.۱',  ic:'🌍'},
+ {k:'roles',  n:'نقش‌ها و پاسخ‌گویی',      c:'۵.۴.۳',  ic:'👥'},
+ {k:'resource',n:'تخصیص منابع',            c:'۵.۴.۴',  ic:'🧰'},
+ {k:'comm',   n:'ارتباطات و مشورت',        c:'۵.۴.۵',  ic:'📣'},
+ {k:'impl',   n:'استقرار',                 c:'۵.۵',    ic:'🚀'},
+ {k:'evalf',  n:'ارزیابی اثربخشی',         c:'۵.۶',    ic:'📊'},
+ {k:'improve',n:'انطباق و بهبود مستمر',    c:'۵.۷',    ic:'📈'},
+ {k:'princ',  n:'اصول هشت‌گانه',           c:'۴',      ic:'💠'}];
+function rmHas(r,k){const v=r&&r.d?r.d[k]:null;if(v==null)return false;if(Array.isArray(v))return v.length>0;return String(v).trim().length>0;}
+function rmStepPc(r,st){const n=st.fs.filter(f=>rmHas(r,f)).length;return Math.round(n*100/st.fs.length);}
+function rmConform(r){return Math.round(avg(RM_PROC.map(st=>rmStepPc(r,st))));}
+function riskpolScore(p){
+  const n=RM_FRAME.filter(f=>rmHas(p,f.k)).length,pc=Math.round(n*100/RM_FRAME.length);
+  return {label:'کامل‌بودن چارچوب (بند ۴ و ۵)',v:pc.toLocaleString('fa-IR')+'٪',bad:pc<60};
+}
+function rmFrameOverall(){
+  const ps=byE('riskpol');if(!ps.length)return 0;
+  return Math.round(avg(RM_FRAME.map(f=>ps.filter(p=>rmHas(p,f.k)).length*100/ps.length)));
+}
+function rmOverdue(r){const d=r.d.nextrev;if(!d)return false;const st=String(r.d.status||'');if(st.indexOf('بسته')>=0)return false;return d<today();}
+function rmOpen(r){const st=String(r.d.status||'');return st.indexOf('بسته')<0;}
 function bankBalance(b){
   const txs=byE('tx').filter(t=>relIds(t,'bank').includes(b.id));
   const s=txs.reduce((a,t)=>a+(t.d.kind==='دریافت'?1:-1)*(t.d.amount||0),0);
@@ -6526,7 +6650,7 @@ function projectSpent(p){
   const txs=byE('tx').filter(t=>relIds(t,'project').includes(p.id)&&t.d.kind==='پرداخت');
   return txs.reduce((a,t)=>a+(t.d.amount||0),0);
 }
-const PROGFN={taskProg,projectProg,growthProg,habitPct,bookProg,courseProg,msProg,bscProg,measureProg};
+const PROGFN={taskProg,projectProg,growthProg,habitPct,bookProg,courseProg,msProg,bscProg,measureProg,riskProg};
 // دسترسی امن: اگر تابعی ثبت نشده بود، به‌جای کرش صفر برگردان
 function progOf(key,r){const f=PROGFN[key];return f?f(r):0;}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
@@ -6559,7 +6683,7 @@ let view={type:'me'};
 /* 🪗 جمع‌شوندگی گروه‌های منو بر اساس موضوع */
 let navCol=null;
 try{navCol=JSON.parse(localStorage.getItem('xr_navcol')||'null');}catch(e){navCol=null;}
-const DASH_GRP={gdash:'رشد شخصی',bizdash:'کسب‌وکار ویژه',findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',gldash:'حسابداری',glnew:'حسابداری',procmap:'فرآیندها (ISO)',bscmap:'استراتژی و تعالی',bsccanvas:'استراتژی و تعالی'};
+const DASH_GRP={gdash:'رشد شخصی',bizdash:'کسب‌وکار ویژه',findash:'مالی تخصصی (IFRS)',invdash:'سرمایه‌گذاری و ثروت',gldash:'حسابداری',glnew:'حسابداری',procmap:'فرآیندها (ISO)',riskdash:'سازمان',bscmap:'استراتژی و تعالی',bsccanvas:'استراتژی و تعالی'};
 function activeGrp(){ // گروهی که صفحه فعلی به آن تعلق دارد (همیشه باز نمایش داده می‌شود)
   if(DASH_GRP[view.type])return DASH_GRP[view.type];
   if((view.type==='list'||view.type==='rec')&&view.e&&E[view.e])return E[view.e].grp;
@@ -6927,6 +7051,7 @@ function nav(){
     if(g==='توسعه نرم‌افزار'&&canSee('astory')&&canView('agiledash'))items+=`<div class="nav-i ${view.type==='agiledash'?'on':''}" onclick="go('agiledash')">💻 داشبورد Agile</div>`;
     if(g==='توکن‌سازی'&&canSee('token')&&canView('tokendash'))items+=`<div class="nav-i ${view.type==='tokendash'?'on':''}" onclick="go('tokendash')">🪙 داشبورد توکن</div>`;
     if(g==='ساخت و ساز'&&canSee('cboq')&&canView('cdash'))items+=`<div class="nav-i ${view.type==='cdash'?'on':''}" onclick="go('cdash')">🏢 داشبورد ساخت‌وساز</div>`;
+    if(g==='سازمان'&&canSee('risk')&&canView('riskdash'))items+=`<div class="nav-i ${view.type==='riskdash'?'on':''}" onclick="go('riskdash')">🤨 داشبورد ریسک (ISO 31000)</div>`;
     if(g==='استراتژی و تعالی'&&canSee('bsc')&&canView('stratdash'))items+=`<div class="nav-i ${view.type==='stratdash'?'on':''}" onclick="go('stratdash')">🏛️ داشبورد استراتژیک</div>`;
     if(g==='استراتژی و تعالی'&&canSee('swot')&&canView('swotmap'))items+=`<div class="nav-i ${view.type==='swotmap'?'on':''}" onclick="go('swotmap')">🧭 بوم SWOT / PESTEL</div>`;
     if(g==='استراتژی و تعالی'&&canSee('process')&&canView('procmap'))items+=`<div class="nav-i ${view.type==='procmap'?'on':''}" onclick="go('procmap')">🔁 نقشه فرآیندها</div>`;
@@ -7042,6 +7167,7 @@ function render(){
     view.type==='gldash'?'📒 دفتر کل و صورت‌های مالی':
     view.type==='glnew'?'🖊️ ثبت سند حسابداری':
     view.type==='procmap'?'🔁 نقشه فرآیندها (ISO)':
+    view.type==='riskdash'?'🤨 مدیریت ریسک (ISO 31000)':
     view.type==='charts'?'📊 نمودارها و شاخص‌ها':
     view.type==='swotmap'?'🧭 بوم SWOT و PESTEL':
     view.type==='stratdash'?'🏛️ داشبورد استراتژیک هلدینگ':
@@ -7050,7 +7176,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',pldash:'pldash',bankdash:'bankdash',finform:'finform',invdash:'invdash',cfaacad:'invdash',procmap:'procmap',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',mbuilder:'mbuilder',mydash:'mydash',quickadd:'quickadd',whdash:'whdash',pudash:'pudash',supdash:'supdash',custdash:'custdash',smdash:'smdash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',aligndash:'aligndash',agiledash:'agiledash'};
+  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',pldash:'pldash',bankdash:'bankdash',finform:'finform',invdash:'invdash',cfaacad:'invdash',procmap:'procmap',riskdash:'riskdash',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',mbuilder:'mbuilder',mydash:'mydash',quickadd:'quickadd',whdash:'whdash',pudash:'pudash',supdash:'supdash',custdash:'custdash',smdash:'smdash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',aligndash:'aligndash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -7075,6 +7201,7 @@ function render(){
     else if(view.type==='finform')c.innerHTML=finFormHTML();
     else if(view.type==='invdash'||view.type==='cfaacad')c.innerHTML=invdashHTML();
     else if(view.type==='procmap')c.innerHTML=procmapHTML();
+    else if(view.type==='riskdash')c.innerHTML=riskdashHTML();
     else if(view.type==='gldash')c.innerHTML=gldashHTML();
     else if(view.type==='glnew')c.innerHTML=glnewHTML();
     else if(view.type==='bizkpi')c.innerHTML=ceodashHTML();
@@ -9755,7 +9882,7 @@ function listHTML(e){
   }
   return h;
 }
-window.bankBalance=bankBalance;window.budgetState=budgetState;window.riskScore=riskScore;
+window.bankBalance=bankBalance;window.budgetState=budgetState;window.riskScore=riskScore;window.riskpolScore=riskpolScore;window.riskProg=riskProg;
 
 /* ================= RECORD PAGE (نمای کامل مثل نوشن) ================= */
 function relChip(id,ent){return `<span class="tag b" style="cursor:pointer" onclick="event.stopPropagation();go('rec','${ent}','${id}')">${E[ent].ic} ${esc(nameOf(id))}</span>`;}
@@ -10122,12 +10249,11 @@ const INDICATORS=[
    const spent=byE('tx').filter(t=>relIds(t,'budget').includes(b.id)&&t.d.kind==='پرداخت').reduce((a,t)=>a+(+t.d.amount||0),0);
    const amt=+b.d.amount||0;return {l:b.d.title||'—',v:amt?Math.min(100,spent/amt*100):0,sub:money(spent)+' از '+money(amt),href:`go('rec','budget','${b.id}')`};}))},
  {k:'risks',ic:'🤨',n:'ریسک‌ها بر اساس امتیاز',fn:dom=>{
-   const P={'قطعی':5,'محتمل':4,'ممکن':3,'بعید':2,'نادر':1},I={'زیاد':3,'متوسط':2,'کم':1};
-   const rows=chE('risk',dom).map(r=>({l:r.d.title||'—',s:(P[r.d.prob]||0)*(I[r.d.impact]||0),href:`go('rec','risk','${r.id}')`})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10);
+   const rows=chE('risk',dom).map(r=>({l:r.d.title||'—',s:rmNet(r),href:`go('rec','risk','${r.id}')`})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10);
    if(!rows.length)return `<div class="empty">ریسک امتیازدهی‌شده‌ای نیست</div>`;
    return rows.map(x=>`<div style="margin:9px 0;cursor:pointer" onclick="${x.href}">
-     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(x.l)}</span><b style="color:${x.s>=10?'var(--bad)':x.s>=6?'var(--warn)':'var(--ok)'}">${x.s.toLocaleString('fa-IR')} از ۱۵</b></div>
-     <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden"><div style="width:${Math.round(x.s/15*100)}%;height:100%;border-radius:99px;background:${x.s>=10?CH.red:x.s>=6?CH.yellow:CH.good}"></div></div></div>`).join('');}},
+     <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(x.l)}</span><b style="color:${rmBand(x.s).c}">${x.s.toLocaleString('fa-IR')} از ۲۵ — ${rmBand(x.s).n}</b></div>
+     <div style="background:var(--bg);border-radius:99px;height:9px;overflow:hidden"><div style="width:${Math.round(x.s/25*100)}%;height:100%;border-radius:99px;background:${rmBand(x.s).c}"></div></div></div>`).join('');}},
  {k:'sales',ic:'🛒',n:'فروش و خرید کالا — ۶ ماه اخیر',fn:dom=>{
    const mk=(rows,kind)=>rows.map(s=>({d:{date:s.d.date,kind,amount:(+s.d.qty||0)*(+s.d.price||0)+(+s.d.extra||0)}}));
    return monthlySVG([...mk(chE('sale',dom),'دریافت'),...mk(chE('purchase',dom),'پرداخت')]);}},
@@ -10973,6 +11099,242 @@ function iso26Panel(items){
   return h+`</div>`;
 }
 
+/* ═══════════════ داشبورد مدیریت ریسک ISO 31000:2018 (مادر-۲۶۶) ═══════════════ */
+const RM_TABS=[['ov','📊 نمای کلی'],['mx','🔥 ماتریس ۵×۵'],['casc','🌊 آبشار ریسک'],['lvl','🏛️ سطوح سازمان'],['strat','🎯 اتصال به استراتژی'],['proc','🔄 فرآیند بند ۶'],['frame','🧭 چارچوب بند ۴ و ۵']];
+function rmAll(){
+  let a=byE('risk');
+  if(view.rdCo)a=a.filter(r=>relIds(r,'company').includes(view.rdCo));
+  if(view.rdLv)a=a.filter(r=>(r.d.level||'')===view.rdLv);
+  if(view.rdAr)a=a.filter(r=>(r.d.area||'')===view.rdAr);
+  if(view.rdOpen)a=a.filter(rmOpen);
+  return a;
+}
+function rmChip(v){const b=rmBand(v);return `<span style="background:${b.c};color:#fff;border-radius:7px;padding:1px 7px;font-weight:800;font-size:11px">${v?v.toLocaleString('fa-IR'):'—'} ${esc(b.n)}</span>`;}
+function rmTile(ic,lb,val,bad,sub){
+  return `<div style="border:1px solid var(--line);border-radius:11px;padding:9px 11px;background:rgba(255,255,255,.03)">
+    <div style="font-size:10.5px;color:var(--tx2)">${ic} ${esc(lb)}</div>
+    <div style="font-size:19px;font-weight:800;color:${bad?'var(--bad)':'var(--tx)'}">${val}</div>
+    ${sub?`<div style="font-size:10px;color:var(--tx2)">${esc(sub)}</div>`:''}</div>`;
+}
+function rmBar(pc){return `<div style="height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:${pc}%;background:${pctColor(pc)}"></div></div>`;}
+function rmRow(r){
+  const b=rmBand(rmNet(r)),cf=rmConform(r);
+  return `<div onclick="go('rec','risk','${r.id}')" style="cursor:pointer;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-inline-start:3px solid ${b.c};border-radius:9px;padding:6px 9px;margin:5px 0">
+    <span style="flex:1;min-width:0"><b style="font-size:12px">${esc(r.d.title||'—')}</b>
+      <span style="font-size:10px;color:var(--tx2)">${esc(r.d.level||'—')} · ${esc(r.d.area||'—')}${r.d.owner?' · '+esc(nameOf(relIds(r,'owner')[0])):''}</span></span>
+    ${rmOverdue(r)?'<span style="font-size:10px;color:var(--bad)">⏰ بازنگری عقب‌افتاده</span>':''}
+    <span style="font-size:10px;color:var(--tx2)">انطباق ${cf.toLocaleString('fa-IR')}٪</span>
+    ${rmChip(rmNet(r))}</div>`;
+}
+function rmFilters(){
+  const cos=byE('company'),ars=[...new Set(byE('risk').map(r=>r.d.area).filter(Boolean))];
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0">
+    <select onchange="view.rdCo=this.value;render()" style="font-size:11px"><option value="">🏢 همه شرکت‌ها</option>${cos.map(c=>`<option value="${c.id}" ${view.rdCo===c.id?'selected':''}>${esc(c.d.title||'—')}</option>`).join('')}</select>
+    <select onchange="view.rdLv=this.value;render()" style="font-size:11px"><option value="">🏛️ همه سطوح</option>${RM_LEVELS.map(l=>`<option value="${esc(l)}" ${view.rdLv===l?'selected':''}>${esc(l)}</option>`).join('')}</select>
+    <select onchange="view.rdAr=this.value;render()" style="font-size:11px"><option value="">🗂️ همه حوزه‌ها</option>${ars.map(l=>`<option value="${esc(l)}" ${view.rdAr===l?'selected':''}>${esc(l)}</option>`).join('')}</select>
+    <label style="font-size:11px;cursor:pointer"><input type="checkbox" ${view.rdOpen?'checked':''} onchange="view.rdOpen=this.checked;render()"> فقط ریسک‌های باز</label>
+    <span style="flex:1"></span>
+    <button class="btn gh sm" onclick="view.rdCo='';view.rdLv='';view.rdAr='';view.rdOpen=false;render()">↺ پاک‌کردن فیلتر</button>
+  </div>`;
+}
+function rmOverview(a){
+  const tol=rmTol();
+  const crit=a.filter(r=>rmBand(rmNet(r)).k===4),high=a.filter(r=>rmBand(rmNet(r)).k===3);
+  const over=a.filter(r=>rmNet(r)>tol);
+  const withPlan=a.filter(r=>rmHas(r,'plan')),od=a.filter(rmOverdue);
+  const opp=a.filter(r=>String(r.d.nature||'').indexOf('فرصت')>=0);
+  const expo=a.reduce((x,r)=>x+(+r.d.exposure||0),0);
+  const cf=a.length?Math.round(avg(a.map(rmConform))):0;
+  let h=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px">
+    ${rmTile('🤨','کل ریسک‌های ثبت‌شده',a.length.toLocaleString('fa-IR'),false,a.filter(rmOpen).length.toLocaleString('fa-IR')+' مورد باز')}
+    ${rmTile('🔴','ریسک بحرانی (۱۷ تا ۲۵)',crit.length.toLocaleString('fa-IR'),crit.length>0)}
+    ${rmTile('🟠','ریسک بالا (۱۰ تا ۱۶)',high.length.toLocaleString('fa-IR'),high.length>0)}
+    ${rmTile('🎚️','بالاتر از سقف قابل تحمل',over.length.toLocaleString('fa-IR'),over.length>0,'سقف مصوب: '+tol.toLocaleString('fa-IR')+' از ۲۵')}
+    ${rmTile('📝','دارای طرح واکنش',(a.length?Math.round(withPlan.length*100/a.length):0).toLocaleString('fa-IR')+'٪',a.length&&withPlan.length*100/a.length<70,withPlan.length.toLocaleString('fa-IR')+' از '+a.length.toLocaleString('fa-IR'))}
+    ${rmTile('⏰','بازنگری عقب‌افتاده',od.length.toLocaleString('fa-IR'),od.length>0)}
+    ${rmTile('🔺','فرصت‌های شناسایی‌شده',opp.length.toLocaleString('fa-IR'),false)}
+    ${rmTile('🔄','انطباق میانگین با بند ۶',cf.toLocaleString('fa-IR')+'٪',cf<60)}
+    ${rmTile('🧭','کامل‌بودن چارچوب (بند ۵)',rmFrameOverall().toLocaleString('fa-IR')+'٪',rmFrameOverall()<60,byE('riskpol').length.toLocaleString('fa-IR')+' سند چارچوب')}
+    ${rmTile('💰','مواجهه مالی تخمینی',expo?money(expo):'—',false)}
+  </div>`;
+  const top=a.slice().sort((x,y)=>rmNet(y)-rmNet(x)).filter(r=>rmNet(r)>0).slice(0,12);
+  h+=`<div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px;margin-bottom:4px">🎯 ریسک‌های اولویت‌دار (بر پایه ریسک باقیمانده)</div>`;
+  h+= top.length?top.map(rmRow).join(''):'<div class="empty">ریسک امتیازدهی‌شده‌ای نیست</div>';
+  h+=`</div>`;
+  if(od.length)h+=`<div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px;margin-bottom:4px">⏰ نیازمند بازنگری فوری (بند ۶.۶)</div>${od.slice(0,10).map(rmRow).join('')}</div>`;
+  return h;
+}
+function rmMatrix(a){
+  const res=view.rdMx!=='inh';
+  let h=`<div style="display:flex;align-items:center;gap:8px;margin:8px 0">
+    <button class="btn ${res?'':'gh'} sm" onclick="view.rdMx='res';render()">ریسک باقیمانده</button>
+    <button class="btn ${res?'gh':''} sm" onclick="view.rdMx='inh';render()">ریسک ذاتی</button>
+    <span style="font-size:10.5px;color:var(--tx2)">ماتریس ۵×۵ احتمال × شدت — بند ۶.۴.۳</span></div>`;
+  const cell=(pi,ii)=>{
+    const list=a.filter(r=>{
+      const p=res?(rmP(r.d.rprob)||rmP(r.d.prob)):rmP(r.d.prob);
+      const i=res?(rmI(r.d.rimpact)||rmI(r.d.impact)):rmI(r.d.impact);
+      return p===pi&&i===ii;});
+    const b=rmBand(pi*ii);
+    return `<td style="background:${b.c}22;border:1px solid ${b.c}66;padding:4px;vertical-align:top;min-width:74px">
+      <div style="font-size:9.5px;color:var(--tx2)">${(pi*ii).toLocaleString('fa-IR')}</div>
+      ${list.map(r=>`<div onclick="go('rec','risk','${r.id}')" title="${esc(r.d.title||'')}" style="cursor:pointer;font-size:10px;background:${b.c};color:#fff;border-radius:5px;padding:1px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.d.title||'—')}</div>`).join('')}</td>`;
+  };
+  h+=`<div style="overflow:auto"><table style="border-collapse:collapse;width:100%"><tr><th style="font-size:10px"></th>${RM_IMP_O.map(x=>`<th style="font-size:10.5px;padding:3px">${esc(x)}</th>`).join('')}</tr>`;
+  RM_PROB_O.forEach(pl=>{
+    h+=`<tr><th style="font-size:10.5px;padding:3px;white-space:nowrap">${esc(pl)}</th>${RM_IMP_O.map(il=>cell(RM_P[pl],RM_I[il])).join('')}</tr>`;
+  });
+  h+=`</table></div><div style="font-size:10px;color:var(--tx2);margin-top:6px">ردیف: احتمال وقوع │ ستون: شدت اثر │ عدد هر خانه: امتیاز ریسک از ۲۵ — بندهای رنگی: کم (۱ تا ۴)، متوسط (۵ تا ۹)، بالا (۱۰ تا ۱۶)، بحرانی (۱۷ تا ۲۵)</div>`;
+  return h;
+}
+function rmCascade(a){
+  const ids=new Set(a.map(r=>r.id));
+  const kids=id=>a.filter(r=>relIds(r,'parent')[0]===id);
+  const roots=a.filter(r=>{const p=relIds(r,'parent')[0];return !p||!ids.has(p);});
+  const node=(r,d)=>{
+    const b=rmBand(rmNet(r)),ch=kids(r.id);
+    let x=`<div style="margin-inline-start:${d*16}px;margin:4px 0">
+      <div onclick="go('rec','risk','${r.id}')" style="cursor:pointer;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-inline-start:3px solid ${b.c};border-radius:9px;padding:5px 8px">
+        <span style="font-size:11px;color:var(--tx2)">${esc(r.d.level||'—')}</span>
+        <b style="font-size:12px;flex:1;min-width:0">${esc(r.d.title||'—')}</b>
+        ${ch.length?`<span style="font-size:10px;color:var(--tx2)">${ch.length.toLocaleString('fa-IR')} ریسک فرزند</span>`:''}
+        ${rmChip(rmNet(r))}</div></div>`;
+    ch.forEach(c=>{x+=node(c,d+1);});
+    return x;
+  };
+  let h=`<div style="font-size:10.5px;color:var(--tx2);margin:8px 0">ریسک والد را در فرم هر ریسک تعیین کنید تا آبشار از سطح هلدینگ تا نفر ساخته شود. ریسک والد جمعِ اثر فرزندان را نمایندگی می‌کند.</div>`;
+  h+= roots.length?roots.sort((x,y)=>rmNet(y)-rmNet(x)).map(r=>node(r,0)).join(''):'<div class="empty">ریسکی برای نمایش نیست</div>';
+  return h;
+}
+function rmLevels(a){
+  let h=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:8px">`;
+  RM_LEVELS.forEach(l=>{
+    const list=a.filter(r=>(r.d.level||'')===l);
+    const mx=list.length?Math.max.apply(null,list.map(rmNet)):0;
+    const av=list.length?Math.round(avg(list.map(rmNet))):0;
+    const cf=list.length?Math.round(avg(list.map(rmConform))):0;
+    const b=rmBand(mx);
+    h+=`<div style="border:1px solid var(--line);border-inline-start:3px solid ${b.c};border-radius:10px;padding:8px 10px;cursor:pointer" onclick="view.rdLv='${esc(l)}';view.rdTab='ov';render()">
+      <div style="font-weight:800;font-size:12.5px">${esc(l)}</div>
+      <div style="font-size:10.5px;color:var(--tx2)">${list.length.toLocaleString('fa-IR')} ریسک · بیشینه ${mx.toLocaleString('fa-IR')} · میانگین ${av.toLocaleString('fa-IR')} از ۲۵</div>
+      <div style="margin-top:5px">${rmBar(cf)}</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">انطباق با فرآیند بند ۶: ${cf.toLocaleString('fa-IR')}٪</div>
+    </div>`;
+  });
+  h+=`</div>`;
+  const grp=(ent,key,ic,ttl)=>{
+    const rows=byE(ent).map(o=>{
+      const list=a.filter(r=>relIds(r,key).includes(o.id));
+      return {o:o,list:list,mx:list.length?Math.max.apply(null,list.map(rmNet)):0};
+    }).filter(x=>x.list.length).sort((x,y)=>y.mx-x.mx);
+    if(!rows.length)return '';
+    let x=`<div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px;margin-bottom:4px">${ic} ${ttl}</div><div style="display:flex;flex-wrap:wrap;gap:6px">`;
+    rows.forEach(r=>{const b=rmBand(r.mx);
+      x+=`<div onclick="go('rec','${ent}','${r.o.id}')" style="cursor:pointer;border:1px solid var(--line);border-inline-start:3px solid ${b.c};border-radius:8px;padding:4px 8px;font-size:11px">
+        <b>${esc(r.o.d.title||'—')}</b> <span style="color:var(--tx2)">${r.list.length.toLocaleString('fa-IR')} ریسک</span> ${rmChip(r.mx)}</div>`;});
+    return x+`</div></div>`;
+  };
+  h+=grp('company','company','🏢','مواجهه ریسک شرکت‌های هلدینگ');
+  h+=grp('business','business','🧩','مواجهه ریسک کسب‌وکارها');
+  h+=grp('orgunit','orgunit','🗂️','مواجهه ریسک واحدهای سازمانی');
+  h+=grp('project','project','🏗️','مواجهه ریسک پروژه‌ها');
+  h+=grp('hr','owner','👤','بار ریسک هر مالک');
+  return h;
+}
+function rmStrat(a){
+  const blk=(ent,key,ic,ttl,note)=>{
+    const rows=byE(ent).map(o=>{
+      const list=a.filter(r=>relIds(r,key).includes(o.id));
+      return {o:o,list:list,mx:list.length?Math.max.apply(null,list.map(rmNet)):0};
+    }).sort((x,y)=>y.mx-x.mx);
+    let x=`<div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px">${ic} ${ttl}</div>
+      <div style="font-size:10px;color:var(--tx2);margin-bottom:5px">${esc(note)}</div>`;
+    if(!rows.length)x+='<div class="empty">موردی ثبت نشده</div>';
+    rows.slice(0,20).forEach(r=>{
+      const b=rmBand(r.mx),unc=r.list.length===0;
+      x+=`<div onclick="go('rec','${ent}','${r.o.id}')" style="cursor:pointer;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-inline-start:3px solid ${unc?'#64748b':b.c};border-radius:9px;padding:5px 9px;margin:4px 0">
+        <b style="font-size:12px;flex:1;min-width:0">${esc(r.o.d.title||'—')}</b>
+        ${unc?'<span style="font-size:10px;color:var(--warn)">⚠️ بدون ریسک شناسایی‌شده</span>':`<span style="font-size:10px;color:var(--tx2)">${r.list.length.toLocaleString('fa-IR')} ریسک</span>${rmChip(r.mx)}`}</div>`;
+    });
+    return x+`</div>`;
+  };
+  let h=`<div style="font-size:10.5px;color:var(--tx2);margin-top:8px">ISO 31000 می‌گوید مدیریت ریسک باید در تعیین استراتژی و اهداف تنیده باشد (بند ۵.۳). این نما نشان می‌دهد کدام هدف، سنجه، فرآیند یا پروژه ریسک شناسایی‌شده ندارد.</div>`;
+  h+=blk('bsc','objective','🎯','اهداف استراتژیک و BSC','هر هدف بدون ریسک، یک نقطه کور در تصمیم‌گیری است');
+  h+=blk('measure','measure','🎚️','سنجه‌های عملکرد','ریسکی که سنجه را تهدید می‌کند');
+  h+=blk('process','process','🔁','فرآیندها (پیوند با ISO 9001 بند ۶.۱)','تفکر مبتنی بر ریسک در سطح فرآیند');
+  h+=blk('project','project','🏗️','پروژه‌ها و برنامه‌ها','ریسک در سطح پروژه و برنامه');
+  return h;
+}
+function rmProcPanel(a){
+  let h=`<div style="font-size:10.5px;color:var(--tx2);margin-top:8px">میزان تکمیل هشت گام فرآیند مدیریت ریسک ISO 31000:2018 (بند ۶) روی ریسک‌های این دامنه.</div>
+  <div style="margin-top:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px">`;
+  RM_PROC.forEach(st=>{
+    const pc=a.length?Math.round(avg(a.map(r=>rmStepPc(r,st)))):0;
+    const full=a.filter(r=>rmStepPc(r,st)===100).length;
+    h+=`<div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px">
+      <div style="font-size:11.5px;font-weight:700">${st.ic} ${esc(st.n)}</div>
+      <div style="font-size:10px;color:var(--tx2)">بند ${esc(st.c)}</div>
+      <div style="margin-top:5px">${rmBar(pc)}</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">${pc.toLocaleString('fa-IR')}٪ — کامل در ${full.toLocaleString('fa-IR')} از ${a.length.toLocaleString('fa-IR')} ریسک</div></div>`;
+  });
+  h+=`</div>`;
+  const gaps=a.map(r=>({r:r,c:rmConform(r)})).filter(x=>x.c<100).sort((x,y)=>x.c-y.c).slice(0,15);
+  if(gaps.length){
+    h+=`<div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px;margin-bottom:4px">⚠️ ریسک‌هایی که پرونده‌شان کامل نیست</div><div style="display:flex;flex-wrap:wrap;gap:6px">`;
+    gaps.forEach(g=>{
+      const miss=RM_PROC.filter(st=>rmStepPc(g.r,st)<100).map(st=>st.ic).join('');
+      h+=`<div onclick="go('rec','risk','${g.r.id}')" style="cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:11px">
+        <b>${esc(g.r.d.title||'—')}</b>
+        <span style="background:${pctColor(g.c)};color:${pctInk(g.c)};border-radius:6px;padding:0 5px;font-weight:700;margin-inline-start:4px">${g.c.toLocaleString('fa-IR')}٪</span>
+        <span style="margin-inline-start:4px">${miss}</span></div>`;
+    });
+    h+=`</div></div>`;
+  }
+  return h;
+}
+function rmFramePanel(){
+  const ps=byE('riskpol');
+  let h=`<div style="font-size:10.5px;color:var(--tx2);margin-top:8px">اصول هشت‌گانه (بند ۴) و مؤلفه‌های چارچوب (بند ۵) ISO 31000:2018. برای هر شرکت یا سطح، یک سند «چارچوب ریسک» ثبت کنید.</div>
+  <div style="margin:8px 0"><button class="btn sm" onclick="go('list','riskpol')">🧭 مدیریت اسناد چارچوب</button></div>`;
+  if(!ps.length)return h+'<div class="empty">هنوز سند چارچوبی ثبت نشده — بدون چارچوب، مدیریت ریسک به فهرست‌نویسی تبدیل می‌شود.</div>';
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px">`;
+  RM_FRAME.forEach(f=>{
+    const n=ps.filter(p=>rmHas(p,f.k)).length,pc=Math.round(n*100/ps.length);
+    h+=`<div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px">
+      <div style="font-size:11.5px;font-weight:700">${f.ic} ${esc(f.n)}</div>
+      <div style="font-size:10px;color:var(--tx2)">بند ${esc(f.c)}</div>
+      <div style="margin-top:5px">${rmBar(pc)}</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">${n.toLocaleString('fa-IR')} از ${ps.length.toLocaleString('fa-IR')} سند (${pc.toLocaleString('fa-IR')}٪)</div></div>`;
+  });
+  h+=`</div><div style="margin-top:12px"><div style="font-weight:800;font-size:12.5px;margin-bottom:4px">📚 اسناد چارچوب ثبت‌شده</div>`;
+  ps.forEach(p=>{
+    const sc=riskpolScore(p),n=RM_FRAME.filter(f=>rmHas(p,f.k)).length,pc=Math.round(n*100/RM_FRAME.length);
+    h+=`<div onclick="go('rec','riskpol','${p.id}')" style="cursor:pointer;display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin:4px 0">
+      <b style="font-size:12px;flex:1;min-width:0">${esc(p.d.title||'—')}</b>
+      <span style="font-size:10px;color:var(--tx2)">${esc(p.d.level||'—')}${relIds(p,'company')[0]?' · '+esc(nameOf(relIds(p,'company')[0])):''}</span>
+      <span style="background:${pctColor(pc)};color:${pctInk(pc)};border-radius:6px;padding:0 6px;font-weight:800;font-size:11px">${pc.toLocaleString('fa-IR')}٪</span></div>`;
+  });
+  return h+`</div>`;
+}
+function riskdashHTML(){
+  if(!view.rdTab)view.rdTab='ov';
+  const a=rmAll();
+  let h=`<div class="card"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <b style="font-size:14px">🤨 مدیریت ریسک بر پایه ISO 31000:2018</b>
+    <span style="font-size:10.5px;color:var(--tx2)">اصول (بند ۴) → چارچوب (بند ۵) → فرآیند (بند ۶) — آبشاری از هلدینگ تا نفر</span></div>`;
+  h+=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px">`;
+  RM_TABS.forEach(([k,n])=>{h+=`<button class="btn ${view.rdTab===k?'':'gh'} sm" onclick="view.rdTab='${k}';render()">${n}</button>`;});
+  h+=`</div>`+rmFilters();
+  if(!byE('risk').length)h+=`<div class="empty">هنوز ریسکی ثبت نشده — از منوی «مدیریت ریسک» شروع کنید</div>`;
+  else if(view.rdTab==='mx')h+=rmMatrix(a);
+  else if(view.rdTab==='casc')h+=rmCascade(a);
+  else if(view.rdTab==='lvl')h+=rmLevels(a);
+  else if(view.rdTab==='strat')h+=rmStrat(a);
+  else if(view.rdTab==='proc')h+=rmProcPanel(a);
+  else if(view.rdTab==='frame')h+=rmFramePanel();
+  else h+=rmOverview(a);
+  return h+`</div>`;
+}
 function procmapHTML(){
   const targets=[{id:'_h',t:'🏦 کل هلدینگ'},
     ...byE('business').map(b=>({id:'b:'+b.id,t:'🧢 '+bizPath(b.id)})),
