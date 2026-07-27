@@ -273,11 +273,11 @@ tbody tr{cursor:pointer} tbody tr:hover{background:var(--bg3)}
     <button class="btn big" id="l_go" onclick="doLogin()">ورود</button>
     <div class="quote">«آنچه را که نتوان اندازه گرفت، نمی‌توان مدیریت کرد.»<br><span style="font-size:11px">— پیتر دراکر</span></div>
   </div>
-  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.66</span></div>
+  <div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.70</span></div>
 </div>
 
 <div id="app">
-  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.66</span></div></aside>
+  <aside id="side"><div class="logo"><span class="lgo" style="width:26px;height:26px;border-radius:8px;font-size:14px;margin:0">M</span> Maalinex</div><nav id="nav"></nav><div class="credit"><span class="cr-ic">🏛️</span> معماری و طراحی: <b>علی خلج</b><br><span style="opacity:.6;font-size:10px;display:block;margin-top:3px">نسخه 2.70</span></div></aside>
   <div id="main">
     <div id="top">
       <button id="burger" onclick="document.getElementById('side').classList.toggle('open')">☰</button>
@@ -500,6 +500,11 @@ project:{ic:'🏗️',n:'پروژه‌ها',grp:'سازمان',f:[
  {k:'procure',n:'برنامه تدارکات',t:LNG},
  {k:'dep',n:'⛓ وابسته به پروژه‌های',t:REL,r:'project'},
  {k:'pm',n:'مدیر پروژه',t:REL,r:'hr',s:1},
+ {k:'members',n:'👥 اعضای تیم پروژه',t:REL,r:'hr'},
+ {k:'contrib',n:'✍️ مجاز به ثبت گزارش',t:REL,r:'hr'},
+ {k:'watch',n:'👁 ناظران (فقط مشاهده)',t:REL,r:'hr'},
+ {k:'access',n:'🔓 دامنه دسترسی',t:SEL,o:['باز برای سازمان','فقط تیم پروژه']},
+ {k:'sec',n:'🔒 محرمانگی',t:SEL,o:['عادی','محرمانه','خیلی محرمانه']},
  {k:'objective',n:'هدف استراتژیک',t:REL,r:'bsc'},
  {k:'strategy',n:'استراتژی مرتبط',t:REL,r:'bsc'},
  {k:'business',n:'کسب‌وکار مرتبط',t:REL,r:'business'},
@@ -508,6 +513,22 @@ project:{ic:'🏗️',n:'پروژه‌ها',grp:'سازمان',f:[
  {k:'crm',n:'مشتریان و ذینفعان',t:REL,r:'crm'},
  {k:'parent',n:'پروژه والد',t:REL,r:'project',s:1}],
  cols:['title','status','prio','pm','objective'],prog:'projectProg'},
+pupdate:{ic:'🗞️',n:'گزارش‌های کار و جلسه',grp:'سازمان',f:[
+ {k:'title',n:'عنوان گزارش',t:TXT},
+ {k:'kind',n:'نوع گزارش',t:SEL,o:['گزارش جلسه','گزارش پیشرفت','مسئله / ریسک','تصمیم','درخواست همکاری']},
+ {k:'date',n:'تاریخ و ساعت',t:DAT},
+ {k:'author',n:'✍️ ثبت‌کننده',t:REL,r:'hr',s:1},
+ {k:'project',n:'🏗️ پروژه مرتبط',t:REL,r:'project',s:1},
+ {k:'meeting',n:'🗃️ جلسه مرتبط',t:REL,r:'meeting',s:1},
+ {k:'task',n:'📘 تسک مرتبط',t:REL,r:'task',s:1},
+ {k:'body',n:'متن گزارش / مشروح مذاکرات',t:LNG},
+ {k:'next',n:'اقدام بعدی',t:LNG},
+ {k:'hours',n:'زمان صرف‌شده (ساعت)',t:NUM},
+ {k:'to',n:'📨 ارجاع به',t:REL,r:'hr'},
+ {k:'ack',n:'وضعیت بررسی',t:SEL,o:['در انتظار بررسی','بررسی شد','نیاز به اصلاح']},
+ {k:'sec',n:'🔒 محرمانگی',t:SEL,o:['عادی','محرمانه','خیلی محرمانه']},
+ {k:'att',n:'پیوست',t:FIL}],
+ cols:['title','kind','date','author','project','ack']},
 task:{ic:'📘',n:'تسک‌ها',grp:'سازمان',f:[
  {k:'title',n:'عنوان تسک',t:TXT},
  {k:'status',n:'وضعیت',t:STA,o:STATUS},
@@ -516,6 +537,7 @@ task:{ic:'📘',n:'تسک‌ها',grp:'سازمان',f:[
  {k:'due',n:'تاریخ و ساعت ددلاین',t:DAT},{k:'est',n:'تخمین زمان (ساعت)',t:NUM},
  {k:'dep',n:'⛓ وابسته به تسک‌های',t:REL,r:'task'},
  {k:'owner',n:'مسئول',t:REL,r:'hr',s:1},
+ {k:'helpers',n:'🤝 همکاران تسک',t:REL,r:'hr'},
  {k:'project',n:'پروژه (ستادی/غیر EPCF)',t:REL,r:'project',s:1},
  {k:'eproject',n:'🏗️ پروژه EPCF',t:REL,r:'eproject',s:1},
  {k:'ewbs',n:'🧱 بسته کاری (WBS)',t:REL,r:'ewbs',s:1},
@@ -605,6 +627,10 @@ meeting:{ic:'🗃️',n:'جلسات',grp:'سازمان',f:[
  {k:'date',n:'تاریخ و ساعت',t:DAT},
  {k:'internal',n:'حاضرین داخلی',t:REL,r:'hr'},
  {k:'external',n:'حاضرین بیرونی',t:REL,r:'crm'},
+ {k:'recorder',n:'✍️ گزارش‌دهنده جلسه',t:REL,r:'hr',s:1},
+ {k:'minutes',n:'📝 صورت‌جلسه',t:LNG},
+ {k:'decisions',n:'✅ تصمیمات و مصوبات',t:LNG},
+ {k:'sec',n:'🔒 محرمانگی',t:SEL,o:['عادی','محرمانه','خیلی محرمانه']},
  {k:'project',n:'پروژه مرتبط',t:REL,r:'project'},
  {k:'company',n:'شرکت مرتبط',t:REL,r:'company'}],
  cols:['title','kind','status','date']},
@@ -875,6 +901,7 @@ sale:{ic:'🛒',n:'فروش سریع (تک‌کالا)',grp:'مدیریت کسب
  {k:'title',n:'شرح فروش / شماره فاکتور',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'wh',n:'🏬 انبار خروج',t:REL,r:'whouse',s:1},
  {k:'qty',n:'تعداد',t:NUM},{k:'price',n:'قیمت واحد (تومان)',t:NUM},
  {k:'extra',n:'هزینه‌های جانبی (حمل و…)',t:NUM},
  {k:'customer',n:'مشتری',t:REL,r:'customer',s:1},
@@ -889,6 +916,7 @@ purchase:{ic:'🚚',n:'خرید سریع (تک‌کالا)',grp:'مدیریت ک
  {k:'title',n:'شرح خرید',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'wh',n:'🏬 انبار ورود',t:REL,r:'whouse',s:1},
  {k:'qty',n:'تعداد',t:NUM},{k:'price',n:'قیمت واحد',t:NUM},
  {k:'cur',n:'💱 ارز خرید',t:SEL,o:['تومان','ریال','دلار','یورو','درهم']},
  {k:'fx',n:'نرخ تسعیر واحد به تومان (اختیاری)',t:NUM},
@@ -915,6 +943,7 @@ invoice:{ic:'🧾',n:'فاکتور و پیش‌فاکتور',grp:'مدیریت �
  {k:'seller',n:'👤 فروشنده / فرد (تارگت و عملکرد)',t:REL,r:'hr',s:1},
  {k:'orgu',n:'🧩 واحد / تیم (تارگت و عملکرد)',t:REL,r:'orgunit',s:1},
  {k:'kind',n:'نوع سند',t:SEL,o:['فاکتور فروش','پیش‌فاکتور']},
+ {k:'wh',n:'🏬 انبار خروج کالا',t:REL,r:'whouse',s:1},
  {k:'status',n:'وضعیت',t:SEL,o:['پیش‌نویس','صادر شده','تسویه شده','باطل']},
  {k:'date',n:'تاریخ صدور',t:DAT},
  {k:'due',n:'تاریخ سررسید',t:DAT},
@@ -1578,14 +1607,49 @@ widdef:{ic:'🧱',n:'ویجت داشبرد',grp:'مدیریت کسب و کار',
  {k:'size',n:'اندازه',t:SEL,o:['کوچک','متوسط','بزرگ']},
  {k:'ord',n:'ترتیب (عدد کوچکتر جلوتر)',t:NUM}],
  cols:['title','dash','wtype','src']},
-waste:{ic:'🗑',n:'ضایعات کالا',grp:'مدیریت کسب و کار',f:[
- {k:'title',n:'شرح (مثل: خرابی ۵ گوشی در انبار)',t:TXT},
+whouse:{ic:'🏬',n:'انبارها',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'نام انبار',t:TXT},
  {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
- {k:'kind',n:'نوع رویداد',t:SEL,o:['ثبت ضایعات (خروج از انبار)','فروش/بازیافت ضایعات']},
+ {k:'code',n:'کد انبار',t:TXT},
+ {k:'kind',n:'نوع انبار',t:SEL,o:['انبار اصلی','فروشگاه/شعبه','انبار امانی','انبار مرجوعی','انبار قرنطینه','سایر']},
+ {k:'main',n:'انبار پیش‌فرض این کسب‌وکار',t:CHK},
+ {k:'keeper',n:'انباردار',t:REL,r:'hr',s:1},
+ {k:'addr',n:'آدرس / محل',t:TXT},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','biz','kind','code'],comp:'whouseBrief'},
+whmove:{ic:'🔀',n:'انتقال بین انبارها',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'شرح انتقال',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
  {k:'product',n:'کالا',t:REL,r:'product',s:1},
  {k:'qty',n:'تعداد',t:NUM},
+ {k:'from',n:'از انبار',t:REL,r:'whouse',s:1},
+ {k:'to',n:'به انبار',t:REL,r:'whouse',s:1},
+ {k:'status',n:'وضعیت',t:SEL,o:['در راه','تحویل شد']},
+ {k:'date',n:'تاریخ ارسال',t:DAT},
+ {k:'recvdate',n:'تاریخ تحویل',t:DAT},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','product','qty','from','to','status'],comp:'whmoveBrief'},
+whcount:{ic:'📋',n:'انبارگردانی (شمارش)',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'شرح شمارش',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'wh',n:'انبار',t:REL,r:'whouse',s:1},
+ {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'counted',n:'تعداد شمارش‌شده',t:NUM},
+ {k:'date',n:'تاریخ شمارش',t:DAT},
+ {k:'applied',n:'اعمال شد (سند اصلاح صادر شده)',t:CHK},
+ {k:'note',n:'توضیح',t:LNG}],
+ cols:['title','wh','product','counted','applied'],comp:'whcountBrief'},
+waste:{ic:'🗑',n:'ضایعات و خروج از انبار',grp:'مدیریت کسب و کار',f:[
+ {k:'title',n:'شرح (مثل: خرابی ۵ گوشی در انبار، هدیه به مشتری)',t:TXT},
+ {k:'biz',n:'کسب‌وکار',t:REL,r:'business',s:1},
+ {k:'kind',n:'نوع رویداد',t:SEL,o:['ثبت ضایعات (خروج از انبار)','خروج بدون فروش (هدیه/نمونه/مصرف داخلی)','فروش/بازیافت ضایعات']},
+ {k:'product',n:'کالا',t:REL,r:'product',s:1},
+ {k:'wh',n:'🏬 انبار',t:REL,r:'whouse',s:1},
+ {k:'qty',n:'تعداد',t:NUM},
  {k:'recover',n:'مبلغ فروش/بازیافت (تومان) — فقط برای نوع فروش',t:NUM},
- {k:'reason',n:'علت',t:SEL,o:['خرابی/آسیب فیزیکی','شکستگی','آب‌دیدگی','انقضا','افت کیفیت','سرقت/مفقودی','سایر']},
+ {k:'reason',n:'علت (برای ضایعات)',t:SEL,o:['خرابی/آسیب فیزیکی','شکستگی','آب‌دیدگی','انقضا','افت کیفیت','سرقت/مفقودی','سایر']},
+ {k:'outuse',n:'🎁 مصرف (برای خروج بدون فروش)',t:SEL,o:['هدیه به مشتری','نمونه بازاریابی/تستر','مصرف داخلی','جایزه/پاداش کارکنان','اهدا/خیریه','گارانتی و جبران خسارت','سایر']},
+ {k:'to',n:'دریافت‌کننده / مقصد (اختیاری)',t:TXT},
  {k:'date',n:'تاریخ',t:DAT},
  {k:'note',n:'توضیح',t:LNG}],
  cols:['title','kind','product','qty','date'],comp:'wasteBrief'},
@@ -2255,8 +2319,8 @@ function _patchCaches(old,rec){
 let _scoping=false;
 /* 🐎 ایندکس رکوردها بر اساس نوع — یک‌بار ساخته می‌شود و در هر رندر تازه می‌شود (سرعت روی داده‌ی حجیم) */
 let _byRaw=null;
-function invalidateByE(){_byRaw=null;_invLineIdx=null;_pinvLineIdx=null;_prodSaleIdx=null;_prodPurchIdx=null;_prodWasteIdx=null;_ceoLineCache=null;_fifoCache=null;_ceoDayCache=null;}
-let _fifoCache=null,_ceoDayCache=null;
+function invalidateByE(){_byRaw=null;_whQtyCache=null;_hridCache=null;_invLineIdx=null;_pinvLineIdx=null;_prodSaleIdx=null;_prodPurchIdx=null;_prodWasteIdx=null;_ceoLineCache=null;_fifoCache=null;_ceoDayCache=null;}
+let _fifoCache=null,_ceoDayCache=null,_whQtyCache=null;
 /* 🐎 ایندکس فروش/خرید به تفکیک کالا — رفع O(n²) در stockNow/fifoCalc روی داده حجیم */
 let _prodSaleIdx=null,_prodPurchIdx=null,_ceoLineCache=null;
 function salesOf(pid){
@@ -2268,16 +2332,23 @@ function purchasesOf(pid){
   return _prodPurchIdx[pid]||[];
 }
 let _prodWasteIdx=null;
-function wasteOf(pid){ // فقط «ثبت ضایعات (خروج)» — خروج از انبار
-  if(!_prodWasteIdx){_prodWasteIdx={};byE('waste').forEach(x=>{if((x.d.kind||'').indexOf('ثبت ضایعات')<0)return;const p=relIds(x,'product')[0];if(p)(_prodWasteIdx[p]||(_prodWasteIdx[p]=[])).push(x);});}
+function wIsGift(r){return (r.d.kind||'').indexOf('خروج بدون فروش')>=0;}
+function wIsOut(r){const k=r.d.kind||'';return k.indexOf('ثبت ضایعات')>=0||k.indexOf('خروج بدون فروش')>=0;}
+window.wIsGift=wIsGift;window.wIsOut=wIsOut;
+function wasteOf(pid){ // همهٔ خروج‌های غیرفروشی: ضایعات + هدیه/نمونه/مصرف داخلی
+  if(!_prodWasteIdx){_prodWasteIdx={};byE('waste').forEach(x=>{if(!wIsOut(x))return;const p=relIds(x,'product')[0];if(p)(_prodWasteIdx[p]||(_prodWasteIdx[p]=[])).push(x);});}
   return _prodWasteIdx[pid]||[];
 }
 function wasteQtyOf(pid){return wasteOf(pid).reduce((a,x)=>a+(+x.d.qty||0),0);}
 function _rebuildByRaw(){_byRaw={};for(const id in recs){const r=recs[id];if(!r||r.del||!r.e)continue;if(!r.d||typeof r.d!=='object')r.d={};(_byRaw[r.e]||(_byRaw[r.e]=[])).push(r);}}
 function byE(e){
   if(!_byRaw)_rebuildByRaw();
-  const rows=_byRaw[e]||[];
+  let rows=_byRaw[e]||[];
   if(_scoping)return rows; // جلوگیری از بازگشت بی‌نهایت هنگام محاسبه محدوده
+  if(session&&SEC_ENTS[e]&&!_secing){ // 🔒 دروازه محرمانگی — پیش از محدوده داده
+    _secing=true;
+    try{rows=rows.filter(secOK);}finally{_secing=false;}
+  }
   const s=myScope();if(!s)return rows;
   _scoping=true;
   try{return rows.filter(inMyScope);}finally{_scoping=false;}
@@ -2292,6 +2363,19 @@ function menuCount(e){ // عدد کنار منو: با کسب‌وکار/شرک�
   if(gBiz()&&e!=='business'){const bf=(def.f||[]).find(f=>f.t===REL&&f.r==='business');
     if(bf)rows=rows.filter(r=>{const ids=relIds(r,bf.k);return !ids.length||ids.includes(gBiz());});}
   return rows.length;}
+/* 🧾 گزارش فاکتور فروش و 📝 پیش‌فاکتور — دو ردیف جدا در منوی فروش */
+const INV_KIND_SALE='فاکتور فروش',INV_KIND_PROF='پیش‌فاکتور';
+function invKindRows(kind){ // شمارش هم‌راستا با فیلتر شرکت/کسب‌وکار فعال
+  let rows=visE('invoice');const def=E['invoice'];
+  if(gCo()){const cf=(def.f||[]).find(f=>f.t===REL&&f.r==='company');
+    if(cf)rows=rows.filter(r=>{const ids=relIds(r,cf.k);return !ids.length||ids.includes(gCo());});}
+  if(gBiz()){const bf=(def.f||[]).find(f=>f.t===REL&&f.r==='business');
+    if(bf)rows=rows.filter(r=>{const ids=relIds(r,bf.k);return !ids.length||ids.includes(gBiz());});}
+  return rows.filter(r=>kind===INV_KIND_PROF?(r.d.kind===INV_KIND_PROF):(r.d.kind!==INV_KIND_PROF));
+}
+function invKindCount(kind){return invKindRows(kind).length;}
+function invGo(kind){go('list','invoice');view.ikind=kind;view.page=0;render();}
+window.invGo=invGo;window.invKindCount=invKindCount;
 function get(id){return recs[id];}
 function nameOf(id){const r=recs[id];return r&&!r.del?(r.d.title||'—'):'—';}
 function unitPath(id,sep){ // مسیر کامل واحد: «شرکت › والد › … › واحد» برای رفع ابهام واحدهای هم‌نام
@@ -2406,6 +2490,14 @@ async function pullAll(full){
       await pullMeta();
       setSync('err','⚠️ سرور داده‌ای برنگرداند — کش محلی حفظ شد. اگر ادامه داشت، «🔄 بررسی مجدد (کامل)» را بزنید یا دسترسی سرور را بررسی کنید.');
       render();return;
+    }
+    // 🛟 کاربر تاییدشده‌ای که هیچ داده‌ای نمی‌گیرد (کش محلی هم خالی): تقریباً همیشه یعنی
+    // فایل امنیتی (maalinex-security.sql) نسخه‌ی قدیمی است و سیاست خواندن سرور، رکوردهای
+    // ساخته‌ی دیگران را رد می‌کند. به‌جای نمایش خاموشِ «همه‌چیز صفر»، صریح هشدار می‌دهیم.
+    if(freshData===0 && !isPending()){
+      recs=fresh;invalidateByE();await pullMeta();
+      setSync('err','⚠️ حساب شما تایید شده اما سرور هیچ رکوردی برنگرداند — ادمین باید آخرین نسخه‌ی فایل «maalinex-security.sql» را در Supabase اجرا کند.');
+      saveLocal();render();return;
     }
     recs=fresh;invalidateByE();
   }
@@ -2561,6 +2653,61 @@ function domsOf(id,seen){ // مجموعه دامنه‌های سازمانی ی�
   });
   return out;
 }
+/* ================= 🔒 محرمانگی رکورد و همکاری تیمی =================
+   مستقل از «محدوده داده» کار می‌کند. قاعده:
+   • عادی            → همه (در چارچوب محدوده داده و سطح دسترسی)
+   • فقط تیم پروژه   → مدیر/بالاتر + هرکس که در رکورد به او ارجاع شده + سازنده رکورد
+   • محرمانه         → ادمین، مدیرارشد، مدیر + ارجاع‌شدگان + سازنده
+   • خیلی محرمانه    → ادمین، مدیرارشد + ارجاع‌شدگان + سازنده
+   ارث‌بری: گزارش/جلسه/تسکِ یک پروژه‌ی محرمانه، خودش هم محرمانه می‌شود. */
+const SEC_ENTS={project:1,pupdate:1,meeting:1,letter:1,task:1};
+const SEC_HIGH={'ادمین':1,'مدیرارشد':1};
+const SEC_MID={'ادمین':1,'مدیرارشد':1,'مدیر':1};
+let _secing=false;
+function secLinkedToMe(r){ // آیا رکورد از طریق یکی از فیلدهای «نفر» به خود کاربر وصل است؟
+  const ids=myHRids(); if(!ids.size)return false;
+  const fs=(E[r.e]&&E[r.e].f)||[];
+  for(const f of fs){if(f.t===REL&&f.r==='hr'&&relIds(r,f.k).some(x=>ids.has(x)))return true;}
+  return false;
+}
+function secSelf(r){ // دروازه‌ی خودِ رکورد (بدون ارث‌بری)
+  if(!r||!r.d)return true;
+  const lvl=r.d.sec||'عادی', teamOnly=(r.d.access==='فقط تیم پروژه');
+  if(lvl==='عادی'&&!teamOnly)return true;
+  if(isAdmin())return true;
+  if(r.d._by&&r.d._by===myEmail())return true;
+  if(secLinkedToMe(r))return true;
+  const role=myRole();
+  if(lvl==='خیلی محرمانه')return !!SEC_HIGH[role];
+  return !!SEC_MID[role]; // «محرمانه» یا «فقط تیم پروژه»
+}
+function secInherit(r){ // ارث‌بری محرمانگی از پروژه‌ی مرتبط (برای غیرِ پروژه)
+  if(r.e==='project')return true;
+  const fs=(E[r.e]&&E[r.e].f)||[];
+  for(const f of fs){
+    if(f.t!==REL||f.r!=='project')continue;
+    for(const pid of relIds(r,f.k)){
+      const p=recs[pid]; if(!p||p.del)continue;
+      if(!secSelf(p))return false;
+    }
+  }
+  return true;
+}
+function secOK(r){
+  if(!session)return true;            // حالت محلی تک‌کاربره
+  if(!r||!r.e||!SEC_ENTS[r.e])return true;
+  if(isAdmin())return true;
+  return secSelf(r)&&secInherit(r);
+}
+/* 🤝 «کارهای من» — رکوردهایی که کاربر جاری در آن‌ها نقش دارد */
+function iAmIn(r){
+  const ids=myHRids();
+  if(ids.size){
+    const fs=(E[r.e]&&E[r.e].f)||[];
+    for(const f of fs){if(f.t===REL&&f.r==='hr'&&relIds(r,f.k).some(x=>ids.has(x)))return true;}
+  }
+  return !!(r.d&&r.d._by&&r.d._by===myEmail());
+}
 function myScope(){ // تنظیم محدوده داده کاربر جاری (null = بدون محدودیت)
   if(!session||isAdmin()||isPending())return null;
   const s=aclFor().scope;
@@ -2586,6 +2733,7 @@ function inMyScope(r){
 /* صفحات و ابزارهای ویژه که ادمین می‌تواند مخفی کند */
 const VIEWS_ACL=[
  ['me','🗂️ میز کار من'],
+ ['myhub','🤝 کارهای من و همکاری تیمی'],
  ['dash','🎛️ اتاق کنترل (بخش سازمانی داخل میز کار)'],
  ['dash_stats','🎛️ ↳ کارت‌های آماری سازمان'],
  ['dash_equity','🎛️ ↳ دارایی و سرمایه هلدینگ'],
@@ -2597,6 +2745,7 @@ const VIEWS_ACL=[
  ['gdash_charts','✨ ↳ نمودارهای رشد'],
  ['gdash_plans','✨ ↳ برنامه‌های پیش رو'],
  ['bizdash','🏪 داشبورد کسب‌وکار'],
+ ['whdash','📦 داشبورد انبار'],
  ['findash','💼 داشبورد مالی تخصصی'],
  ['invdash','💎 داشبورد سرمایه‌گذاری'],
  ['cfaacad','🎓 آموزش و کاربرد CFA'],
@@ -2636,7 +2785,7 @@ const MODULES=[
  {id:'M12',n:'سرمایه‌گذاری و ثروت',ents:['valuation','feasproj','position','cfastudy','dataseries'],views:['invdash']},
  {id:'M14',n:'استراتژی، فرآیندها و تعالی',ents:['bsc','measure','efqm','swot','process','procstep'],views:['stratdash','swotmap','bscmap','bsccanvas','procmap']},
  {id:'M07',n:'فروش و فاکتور',ents:['invoice','invline','saletarget','settle','expense','pbudget','plmonth','gateway','pfsettle','kpival','ctrlval','mdef','mval','dashdef','widdef','waste'],views:['salesdash','invnew','targetdash','settlenew','arapdash','cashdash','plreport','ceodash','mbuilder','mydash','pfdash']},
- {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline'],views:['bizdash','pinvnew']},
+ {id:'M15',n:'کسب‌وکار ویژه (کالا / فروش)',ents:['product','sale','purchase','channel','purchinv','purchline','whouse','whmove','whcount'],views:['bizdash','pinvnew']},
  {id:'M17',n:'EPCF (طراحی│خرید│اجرا│تامین مالی)',ents:['eproject','ewbs','edoc','emr','econtract','eprog','esite','ehse','eclaim','einv','efin'],views:['epcfdash','portdash']},
  {id:'M18',n:'ساخت و ساز (پروژه ساختمانی)',ents:['cblock','cboq','csub','csubinv','cmat','cquote','clabor','cmach','cpetty'],views:['cdash']},
  {id:'M19',n:'توکن‌سازی پروژه (Tokenization)',ents:['token','tokenholder','tokentx','tokenloan','tokenins'],views:['tokendash']},
@@ -2876,11 +3025,14 @@ function myHR(){
   // ۲) تطبیق ایمیل پرونده HR
   return byE('hr').find(h=>(h.d.email||'').toLowerCase()===em)||null;
 }
+var _hridCache=null,_hridKey='';
 function myHRids(){ // همه پرونده‌های HR متعلق به کاربر جاری (اتصال صریح + همه تطبیق‌های ایمیل)
   const em=myEmail().toLowerCase(), ids=new Set();
+  if(_hridCache&&_hridKey===em&&_byRaw)return _hridCache; // 🐎 کش — دروازه محرمانگی این را برای هر رکورد صدا می‌زند
   const u=usersList().find(x=>x.email&&x.email.toLowerCase()===em);
   if(u&&u.hr&&recs[u.hr]&&!recs[u.hr].del)ids.add(u.hr);
   byE('hr').forEach(h=>{if((h.d.email||'').toLowerCase()===em)ids.add(h.id);});
+  _hridCache=ids;_hridKey=em;
   return ids;
 }
 function setUserHR(i,hrId){
@@ -2951,12 +3103,13 @@ function impcenterHTML(){
     ${log.length?`<div class="tblwrap" style="max-height:180px;overflow:auto;margin-top:6px"><table><tbody>${log.map(l=>`<tr><td style="text-align:right;font-size:11px">${esc(l)}</td></tr>`).join('')}</tbody></table></div>`:''}
     </div>`;
   }
+  h+=srchBox('impc','🔍 جستجوی بخش برای گرفتن قالب یا بارگذاری…','— گروه‌های بی‌نتیجه موقتاً پنهان می‌شوند');
   allGroups().forEach(g=>{
     const ents=Object.entries(E).filter(([k,v])=>v.grp===g&&!v.sub&&can('c',k)&&impFields(k).length&&k!=='plmonth');
     if(!ents.length)return;
-    h+=`<div class="sec"><h3>${esc(grpLabel(g))}</h3><div class="tblwrap"><table><tbody>`;
+    h+=`<div class="sec" data-srsec="impc"><h3>${esc(grpLabel(g))}</h3><div class="tblwrap"><table><tbody>`;
     ents.forEach(([k,v])=>{
-      h+=`<tr><td style="text-align:right">${v.ic} ${esc(v.n)} <span style="color:var(--tx2);font-size:11px">(${byE(k).length.toLocaleString('fa-IR')})</span></td>
+      h+=`<tr data-sr="impc" data-srt="${esc(v.n+' '+k+' '+grpLabel(g))}"><td style="text-align:right">${v.ic} ${esc(v.n)} <span style="color:var(--tx2);font-size:11px">(${byE(k).length.toLocaleString('fa-IR')})</span></td>
         <td style="white-space:nowrap;text-align:left">
           <button class="btn gh sm" onclick="impTemplate('${k}')">⬇️ قالب</button>
           <button class="btn sm" onclick="impOpen('${k}')">📂 بارگذاری</button></td></tr>`;
@@ -3139,13 +3292,15 @@ function impParse(arr){
     ${(()=>{const dp=ok.filter(r=>r.dup&&!r.existing).length;return dp?`<span style="color:var(--warn)">⏭ ${dp.toLocaleString('fa-IR')} ردیف تکراری (رد می‌شوند)</span>`:'';})()}
     ${unknown.length?`<span style="color:var(--warn)">ستون‌های ناشناخته (نادیده گرفته شد): ${unknown.map(esc).join('، ')}</span>`:''}
   </div>
+  ${out.length>=8?srchBox('impp','🔍 جستجو در ردیف‌های این فایل…'):''}
   <div class="tblwrap" style="max-height:300px;overflow:auto"><table><thead><tr><th>ردیف فایل</th><th>عنوان</th><th>وضعیت</th></tr></thead><tbody>`;
   out.slice(0,200).forEach(r=>{
-    h+=`<tr><td>${r.n.toLocaleString('fa-IR')}</td><td>${esc(r.d.title||'—')}</td>
+    h+=`<tr data-sr="impp" data-srt="${esc(r.n+' '+(r.d.title||'')+' '+r.errs.join(' '))}"><td>${r.n.toLocaleString('fa-IR')}</td><td>${esc(r.d.title||'—')}</td>
       <td style="white-space:normal">${r.errs.length?'<span class="imp-bad">⚠️ '+r.errs.map(esc).join(' │ ')+'</span>':(r.dup&&!r.existing?'<span style="color:var(--warn)">⏭ تکراری با رکورد موجود (همان دوره/مبلغ) — وارد نمی‌شود</span>':(r.existing?'<span style="color:var(--warn)">🔁 هم‌نام موجود — '+(document.getElementById('imp_upsert').checked?'به‌روزرسانی می‌شود':'رکورد جدید ساخته می‌شود')+'</span>':'<span class="imp-ok">✅ جدید</span>'))}</td></tr>`;
   });
   h+=`</tbody></table></div>${out.length>200?'<div style="font-size:11px;color:var(--tx2);margin-top:4px">… و '+(out.length-200).toLocaleString('fa-IR')+' ردیف دیگر</div>':''}`;
   prev.innerHTML=h;
+  try{srchApplyAll();}catch(e){}
   document.getElementById('imp_go').disabled=!impState.valid.length;
   document.getElementById('imp_go').textContent='ثبت نهایی '+impState.valid.length.toLocaleString('fa-IR')+' ردیف';
 }
@@ -3761,9 +3916,11 @@ function productStat(p){
 }
 window.saleTotal=saleTotal;window.purchTotal=purchTotal;window.productStat=productStat;
 function wasteBrief(r){const pid=relIds(r,'product')[0];const p=pid&&recs[pid];const q=+r.d.qty||0;
-  const isSale=(r.d.kind||'').indexOf('فروش')>=0;
+  const isSale=(r.d.kind||'').indexOf('فروش/بازیافت')>=0;
   if(isSale)return {label:'بازیافت',v:'💵 '+money(+r.d.recover||0)+(p?' ('+esc(p.d.title)+')':''),bad:false};
   const cost=p?q*(+p.d.buy||0):0;
+  if(wIsGift(r))return {label:'خروج بدون فروش │ بهای کالا',
+    v:'🎁 '+q.toLocaleString('fa-IR')+' عدد │ '+money(cost)+(r.d.outuse?' — '+esc(r.d.outuse):'')+(p?' — '+esc(p.d.title):''),bad:false};
   return {label:'تعداد │ ضرر (خرید)',v:q.toLocaleString('fa-IR')+' عدد │ '+money(cost)+(p?' — '+esc(p.d.title):''),bad:true};}
 window.wasteBrief=wasteBrief;
 /* ===== 🧾 موتور فاکتور فروش (M07) ===== */
@@ -4136,7 +4293,8 @@ function postInvoice(id,silent){
   if(cfg.stock){
     lines.forEach(l=>{const pid=relIds(l,'product')[0];if(!pid)return;
       const sid=uid();saleIds.push(sid);
-      put({id:sid,e:'sale',d:{title:(inv.d.title||'فاکتور')+' — '+((recs[pid]&&recs[pid].d.title)||''),biz:bz,product:[pid],
+      const _wh=relIds(l,'wh').length?relIds(l,'wh'):relIds(inv,'wh'); // 🏬 انبار خروج کالا
+      put({id:sid,e:'sale',d:{title:(inv.d.title||'فاکتور')+' — '+((recs[pid]&&recs[pid].d.title)||''),biz:bz,product:[pid],wh:_wh,
         qty:l.d.qty||0,price:l.d.price||0,kind:c.due>0?'اعتباری':'نقدی',settled:c.due<=0,date:dt,_inv:id},u:Date.now()});
     });
   }
@@ -6203,7 +6361,8 @@ function mydTplApply(k){
 window.mydTplApply=mydTplApply;
 function wasteNew(kind){
   if(!can('c','waste')){alert('اجازه ثبت ندارید');return;}
-  const d={kind:kind==='sale'?'فروش/بازیافت ضایعات':'ثبت ضایعات (خروج از انبار)',date:{s:today()}};
+  const d={kind:kind==='sale'?'فروش/بازیافت ضایعات':kind==='gift'?'خروج بدون فروش (هدیه/نمونه/مصرف داخلی)':'ثبت ضایعات (خروج از انبار)',date:{s:today()}};
+  if(kind==='gift')d.outuse='هدیه به مشتری';
   if(gBiz())d.biz=[gBiz()];
   openRec('waste',null,null);
   if(cur){cur.d=Object.assign(cur.d,d);drawModal();}
@@ -6963,6 +7122,14 @@ function quickaddHTML(){
 window.qkSetOp=qkSetOp;window.qkField=qkField;window.qkPickProd=qkPickProd;window.qkPickCust=qkPickCust;window.qkPickSupp=qkPickSupp;window.qkSave=qkSave;
 function bizMenuHTML(){
   const ent=k=>canSee(k)?`<div class="nav-i ${view.type==='list'&&view.e===k?'on':''}" onclick="go('list','${k}')">${E[k].ic} ${E[k].n}<span class="c">${menuCount(k).toLocaleString('fa-IR')}</span></div>`:'';
+  const invMenuHTML=()=>{
+    if(!canSee('invoice'))return '';
+    const row=(kind,label,ic)=>{
+      const on=view.type==='list'&&view.e==='invoice'&&view.ikind===kind;
+      return `<div class="nav-i ${on?'on':''}" onclick="invGo('${kind}')">${ic} ${label}<span class="c">${invKindCount(kind).toLocaleString('fa-IR')}</span></div>`;
+    };
+    return row(INV_KIND_SALE,'گزارش فاکتورهای فروش','🧾')+row(INV_KIND_PROF,'گزارش پیش‌فاکتورها','📝');
+  };
   const it=(type,label,onclick,cond)=>cond?`<div class="nav-i ${view.type===type?'on':''}" onclick="${onclick}">${label}</div>`:'';
   const sec=(title,body)=>body?`<div class="nav-sub">${title}</div>${body}`:'';
   let h='';
@@ -6976,7 +7143,7 @@ function bizMenuHTML(){
   // 2️⃣ مدیریت انبار
   h+=sec('📦 مدیریت انبار',
     it('whdash','📦 داشبورد انبار',"go('whdash')",canSee('product')&&canView('whdash'))
-    +ent('product')+ent('waste')+ent('channel'));
+    +ent('product')+ent('whouse')+ent('whmove')+ent('whcount')+ent('waste')+ent('channel'));
   // 3️⃣ مدیریت مشتریان
   h+=sec('🛍️ مدیریت مشتریان',
     it('custdash','🛍️ داشبورد مشتریان',"go('custdash')",canSee('customer')&&canView('custdash'))
@@ -6987,7 +7154,7 @@ function bizMenuHTML(){
     +it('invnew','🧾 صدور فاکتور فروش',"invDraft=null;go('invnew')",canSee('invoice')&&can('c','invoice')&&canView('invnew'))
     +it('plreport','💰 سود و زیان فروش',"go('plreport')",canSee('invoice')&&canView('plreport'))
     +it('targetdash','🎯 پایش تارگت فروش',"go('targetdash')",canSee('saletarget')&&canView('targetdash'))
-    +ent('invoice')+ent('sale')+ent('saletarget'));
+    +invMenuHTML()+ent('sale')+ent('saletarget'));
   // 5️⃣ مدیریت خرید
   h+=sec('🚚 مدیریت خرید',
     it('pudash','🚚 داشبورد مدیریت خرید',"go('pudash')",canSee('purchase')&&canView('pudash'))
@@ -7015,6 +7182,7 @@ function nav(){
   const el=document.getElementById('nav');
   if(isPending()){el.innerHTML='';return;}
   let h=`<div class="nav-i ${view.type==='me'?'on':''}" onclick="go('me')">🗂️ میز کار من</div>`;
+  if(canView('myhub'))h+=`<div class="nav-i ${view.type==='myhub'?'on':''}" onclick="go('myhub')">🤝 کارهای من و همکاری</div>`;
   h+=`
   ${canView('cal')?`<div class="nav-i ${view.type==='cal'?'on':''}" onclick="go('cal')">📅 تقویم</div>`:''}
   ${canView('charts')?`<div class="nav-i ${view.type==='charts'?'on':''}" onclick="go('charts')">📊 نمودارها و شاخص‌ها</div>`:''}
@@ -7093,6 +7261,7 @@ function render(){
   _domCache={}; // کش محدوده داده در هر رندر تازه می‌شود
   // 🐎 کش‌ها بین رندرها زنده می‌مانند؛ فقط put/pull/realtime آن‌ها را نامعتبر می‌کنند
   try{migrateChain();}catch(e){} // تبدیل رکوردهای قدیمی استراتژی/هدف به BSC
+  try{migrateWh();}catch(e){} // 🏬 ساخت انبار پیش‌فرض در اولین اجرا
   try{migrateOrg();}catch(e){} // کسب‌وکار ذیل شرکت
   try{migrateUuidIds();}catch(e){} // idهای غیر uuid → uuid (رفع خطای سینک)
   try{applyBrand();}catch(e){} // نام/لوگو/رنگ سفارشی نسخه
@@ -7119,13 +7288,17 @@ function render(){
   if(view.type==='dash')view={type:'me'}; // اتاق کنترل با میز کار من ادغام شده
   if(view.type==='rec'&&(!recs[view.id]||recs[view.id].del))view={type:'list',e:view.e};
   if(view.type==='rec'&&myScope()&&!inMyScope(recs[view.id]))view={type:'list',e:view.e}; // خارج از محدوده داده کاربر
+  if(view.type==='rec'&&recs[view.id]&&!secOK(recs[view.id]))view={type:'list',e:view.e}; // 🔒 رکورد محرمانه
   document.getElementById('ttl').textContent=
+    (view.type==='list'&&view.e==='invoice'&&view.ikind===INV_KIND_SALE)?'🧾 گزارش فاکتورهای فروش':
+    (view.type==='list'&&view.e==='invoice'&&view.ikind===INV_KIND_PROF)?'📝 گزارش پیش‌فاکتورها':
     view.type==='users'?'👤 کاربران و دسترسی':
     view.type==='acl'?'🛡️ سطوح دسترسی':
     view.type==='schema'?'🧩 فیلدها و بخش‌ها':
     view.type==='impcenter'?'📥 مرکز ورود اکسل':
     view.type==='modcfg'?'🧰 مدیریت محصول':
     view.type==='me'?'🗂️ میز کار من':
+    view.type==='myhub'?'🤝 کارهای من و همکاری تیمی':
     view.type==='gdash'?'✨ داشبورد رشد شخصی':
     view.type==='cal'?'📅 تقویم':
     view.type==='bizdash'?'🏪 داشبورد کسب‌وکار':
@@ -7176,7 +7349,7 @@ function render(){
     view.type==='rec'?(E[view.e].ic+' '+(recs[view.id].d.title||E[view.e].n)):
     E[view.e].ic+' '+E[view.e].n;
   // محافظ صفحات ویژه بر اساس ماتریس دسترسی
-  const VG={me:'me',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',pldash:'pldash',bankdash:'bankdash',finform:'finform',invdash:'invdash',cfaacad:'invdash',procmap:'procmap',riskdash:'riskdash',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',mbuilder:'mbuilder',mydash:'mydash',quickadd:'quickadd',whdash:'whdash',pudash:'pudash',supdash:'supdash',custdash:'custdash',smdash:'smdash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',aligndash:'aligndash',agiledash:'agiledash'};
+  const VG={me:'me',myhub:'myhub',cal:'cal',charts:'charts',gdash:'gdash',bizdash:'bizdash',bscmap:'bscmap',bsccanvas:'bsccanvas',findash:'findash',pldash:'pldash',bankdash:'bankdash',finform:'finform',invdash:'invdash',cfaacad:'invdash',procmap:'procmap',riskdash:'riskdash',gldash:'gldash',glnew:'glnew',salesdash:'salesdash',invnew:'invnew',targetdash:'targetdash',pinvnew:'pinvnew',settlenew:'settlenew',arapdash:'arapdash',cashdash:'cashdash',chqdash:'chqdash',plreport:'plreport',ceodash:'ceodash',mbuilder:'mbuilder',mydash:'mydash',quickadd:'quickadd',whdash:'whdash',pudash:'pudash',supdash:'supdash',custdash:'custdash',smdash:'smdash',pfdash:'pfdash',epcfdash:'epcfdash',cdash:'cdash',portdash:'portdash',tokendash:'tokendash',perfdash:'perfdash',aligndash:'aligndash',agiledash:'agiledash'};
   if(VG[view.type]&&!canView(VG[view.type])){
     c.innerHTML=`<div class="empty">دسترسی شما به این صفحه توسط ادمین محدود شده است</div>`;whoami();return;
   }
@@ -7187,6 +7360,7 @@ function render(){
     else if(view.type==='schema')c.innerHTML=schemaHTML();
     else if(view.type==='impcenter')c.innerHTML=impcenterHTML();
     else if(view.type==='me')c.innerHTML=meHTML();
+    else if(view.type==='myhub')c.innerHTML=myhubHTML();
     else if(view.type==='gdash')c.innerHTML=gdashHTML();
     else if(view.type==='cal')c.innerHTML=calHTML();
     else if(view.type==='bizdash')c.innerHTML=bizdashHTML();
@@ -7254,8 +7428,53 @@ function render(){
     if(!el&&(_foc.oi||_foc.oc)){const cand=document.querySelectorAll('#content input,#content textarea');for(let i=0;i<cand.length;i++){const x=cand[i];if((_foc.oi&&x.getAttribute('oninput')===_foc.oi)||(_foc.oc&&x.getAttribute('onchange')===_foc.oc)){el=x;break;}}}
     if(el&&el.closest('#content')){el.focus();try{if(_foc.ss!=null&&el.setSelectionRange)el.setSelectionRange(_foc.ss,_foc.se);}catch(e){}}}
   }catch(e){}
+  try{srchApplyAll();}catch(e){} // 🔍 اعمال دوبارهٔ جستجوهای درون‌صفحه‌ای پس از رندر
   whoami();
 }
+/* ===== 🔍 موتور جستجوی درون‌صفحه‌ای — فیلتر DOM، بدون render() ===== */
+const _srchQ={};
+function srchNorm(x){return String(x==null?'':x)
+  .replace(/[يى]/g,'ی').replace(/ك/g,'ک')
+  .replace(/[‌‎‏]/g,' ')
+  .replace(/[۰-۹]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x06F0+48))
+  .replace(/[٠-٩]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x0660+48))
+  .replace(/\s+/g,' ').trim().toLowerCase();}
+function srchBox(id,ph,hint){
+  const v=_srchQ[id]||'';
+  return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:9px">
+    <input data-search="srch_${id}" id="srch_${id}" value="${esc(v)}" placeholder="${esc(ph||'🔍 جستجو…')}"
+      oninput="srchRun('${id}')" onkeydown="if(event.key==='Escape'){srchClear('${id}');}" style="flex:1;min-width:190px;max-width:340px">
+    <span id="srchc_${id}" style="font-size:11px;color:var(--tx2)"></span>
+    ${v?`<button class="btn gh sm" onclick="srchClear('${id}')">✕ پاک‌کردن</button>`:''}
+    ${hint?`<span style="font-size:10.5px;color:var(--tx2)">${esc(hint)}</span>`:''}</div>`;
+}
+function srchRun(id){
+  const inp=document.getElementById('srch_'+id);
+  const q=inp?inp.value:(_srchQ[id]||'');
+  _srchQ[id]=q;
+  const toks=srchNorm(q).split(' ').filter(Boolean);
+  const rows=document.querySelectorAll('[data-sr="'+id+'"]');
+  let vis=0;
+  rows.forEach(r=>{
+    const t=srchNorm(r.getAttribute('data-srt')||r.textContent||'');
+    const ok=!toks.length||toks.every(x=>t.indexOf(x)>=0);
+    r.style.display=ok?'':'none'; if(ok)vis++;
+  });
+  document.querySelectorAll('[data-srsec="'+id+'"]').forEach(sec=>{
+    const kids=sec.querySelectorAll('[data-sr="'+id+'"]');
+    if(!kids.length)return;
+    let any=false; kids.forEach(k=>{if(k.style.display!=='none')any=true;});
+    sec.style.display=any?'':'none';
+  });
+  const c=document.getElementById('srchc_'+id);
+  if(c)c.textContent=toks.length?(vis.toLocaleString('fa-IR')+' مورد از '+rows.length.toLocaleString('fa-IR')):(rows.length?rows.length.toLocaleString('fa-IR')+' مورد':'');
+}
+function srchClear(id){_srchQ[id]='';const i=document.getElementById('srch_'+id);if(i){i.value='';i.focus();}srchRun(id);}
+function srchApplyAll(){try{document.querySelectorAll('[data-search^="srch_"]').forEach(i=>{
+  const id=(i.id||'').replace(/^srch_/,''); if(!id)return;
+  if(_srchQ[id]!=null&&i.value!==_srchQ[id])i.value=_srchQ[id];
+  srchRun(id);});}catch(e){}}
+window.srchRun=srchRun;window.srchClear=srchClear;window.srchApplyAll=srchApplyAll;window.srchBox=srchBox;window.srchNorm=srchNorm;
 let _searchT=null;
 function listSearch(v){view.q=v;view.page=0;clearTimeout(_searchT);_searchT=setTimeout(render,200);}
 window.listSearch=listSearch;
@@ -7882,6 +8101,99 @@ function custdashHTML(){
   return h;
 }
 /* ===== 📦 داشبورد جامع انبار ===== */
+/* ===== 🏬 موتور چند‌انباره — موجودی تعدادی و ریالی به تفکیک انبار ===== */
+function whList(biz){const l=byE('whouse');return biz?l.filter(w=>!relIds(w,'biz').length||relIds(w,'biz').includes(biz)):l;}
+function whDefault(biz){
+  const l=byE('whouse');
+  return l.find(w=>w.d.main&&biz&&relIds(w,'biz').includes(biz))
+      || l.find(w=>biz&&relIds(w,'biz').includes(biz))
+      || l.find(w=>w.d.main&&!relIds(w,'biz').length)
+      || l.find(w=>w.d.main) || l[0] || null;
+}
+function whIdOf(r){ // انبار یک تراکنش؛ اگر ثبت نشده باشد، انبار پیش‌فرضِ کسب‌وکارش
+  const w=relIds(r,'wh')[0]; if(w&&recs[w]&&!recs[w].del)return w;
+  const d=whDefault(relIds(r,'biz')[0]||''); return d?d.id:'';
+}
+function whQtyOf(pid){ // {انبار:تعداد, _transit:در راه}
+  if(!_whQtyCache)_whQtyCache={};
+  if(_whQtyCache[pid])return _whQtyCache[pid];
+  const m={},add=(w,q)=>{if(!w||!q)return;m[w]=(m[w]||0)+q;};
+  const p=recs[pid];
+  if(p&&(+p.d.stock0||0)){const d=whDefault(relIds(p,'biz')[0]||'');if(d)add(d.id,+p.d.stock0||0);}
+  purchasesOf(pid).forEach(x=>add(whIdOf(x),+x.d.qty||0));
+  salesOf(pid).forEach(x=>add(whIdOf(x),-(+x.d.qty||0)));
+  wasteOf(pid).forEach(x=>add(whIdOf(x),-(+x.d.qty||0)));
+  let transit=0;
+  byE('whmove').forEach(mv=>{
+    if(relIds(mv,'product')[0]!==pid)return;
+    const q=+mv.d.qty||0; if(q<=0)return;
+    const f=relIds(mv,'from')[0],t=relIds(mv,'to')[0];
+    if(f)add(f,-q);
+    if(mv.d.status==='تحویل شد'){if(t)add(t,q);} else transit+=q;
+  });
+  m._transit=transit;
+  return _whQtyCache[pid]=m;
+}
+function whStock(whId,pid){const m=whQtyOf(pid);return whId==='_transit'?(m._transit||0):(m[whId]||0);}
+function whTransit(pid){return whQtyOf(pid)._transit||0;}
+function whTotals(whId,biz){ // جمع تعدادی و ریالی یک انبار (ارزش = تعداد × بهای واحد FIFO)
+  let qty=0,val=0,items=0;
+  byE('product').filter(p=>!p.d.sub&&(!biz||relIds(p,'biz').includes(biz))).forEach(p=>{
+    const q=whStock(whId,p.id); if(!q)return;
+    qty+=q; val+=q*whUnitCost(p); if(q>0)items++;
+  });
+  return {qty,val,items};
+}
+function whAggBiz(bizId){ // تجمیع همه انبارهای یک کسب‌وکار
+  let qty=0,val=0;whList(bizId).filter(w=>relIds(w,'biz').includes(bizId)).forEach(w=>{const t=whTotals(w.id,bizId);qty+=t.qty;val+=t.val;});
+  return {qty,val};
+}
+function whAggCompany(coId){ // تجمیع کسب‌وکارهای یک شرکت
+  let qty=0,val=0;byE('business').filter(b=>relIds(b,'company').includes(coId)).forEach(b=>{const t=whAggBiz(b.id);qty+=t.qty;val+=t.val;});
+  return {qty,val};
+}
+function migrateWh(){ // یک‌بار: اگر انباری تعریف نشده ولی کالا هست، انبار اصلی هر کسب‌وکار ساخته می‌شود
+  if(byE('whouse').length)return 0;
+  if(!byE('product').length)return 0;
+  let n=0;
+  const mk=(t,b)=>{const id=uid();recs[id]={id,e:'whouse',d:{title:t,biz:b?[b]:[],kind:'انبار اصلی',main:true,_auto:1},u:Date.now()};queue.push(id);n++;};
+  const bs=byE('business');
+  if(bs.length)bs.forEach(b=>mk('انبار اصلی — '+(b.d.title||'—'),b.id)); else mk('انبار اصلی','');
+  if(n){invalidateByE();saveLocal();saveQ();try{flush();}catch(e){}}
+  return n;
+}
+function whouseBrief(r){const t=whTotals(r.id,relIds(r,'biz')[0]||'');
+  return {label:'موجودی │ ارزش (FIFO)',v:t.qty.toLocaleString('fa-IR')+' واحد │ '+money(t.val)+' │ '+t.items.toLocaleString('fa-IR')+' قلم',bad:false};}
+function whmoveBrief(r){const pid=relIds(r,'product')[0],p=pid&&recs[pid];const q=+r.d.qty||0;
+  const fn=nameOf(relIds(r,'from')[0])||'—',tn=nameOf(relIds(r,'to')[0])||'—';
+  return {label:(r.d.status==='تحویل شد'?'انتقال انجام‌شده':'🚚 در راه'),
+    v:q.toLocaleString('fa-IR')+' عدد '+(p?esc(p.d.title):'')+' │ '+esc(fn)+' ← '+esc(tn)+(p?' │ '+money(q*whUnitCost(p)):''),
+    bad:r.d.status!=='تحویل شد'};}
+function whcountBrief(r){const pid=relIds(r,'product')[0],wh=relIds(r,'wh')[0];
+  if(!pid||!wh)return {label:'انبارگردانی',v:'کالا و انبار را مشخص کنید',bad:true};
+  const sys=whStock(wh,pid),cnt=+r.d.counted||0,diff=cnt-sys;const p=recs[pid];
+  return {label:'سیستمی │ شمارش │ اختلاف',
+    v:sys.toLocaleString('fa-IR')+' │ '+cnt.toLocaleString('fa-IR')+' │ '+(diff>0?'+':'')+diff.toLocaleString('fa-IR')+(p?' ('+money(Math.abs(diff)*whUnitCost(p))+')':'')+(r.d.applied?' ✅ اعمال شد':''),
+    bad:!r.d.applied&&diff!==0};}
+function whCountApply(id){
+  const c=recs[id]; if(!c)return;
+  if(c.d.applied){alert('این شمارش قبلاً اعمال شده است.');return;}
+  if(!can('c','purchase')||!can('c','waste')){alert('اجازه ثبت سند اصلاح ندارید');return;}
+  const pid=relIds(c,'product')[0],wh=relIds(c,'wh')[0];
+  if(!pid||!wh){alert('ابتدا کالا و انبار را مشخص کنید.');return;}
+  const p=recs[pid];const sys=whStock(wh,pid),cnt=+c.d.counted||0,diff=cnt-sys;
+  const dt=c.d.date||{s:today()};const bz=relIds(c,'biz');
+  if(diff>0){
+    put({id:uid(),e:'purchase',d:{title:'اصلاح انبارگردانی (اضافی) — '+((p&&p.d.title)||''),biz:bz,product:[pid],wh:[wh],qty:diff,price:whUnitCost(p),kind:'نقدی',settled:true,date:dt,_whc:id},u:Date.now()});
+  } else if(diff<0){
+    put({id:uid(),e:'waste',d:{title:'کسری انبارگردانی — '+((p&&p.d.title)||''),biz:bz,product:[pid],wh:[wh],qty:-diff,kind:'ثبت ضایعات (خروج از انبار)',reason:'سرقت/مفقودی',date:dt,_whc:id},u:Date.now()});
+  }
+  c.d.applied=true;c.d.diff=diff;c.u=Date.now();put(c);
+  alert(diff===0?'اختلافی نبود؛ شمارش تأیید شد.':('سند اصلاح صادر شد: '+(diff>0?'اضافی ':'کسری ')+Math.abs(diff).toLocaleString('fa-IR')+' عدد — موجودی این انبار به‌روز شد.'));
+}
+window.whStock=whStock;window.whTransit=whTransit;window.whTotals=whTotals;window.whDefault=whDefault;window.whQtyOf=whQtyOf;
+window.whAggBiz=whAggBiz;window.whAggCompany=whAggCompany;window.whCountApply=whCountApply;window.whList=whList;window.whIdOf=whIdOf;
+window.whouseBrief=whouseBrief;window.whmoveBrief=whmoveBrief;window.whcountBrief=whcountBrief;window.migrateWh=migrateWh;
 function whUnitCost(p){const f=fifoCalc(p);return f.avg||p.d.buy||0;}
 function whRefDate(biz){ // تاریخ مرجع = جدیدترین رویداد داده (خرید/فروش) — نه ساعت سرور
   let mx='';
@@ -8255,11 +8567,18 @@ function whdashHTML(){
   const waste=whExpSum(b,['ضایعات'],'','');
   const storeCost=whExpSum(b,['حمل و انبارداری','انبار','بسته‌بندی','وانت'],'','');
   // 🗑 ضایعات کالا — تعدادی و ریالی، به قیمت خرید و قیمت فروش، خالص پس از بازیافت
-  const wByProd={};
+  const wByProd={},gByProd={};
   byE('waste').forEach(w=>{if(b&&!relIds(w,'biz').includes(b))return;const pid=relIds(w,'product')[0];if(!pid)return;
-    const p=recs[pid];if(!p)return;const g=wByProd[pid]||(wByProd[pid]={p,qty:0,cost:0,sell:0,recover:0});
-    if((w.d.kind||'').indexOf('فروش')>=0){g.recover+=(+w.d.recover||0);}
+    const p=recs[pid];if(!p)return;
+    if(wIsGift(w)){ // 🎁 هدیه/نمونه/مصرف داخلی — خروج بدون فروش، جدا از ضایعات
+      const g2=gByProd[pid]||(gByProd[pid]={p,qty:0,cost:0,sell:0,uses:{}});
+      const q2=+w.d.qty||0;g2.qty+=q2;g2.cost+=q2*(+p.d.buy||0);g2.sell+=q2*(+p.d.sell||0);
+      const u=w.d.outuse||'سایر';g2.uses[u]=(g2.uses[u]||0)+q2;return;}
+    const g=wByProd[pid]||(wByProd[pid]={p,qty:0,cost:0,sell:0,recover:0});
+    if((w.d.kind||'').indexOf('فروش/بازیافت')>=0){g.recover+=(+w.d.recover||0);}
     else{const q=+w.d.qty||0;g.qty+=q;g.cost+=q*(+p.d.buy||0);g.sell+=q*(+p.d.sell||0);}});
+  const gArr=Object.values(gByProd).filter(x=>x.qty>0);
+  const gTot={qty:0,cost:0,sell:0};gArr.forEach(x=>{gTot.qty+=x.qty;gTot.cost+=x.cost;gTot.sell+=x.sell;});
   const wArr=Object.values(wByProd).filter(x=>x.qty>0||x.recover>0);
   const wTot={qty:0,cost:0,sell:0,recover:0};wArr.forEach(x=>{wTot.qty+=x.qty;wTot.cost+=x.cost;wTot.sell+=x.sell;wTot.recover+=x.recover;});
   const wNet=wTot.cost-wTot.recover; // ضرر خالص (به بهای خرید) پس از بازیافت
@@ -8280,6 +8599,7 @@ function whdashHTML(){
     <span style="flex:1"></span>
     <select onchange="setGBiz(this.value)" style="max-width:180px"><option value="">همه کسب‌وکارها</option>${bizzes.map(x=>`<option value="${x.id}" ${x.id===b?'selected':''}>${esc(x.d.title)}</option>`).join('')}</select>
     <button class="btn gh sm" onclick="wasteNew('out')">🗑 ثبت ضایعات</button>
+    <button class="btn gh sm" onclick="wasteNew('gift')">🎁 خروج بدون فروش</button>
     <button class="btn gh sm" onclick="wasteNew('sale')">💵 فروش ضایعات</button></div>`;
   if(!rows.length){return h+`<div class="empty">هنوز کالایی در «مدیریت انبار ← کالا و خدمات» ثبت نشده — بعد از افزودن کالا و ثبت خرید/فروش، همه شاخص‌ها اینجا محاسبه می‌شوند.</div>`;}
   // نمودار ارزش انبار
@@ -8300,9 +8620,28 @@ function whdashHTML(){
       <div style="font-size:11px;color:var(--tx2)">🗑 ضرر خالص ضایعات کالا ▾</div>
       <div style="font-size:18px;font-weight:800;margin-top:4px;color:${wNet>0?'var(--bad)':'var(--tx)'}">${money(wNet)}</div>
       <div style="font-size:10px;color:var(--tx2);margin-top:3px">به قیمت خرید ${abbrN(wTot.cost)} │ به قیمت فروش ${abbrN(wTot.sell)}${wTot.recover?' │ بازیافت '+abbrN(wTot.recover):''}<br>${wTot.qty.toLocaleString('fa-IR')} عدد ضایع │ برای جزئیات کلیک کن</div></div>
+    <div class="sec" style="text-align:center;padding:13px 10px;cursor:pointer;${view.whGiftOpen?'border:1px solid var(--ac)':''}" onclick="view.whGiftOpen=!view.whGiftOpen;render()">
+      <div style="font-size:11px;color:var(--tx2)">🎁 خروج بدون فروش (هدیه/نمونه/مصرف داخلی) ▾</div>
+      <div style="font-size:18px;font-weight:800;margin-top:4px">${money(gTot.cost)}</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">${gTot.qty.toLocaleString('fa-IR')} عدد │ به قیمت فروش ${abbrN(gTot.sell)}<br>از سود فروش کسر نمی‌شود — موجودی خودکار کم می‌شود</div></div>
     ${kcard('store','🏬 هزینه انبارداری (کل)',money(storeCost),false,saleYr>0?(storeCost/saleYr*100).toLocaleString('fa-IR',{maximumFractionDigits:2})+'٪ فروش':'')}
     ${kcard('cogs','💵 بهای تمام‌شده فروش‌رفته',money(totCogs))}
   </div>`;
+  // 🎁 جزئیات خروج بدون فروش به تفکیک کالا
+  if(view.whGiftOpen){
+    h+=`<div class="sec" style="border:1px solid var(--ac)"><h3>🎁 خروج بدون فروش به تفکیک کالا <span style="flex:1"></span>
+      <button class="btn gh sm" onclick="wasteNew('gift')">＋ ثبت خروج بدون فروش</button>
+      <button class="btn gh sm" onclick="view.whGiftOpen=false;render()">✕ بستن</button></h3>`;
+    if(!gArr.length)h+=`<div class="empty">هنوز خروج بدون فروشی ثبت نشده — هدیه به مشتری، نمونه بازاریابی، مصرف داخلی و مواردی از این دست را اینجا ثبت کن تا موجودی خودکار کم شود بدون آنکه در ضرر ضایعات یا سود فروش بیاید.</div>`;
+    else h+=`<div class="tblwrap"><table><thead><tr><th style="text-align:right">کالا</th><th>تعداد</th><th>بهای تمام‌شده (خرید)</th><th>ارزش به قیمت فروش</th><th style="text-align:right">مصرف</th></tr></thead><tbody>
+      ${gArr.sort((a,b)=>b.cost-a.cost).map(x=>`<tr style="cursor:pointer" onclick="view={type:'list',e:'waste'};render()">
+        <td style="text-align:right">${esc(x.p.d.title||'—')}</td>
+        <td>${x.qty.toLocaleString('fa-IR')}</td><td>${money(x.cost)}</td><td>${money(x.sell)}</td>
+        <td style="text-align:right;white-space:normal">${Object.entries(x.uses).sort((a,b)=>b[1]-a[1]).map(([u,q])=>`<span class="tag">${esc(u)}: ${q.toLocaleString('fa-IR')}</span>`).join('')}</td></tr>`).join('')}
+      <tr style="font-weight:800"><td style="text-align:right">جمع</td><td>${gTot.qty.toLocaleString('fa-IR')}</td><td>${money(gTot.cost)}</td><td>${money(gTot.sell)}</td><td></td></tr>
+      </tbody></table></div>`;
+    h+=`</div>`;
+  }
   // 🗑 جزئیات آبشاری ضایعات به تفکیک کالا (با کلیک روی کارت باز می‌شود)
   if(view.whWasteOpen){
     h+=`<div class="sec" style="border:1px solid var(--ac)"><h3>🗑 ضایعات به تفکیک کالا <span style="flex:1"></span>
@@ -8321,6 +8660,42 @@ function whdashHTML(){
       </tbody></table></div>
       <div style="font-size:10.5px;color:var(--tx2);margin-top:6px">ضرر خالص = ضرر به قیمت خرید − مبلغ فروش ضایعات. روی هر ردیف بزن تا رکوردهای ضایعات آن باز شود.</div>`;}
     h+=`</div>`;
+  }
+  // 🏬 موجودی به تفکیک انبار (چند انباره)
+  {
+    const whs=whList(b);
+    if(whs.length){
+      const tr=byE('product').filter(p=>!p.d.sub&&(!b||relIds(p,'biz').includes(b)))
+        .reduce((a,p)=>{const q=whTransit(p.id);return a+(q>0?q*whUnitCost(p):0);},0);
+      const trQ=byE('product').filter(p=>!p.d.sub&&(!b||relIds(p,'biz').includes(b)))
+        .reduce((a,p)=>a+(whTransit(p.id)||0),0);
+      const wt=whs.map(w=>({w,t:whTotals(w.id,b)})).sort((x,y)=>y.t.val-x.t.val);
+      const sumV=wt.reduce((a,x)=>a+x.t.val,0)||1;
+      h+=`<div class="sec"><h3>🏬 موجودی به تفکیک انبار <span class="c">${whs.length.toLocaleString('fa-IR')}</span><span style="flex:1"></span>
+        <button class="btn gh sm" onclick="openRec('whmove')">🚚 انتقال بین انبار</button>
+        <button class="btn gh sm" onclick="openRec('whcount')">🧮 شمارش انبار</button>
+        <button class="btn gh sm" onclick="go('list','whouse')">🏬 انبارها</button></h3>
+        <div class="tblwrap"><table><thead><tr><th style="text-align:right">انبار</th><th>نوع</th><th>تعداد</th><th>اقلام</th><th>ارزش (FIFO)</th><th>٪</th></tr></thead><tbody>
+        ${wt.map(x=>`<tr style="cursor:pointer" onclick="view.whSel=(view.whSel==='${x.w.id}'?'':'${x.w.id}');render()">
+          <td style="text-align:right">${x.w.d.main?'⭐ ':''}${esc(x.w.d.title||'—')}${x.w.d.code?' <span class="tag">'+esc(x.w.d.code)+'</span>':''}</td>
+          <td>${esc(x.w.d.kind||'—')}</td><td>${x.t.qty.toLocaleString('fa-IR')}</td><td>${x.t.items.toLocaleString('fa-IR')}</td>
+          <td>${money(x.t.val)}</td><td>${(x.t.val/sumV*100).toLocaleString('fa-IR',{maximumFractionDigits:1})}٪</td></tr>`).join('')}
+        ${trQ?`<tr style="color:var(--warn)"><td style="text-align:right">🚚 در راه (انتقال ثبت‌نشده)</td><td>—</td><td>${trQ.toLocaleString('fa-IR')}</td><td>—</td><td>${money(tr)}</td><td>—</td></tr>`:''}
+        <tr style="font-weight:800"><td style="text-align:right">جمع</td><td></td><td>${(wt.reduce((a,x)=>a+x.t.qty,0)+trQ).toLocaleString('fa-IR')}</td><td></td><td>${money(wt.reduce((a,x)=>a+x.t.val,0)+tr)}</td><td></td></tr>
+        </tbody></table></div>
+        <div style="font-size:10.5px;color:var(--tx2);margin-top:6px">روی هر انبار بزن تا ریز کالاهای آن باز شود. «در راه» = انتقال‌هایی که از انبار مبدأ خارج شده‌اند ولی هنوز «تحویل شد» نخورده‌اند.</div>`;
+      if(view.whSel&&whs.some(w=>w.id===view.whSel)){
+        const wsel=recs[view.whSel];
+        const det=byE('product').filter(p=>!p.d.sub&&(!b||relIds(p,'biz').includes(b)))
+          .map(p=>({p,q:whStock(view.whSel,p.id)})).filter(x=>x.q).sort((x,y)=>y.q*whUnitCost(y.p)-x.q*whUnitCost(x.p));
+        h+=`<div style="margin-top:10px;border-top:1px solid var(--bd);padding-top:8px"><b>📦 ریز موجودی «${esc(wsel?wsel.d.title:'')}»</b>
+          <button class="btn gh sm" style="margin-inline-start:8px" onclick="view.whSel='';render()">✕ بستن</button>
+          ${det.length?`<div class="tblwrap" style="max-height:320px;overflow:auto;margin-top:6px"><table><thead><tr><th style="text-align:right">کالا</th><th>تعداد</th><th>بهای واحد</th><th>ارزش</th><th>کل (همه انبارها)</th></tr></thead><tbody>
+          ${det.map(x=>`<tr><td style="text-align:right">${esc(x.p.d.title||'—')}</td><td>${x.q.toLocaleString('fa-IR')}</td><td>${money(whUnitCost(x.p))}</td><td>${money(x.q*whUnitCost(x.p))}</td><td style="color:var(--tx2)">${stockNow(x.p).toLocaleString('fa-IR')}</td></tr>`).join('')}
+          </tbody></table></div>`:'<div class="empty" style="padding:12px">این انبار موجودی ندارد</div>'}</div>`;
+      }
+      h+=`</div>`;
+    }
   }
   // 🕰 تفکیک ارزش انبار بر اساس مدت ماندگاری (aging)
   const agTot=aging.reduce((a,x)=>a+x.val,0)||1;
@@ -9734,6 +10109,17 @@ function listHTML(e){
       _bizHint=`<div style="font-size:11px;color:var(--tx2);margin-bottom:6px">🏢 فیلتر کسب‌وکار فعال: «${esc(nameOf(gBiz()))}»${nb?` │ ${nb.toLocaleString('fa-IR')} رکورد بدون کسب‌وکار هم نمایش داده می‌شود`:''} — <span style="color:var(--ac);cursor:pointer" onclick="setGBiz('')">نمایش همه</span></div>`;}}
   // 🏗️ فیلتر پروژه فعال EPCF
   if(gPrj()){const pf=def.f.find(f=>f.t===REL&&f.r==='eproject');if(pf)rows=rows.filter(r=>relIds(r,pf.k).includes(gPrj()));}
+  // 🧾/📝 جداسازی گزارش فاکتور فروش از پیش‌فاکتور
+  let _invBar='';
+  if(e==='invoice'){
+    const ik=view.ikind||'';
+    if(ik===INV_KIND_PROF)rows=rows.filter(r=>r.d.kind===INV_KIND_PROF);
+    else if(ik===INV_KIND_SALE)rows=rows.filter(r=>r.d.kind!==INV_KIND_PROF);
+    const chip=(v,lb)=>`<button class="btn ${ik===v?'':'gh'} sm" onclick="view.ikind='${v}';view.page=0;render()">${lb}</button>`;
+    _invBar=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      ${chip(INV_KIND_SALE,'🧾 فاکتورهای فروش')}${chip(INV_KIND_PROF,'📝 پیش‌فاکتورها')}
+      <button class="btn ${ik?'gh':''} sm" onclick="view.ikind='';view.page=0;render()">همه اسناد</button></div>`;
+  }
   if(view.flt&&FILTERS[view.flt])rows=rows.filter(FILTERS[view.flt].f);
   if(q){const ql=q.toLowerCase();rows=rows.filter(r=>JSON.stringify(r.d).toLowerCase().includes(ql));}
   // 🔎 فیلترهای ستونی (چند فیلد هم‌زمان)
@@ -9792,7 +10178,7 @@ function listHTML(e){
       ${sortFs.filter(f=>[SEL,STA,REL,CHK,MUL,TXT].includes(f.t)).map(f=>`<option value="${f.k}" ${view.grp===f.k?'selected':''}>${esc(f.n)}</option>`).join('')}</select>
     <button class="btn gh sm" onclick="view.filterOpen=!view.filterOpen;render()">🔎 فیلتر ستونی${Object.values(colFlt).filter(Boolean).length?' ('+Object.values(colFlt).filter(Boolean).length.toLocaleString('fa-IR')+')':''}</button>
     ${(view.sort||view.grp||Object.values(colFlt).some(Boolean)||view.flt)?`<button class="btn bad sm" onclick="view.sort=null;view.grp=null;view.cf={};view.flt=null;view.page=0;render()">پاک‌سازی ابزارها ✕</button>`:''}
-  </div>${_bizHint}${lvlBar}`;
+  </div>${_invBar}${_bizHint}${lvlBar}`;
   // پنل فیلتر ستونی
   if(view.filterOpen){
     h+=`<div class="sec" style="margin-bottom:10px"><h3 style="font-size:13px">🔎 فیلتر بر اساس فیلد</h3>
@@ -9905,6 +10291,8 @@ function recHTML(e,id){
     ${e==='invoice'&&r.d._posted?`<span class="tag g" style="align-self:center">✅ در انبار/حسابداری ثبت شد</span>`:''}
     ${e==='purchinv'&&r.d.status!=='باطل'&&!r.d._posted&&(autopostCfg().stock||autopostCfg().gl)?`<button class="btn gh sm" onclick="postPurch('${id}')">📥 ثبت در انبار/حسابداری</button>`:''}
     ${e==='purchinv'&&r.d._posted?`<span class="tag g" style="align-self:center">✅ در انبار/حسابداری ثبت شد</span>`:''}
+    ${e==='whcount'&&!r.d.applied?`<button class="btn gh sm" onclick="whCountApply('${id}')">✅ اعمال شمارش</button>`:''}
+    ${e==='whcount'&&r.d.applied?`<span class="tag g" style="align-self:center">✅ شمارش اعمال شد${r.d.diff?' │ اختلاف '+Number(r.d.diff).toLocaleString('fa-IR'):''}</span>`:''}
     ${e==='settle'&&!r.d._posted?`<button class="btn gh sm" onclick="settlePost('${id}')">📤 ثبت در حسابداری</button>`:''}
     ${e==='settle'&&r.d._posted?`<span class="tag g" style="align-self:center">✅ ثبت شد</span>`:''}
     ${can('e',e,r)?`<button class="btn sm" onclick="openRec('${e}','${id}')">✏️ ویرایش</button>`:''}</div>`;
@@ -9979,6 +10367,73 @@ function miniTable(ek,rows,extraCol){
   let h=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${ed.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
   rows.forEach(x=>{h+=`<tr onclick="go('rec','${ek}','${x.id}')">${cols.map(f=>`<td>${cellHTML(x,f)}</td>`).join('')}${ed.prog?`<td>${pbarHTML(progOf(ed.prog,x))}</td>`:''}</tr>`;});
   return h+'</tbody></table></div>';
+}
+
+/* ================= 🤝 کارهای من و همکاری تیمی =================
+   چهار برگ: تسک‌های ارجاع‌شده به من │ پروژه‌هایی که درگیرشان هستم │ جلسات من │ گزارش‌های من
+   همه‌ی لیست‌ها از byE می‌آیند، پس دروازه محرمانگی و محدوده داده خودکار اعمال شده است. */
+function _mhTab(){return view.mhTab||'task';}
+function _mhChip(k,l,n){return `<button class="btn ${_mhTab()===k?'':'gh'} sm" onclick="view.mhTab='${k}';render()">${l} ${n!=null?`<span class="c">${n.toLocaleString('fa-IR')}</span>`:''}</button>`;}
+function _mhRows(e){return byE(e).filter(iAmIn);}
+function _mhTbl(e,rows,extra){
+  const def=E[e];
+  if(!rows.length)return `<div class="empty">موردی برای شما ثبت نشده است</div>`;
+  const cols=(extra||def.cols).map(k=>def.f.find(x=>x.k===k)).filter(Boolean);
+  let h=`<div class="tblwrap"><table class="minitbl"><thead><tr>${cols.map(f=>`<th>${f.n}</th>`).join('')}${def.prog?'<th>پیشرفت</th>':''}</tr></thead><tbody>`;
+  rows.sort((a,b)=>b.u-a.u).forEach(x=>{
+    h+=`<tr onclick="go('rec','${e}','${x.id}')">${cols.map(f=>`<td>${cellHTML(x,f)}</td>`).join('')}${def.prog?`<td>${pbarHTML(progOf(def.prog,x))}</td>`:''}</tr>`;
+  });
+  return h+`</tbody></table></div>`;
+}
+function myhubHTML(){
+  if(!canView('myhub'))return `<div class="empty">دسترسی شما به این بخش محدود شده است</div>`;
+  const tk=canSee('task')?_mhRows('task'):[], pj=canSee('project')?_mhRows('project'):[],
+        mt=canSee('meeting')?_mhRows('meeting'):[], up=canSee('pupdate')?_mhRows('pupdate'):[];
+  const openTk=tk.filter(x=>!['انجام شد','Done','لغو شد'].includes(x.d.status));
+  const waiting=up.filter(x=>(x.d.ack||'در انتظار بررسی')==='در انتظار بررسی');
+  let h=`<div class="sec"><h3>🤝 کارهای من و همکاری تیمی</h3>
+    <div class="empty" style="text-align:start;line-height:2">
+      اینجا فقط چیزهایی را می‌بینید که <b>خودتان در آن‌ها نقش دارید</b> — مسئول، عضو تیم، همکار تسک، حاضر در جلسه، گزارش‌دهنده، یا سازنده‌ی رکورد.
+      رکوردهای <b>محرمانه</b> و پروژه‌های <b>«فقط تیم پروژه»</b> برای کسی که در آن‌ها نقشی ندارد نمایش داده نمی‌شوند.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      ${_mhChip('task','📘 تسک‌های من',openTk.length)}
+      ${_mhChip('proj','🏗️ پروژه‌های من',pj.length)}
+      ${_mhChip('meet','🗃️ جلسات من',mt.length)}
+      ${_mhChip('rep','🗞️ گزارش‌ها',waiting.length)}
+    </div></div>`;
+  const T=_mhTab();
+  if(T==='task'){
+    h+=`<div class="sec"><h3>📘 تسک‌های ارجاع‌شده به من <span class="c">${openTk.length.toLocaleString('fa-IR')}</span>
+      <span style="flex:1"></span>${can('c','task')?`<button class="btn gh sm" onclick="openRec('task')">＋ تسک جدید</button>`:''}</h3>
+      ${_mhTbl('task',openTk,['title','status','prio','due','project'])}</div>`;
+    const done=tk.filter(x=>['انجام شد','Done'].includes(x.d.status));
+    if(done.length)h+=`<div class="sec"><h3>✅ انجام‌شده‌ها <span class="c">${done.length.toLocaleString('fa-IR')}</span></h3>${_mhTbl('task',done,['title','status','due','project'])}</div>`;
+  }
+  if(T==='proj'){
+    h+=`<div class="sec"><h3>🏗️ پروژه‌هایی که در آن‌ها درگیرم <span class="c">${pj.length.toLocaleString('fa-IR')}</span></h3>
+      ${_mhTbl('project',pj,['title','status','prio','pm','sec'])}</div>`;
+    if(pj.length)h+=`<div class="sec"><h3>✍️ ثبت گزارش برای پروژه</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${pj.map(p=>can('c','pupdate')?`<button class="btn gh sm" onclick="openRec('pupdate',null,{k:'project',id:'${p.id}'})">＋ ${esc(p.d.title||'—')}</button>`:'').join('')}</div>
+      <div class="empty" style="text-align:start;margin-top:8px">گزارش شما زیر همان پروژه ثبت می‌شود و برای مدیر پروژه و اعضای تیم قابل مشاهده است.</div></div>`;
+  }
+  if(T==='meet'){
+    h+=`<div class="sec"><h3>🗃️ جلساتی که در آن‌ها حاضرم <span class="c">${mt.length.toLocaleString('fa-IR')}</span>
+      <span style="flex:1"></span>${can('c','meeting')?`<button class="btn gh sm" onclick="openRec('meeting')">＋ جلسه جدید</button>`:''}</h3>
+      ${_mhTbl('meeting',mt,['title','kind','status','date','sec'])}</div>`;
+    const noMin=mt.filter(x=>!x.d.minutes&&x.d.status!=='شروع نشده');
+    if(noMin.length)h+=`<div class="sec"><h3>📝 جلسات بدون صورت‌جلسه <span class="c">${noMin.length.toLocaleString('fa-IR')}</span></h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${noMin.map(m=>`<button class="btn gh sm" onclick="openRec('meeting','${m.id}')">✏️ ${esc(m.d.title||'—')}</button>`).join('')}</div>
+      <div class="empty" style="text-align:start;margin-top:8px">صورت‌جلسه را داخل خودِ جلسه بنویسید، یا با «گزارش جلسه» آن را به پروژه وصل کنید تا در تاریخچه‌ی پروژه بماند.</div></div>`;
+  }
+  if(T==='rep'){
+    h+=`<div class="sec"><h3>🗞️ در انتظار بررسی <span class="c">${waiting.length.toLocaleString('fa-IR')}</span>
+      <span style="flex:1"></span>${can('c','pupdate')?`<button class="btn gh sm" onclick="openRec('pupdate')">＋ گزارش جدید</button>`:''}</h3>
+      ${_mhTbl('pupdate',waiting,['title','kind','date','author','project'])}</div>`;
+    const rest=up.filter(x=>(x.d.ack||'در انتظار بررسی')!=='در انتظار بررسی');
+    h+=`<div class="sec"><h3>📚 سایر گزارش‌های من <span class="c">${rest.length.toLocaleString('fa-IR')}</span></h3>${_mhTbl('pupdate',rest,['title','kind','date','ack','project'])}</div>`;
+  }
+  return h;
 }
 function meHTML(){
   const hr=myHR(), hrIds=myHRids();
@@ -10416,13 +10871,14 @@ function aclHTML(){
   if(!v)return h+`<div class="empty">کاربری ثبت نشده است</div>`;
   // صفحات و ابزارهای ویژه
   h+=`<div class="sec"><h3>🖥️ صفحات و ابزارها (داشبوردها)</h3>
+  ${srchBox('aclv','🔍 جستجوی صفحه یا ابزار…')}
   <div class="tblwrap"><table><thead><tr><th>صفحه / ابزار</th><th>دسترسی</th></tr></thead><tbody>
   ${VIEWS_ACL.map(([vk,vn])=>{
     const curV=(cfg.views||{})[vk]||'';
-    if(vk==='layout'||vk==='seclayout')return `<tr><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
+    if(vk==='layout'||vk==='seclayout')return `<tr data-sr="aclv" data-srt="${esc(vn+' '+vk)}"><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
       <option value="" ${curV===''?'selected':''}>غیرفعال (پیش‌فرض)</option>
       <option value="show" ${curV==='show'?'selected':''}>مجاز ✅</option></select></td></tr>`;
-    return `<tr><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
+    return `<tr data-sr="aclv" data-srt="${esc(vn+' '+vk)}"><td>${vn}</td><td><select onchange="setAclView('${vk}',this.value)" style="max-width:190px">
       <option value="" ${curV===''?'selected':''}>نمایش (پیش‌فرض)</option>
       <option value="hide" ${curV==='hide'?'selected':''}>مخفی 🚫</option></select></td></tr>`;
   }).join('')}
@@ -10455,10 +10911,11 @@ function aclHTML(){
       <h3 style="font-size:12.5px;margin-top:10px">🧩 واحدهای سازمانی مجاز</h3>${pick('orgunit','u','🧩')}`:''}
     </div>`;
   }
+  h+=srchBox('acle','🔍 جستجوی بخش (دیتابیس) در همه گروه‌ها…','— گروه‌های بی‌نتیجه موقتاً پنهان می‌شوند');
   allGroups().forEach((g,gi)=>{
     if(!Object.values(E).some(d=>d.grp===g))return;
     const gHid=(cfg.grp||{})[g]==='hide';
-    h+=`<div class="sec" style="${gHid?'opacity:.55':''}"><h3>${esc(grpLabel(g))}
+    h+=`<div class="sec" data-srsec="acle" style="${gHid?'opacity:.55':''}"><h3>${esc(grpLabel(g))}
       <span style="flex:1"></span>
       <select onchange="setAclGrp('${g.replace(/'/g,"\\'")}',this.value)" style="max-width:190px;font-size:11.5px" title="یک‌ضرب کل گروه (همه بخش‌ها و داشبوردهایش) را برای این نقش مخفی کن">
         <option value="" ${!gHid?'selected':''}>گروه: نمایش عادی</option>
@@ -10470,15 +10927,15 @@ function aclHTML(){
     <div class="tblwrap"><table><thead><tr><th>بخش</th><th>دسترسی</th><th>فیلدها</th></tr></thead><tbody>`;
     Object.entries(E).filter(([k,d])=>d.grp===g).forEach(([ek,ed])=>{
       const cur=(cfg.ent||{})[ek]||'';
-      h+=`<tr><td>${ed.ic} ${ed.n}</td>
+      h+=`<tr data-sr="acle" data-srt="${esc(ed.n+' '+ek+' '+grpLabel(g))}"><td>${ed.ic} ${ed.n}</td>
         <td><select onchange="setAclEnt('${ek}',this.value)" style="max-width:190px">
           ${LVLOPTS.map(([val,l])=>`<option value="${val}" ${cur===val?'selected':''}>${l}</option>`).join('')}</select></td>
         <td><button class="btn gh sm" onclick="view.aclEnt=view.aclEnt==='${ek}'?null:'${ek}';render()">${view.aclEnt===ek?'بستن':'تنظیم فیلدها'}</button></td></tr>`;
       if(view.aclEnt===ek){
-        h+=`<tr><td colspan="3" style="white-space:normal"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;padding:6px 0">`;
+        h+=`<tr data-sr="acle" data-srt="${esc(ed.n+' '+ek+' '+grpLabel(g))}"><td colspan="3" style="white-space:normal">${srchBox('aclf','🔍 جستجوی فیلد در «'+ed.n+'»…')}<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;padding:6px 0">`;
         ed.f.filter(f=>f.k!=='title').forEach(f=>{
           const fc=(cfg.fld||{})[ek+'.'+f.k]||'';
-          h+=`<div style="display:flex;gap:6px;align-items:center;font-size:12px">
+          h+=`<div data-sr="aclf" data-srt="${esc(f.n+' '+f.k)}" style="display:flex;gap:6px;align-items:center;font-size:12px">
             <span style="flex:1;color:var(--tx2)">${f.n}</span>
             <select onchange="setAclFld('${ek}','${f.k}',this.value)" style="max-width:130px;padding:4px 6px;font-size:11.5px">
               ${FLDOPTS.map(([val,l])=>`<option value="${val}" ${fc===val?'selected':''}>${l}</option>`).join('')}</select></div>`;
@@ -23809,11 +24266,12 @@ function usersHTML(){
   const list=usersList();
   let h=`<div class="sec"><h3>👤 کاربران و سطح دسترسی</h3>
   <p style="font-size:12px;color:var(--tx2);margin-bottom:12px">هر کاربر با ایمیل و رمز خودش وارد می‌شود (بار اول در صفحه ورود، خودش ثبت‌نام می‌کند). اینجا نقش هر ایمیل را تعیین می‌کنید. ایمیلی که در این لیست نباشد، نقش «کاربر» می‌گیرد.</p>
+  ${srchBox('usr','🔍 جستجوی ایمیل یا نقش…')}
   <div class="tblwrap"><table><thead><tr><th>ایمیل</th><th>نقش</th><th>👥 پرونده منابع انسانی</th><th></th></tr></thead><tbody>`;
   list.forEach((u,i)=>{
     const hrLinked=u.hr&&recs[u.hr]&&!recs[u.hr].del?u.hr:'';
     const emailMatch=!hrLinked&&byE('hr').find(x=>(x.d.email||'').toLowerCase()===(u.email||'').toLowerCase());
-    h+=`<tr><td dir="ltr" style="text-align:left">${esc(u.email)}</td>
+    h+=`<tr data-sr="usr" data-srt="${esc((u.email||'')+' '+(u.role||''))}"><td dir="ltr" style="text-align:left">${esc(u.email)}</td>
       <td><select onchange="setRole(${i},this.value)" style="max-width:170px;${u.role===PENDING?'border-color:var(--warn)':''}">${aclRoles().concat([PENDING]).map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}</select>
       ${u.role===PENDING?'<div style="font-size:10.5px;color:var(--warn)">تازه ثبت‌نام کرده — منتظر تایید شما</div>':''}</td>
       <td><select onchange="setUserHR(${i},this.value)" style="max-width:190px">
@@ -24096,8 +24554,9 @@ function drawModal(){
       <span style="font-size:11px;color:var(--tx2)">${formArrange?'با ▲▼ جابجا کن، با 👁 مخفی/نمایش بده — روی همه کاربران اعمال می‌شود. دوباره بزن تا تمام شود.':'ترتیب و نمایش فیلدهای این فرم را تغییر بده'}</span></div>`;
   }
   const hid=formHidden(e);
-  h+=`<div class="mrow" id="mrow_dnd">`;
   const _ff=formFields(e), _ffkeys=_ff.map(x=>x.k);
+  if(_ff.length>=14)h+=srchBox('mfld','🔍 جستجوی فیلد در این فرم…','— فقط نمایش را فیلتر می‌کند، مقادیر دست‌نخورده می‌مانند');
+  h+=`<div class="mrow" id="mrow_dnd">`;
   _ff.forEach((f,_fi)=>{
     const v=cur.d[f.k];
     const ro=fldMode(e,f.k)==='read';
@@ -24108,7 +24567,7 @@ function drawModal(){
         <button class="btn gh sm" style="padding:1px 7px" onclick="fmArrange('${e}','${f.k}',-1)" title="بالا">▲</button>
         <button class="btn gh sm" style="padding:1px 7px" onclick="fmArrange('${e}','${f.k}',1)" title="پایین">▼</button>
         <button class="btn ${isHidden?'':'gh'} sm" style="padding:1px 7px" onclick="fmHide('${e}','${f.k}')" title="${isHidden?'نمایش این فیلد':'مخفی‌کردن این فیلد'}">${isHidden?'🙈':'👁'}</button></span>`:'';
-    h+=`<div class="${full}" data-fk="${f.k}" ${drag?'draggable="true"':''} ${drag?'style="cursor:grab"':''} ${formArrange&&isHidden?'style="opacity:.5"':''}><label>${drag?'<span class="dndh" title="بکشید و جابجا کنید" style="cursor:grab;color:var(--tx2)">⋮⋮</span> ':''}${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}${arrCtl}</label>`;
+    h+=`<div class="${full}" data-fk="${f.k}" data-sr="mfld" data-srt="${esc(f.n+' '+f.k)}" ${drag?'draggable="true"':''} ${drag?'style="cursor:grab"':''} ${formArrange&&isHidden?'style="opacity:.5"':''}><label>${drag?'<span class="dndh" title="بکشید و جابجا کنید" style="cursor:grab;color:var(--tx2)">⋮⋮</span> ':''}${f.n}${f.t===REL?(f.s?' (تکی)':''):''}${plus}${arrCtl}</label>`;
     if(formArrange){h+=`<div style="font-size:10.5px;color:var(--tx2);padding:6px 8px;background:var(--bg);border:1px dashed var(--line);border-radius:8px">${isHidden?'🙈 مخفی از فرم':'نوع: '+((CF_TYPES.find(t=>t[0]===f.t)||[,f.t])[1])}</div></div>`;return;}
     if(f.t==='calc'){
       const cv=calcVal(e,f,cur.d);
@@ -24200,6 +24659,7 @@ function drawModal(){
       });
     });
   }
+  try{srchApplyAll();}catch(e){} // 🔍 جستجوی فیلدهای فرم
 }
 function relPicker(f){
   const sel=relIds(cur,f.k);
