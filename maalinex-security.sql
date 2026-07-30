@@ -136,7 +136,6 @@ $$ select app_is_admin()
      or coalesce(d->>'_by','')=''
      or lower(d->>'_by')=app_email() $$;
 
-
 -- مالکیت هدف BSC / سنجه (خودش یا از طریق هدفِ والد سنجه)
 create or replace function public.app_bsc_mine(ent text, d jsonb) returns boolean
 language plpgsql stable security definer set search_path=public as $$
@@ -318,3 +317,26 @@ create policy mlx_del   on storage.objects for delete to authenticated using (ap
 select 'RLS فعال شد ✅' as status,
   (select count(*) from pg_policies where tablename='records') as policies_records,
   (select count(*) from pg_policies where tablename='objects' and policyname like 'mlx_%') as policies_storage;
+
+
+-- ---------- ⏱ نسخه ۱.۶۳: زمان سرور برای updated_at (رفع گم‌شدن تغییرات با ساعتِ غلط دستگاه‌ها) ----------
+create or replace function public.app_touch_updated() returns trigger
+language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+drop trigger if exists trg_touch_updated on public.records;
+create trigger trg_touch_updated before insert or update on public.records
+  for each row execute function public.app_touch_updated();
+
+-- ---------- 📡 فعال‌سازی رئال‌تایم (هم‌دیدی فوری کاربران) ----------
+do $$
+begin
+  begin
+    alter publication supabase_realtime add table public.records;
+  exception when duplicate_object then null;
+           when undefined_object then null;
+  end;
+end $$;
+alter table public.records replica identity full;
