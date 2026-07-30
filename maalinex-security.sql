@@ -119,22 +119,10 @@ begin
        and txt like '%'||o.id::text||'%');
 end $$;
 
--- حریم شخصی «رشد فردی»: فقط بخش‌های شخصی محدود می‌شوند، نه همه‌ی داده‌ها
--- ⚠️ رفع اشکال مهم: نسخه‌ی قبلی این تابع به ازای «هر» موجودیتی که فیلد _by داشت اعمال می‌شد.
--- چون اپ روی هر رکورد تازه‌ساخته‌شده _by (ایمیل سازنده) می‌گذارد، نتیجه این بود که کاربر
--- تاییدشده‌ی غیرادمین هیچ رکوردی از ساخته‌های دیگران را نمی‌دید و همه‌چیز صفر به‌نظر می‌رسید.
--- اکنون محدودیت فقط روی فهرست «رشد شخصی» است — همان فهرستی که اپ هم (GROWTH) رعایت می‌کند.
-create or replace function public.app_growth(ent text) returns boolean
-language sql immutable as
-$$ select ent in ('growth','habit','win','plan','asset','area','note',
-                  'book','booknote','course','reminder') $$;
-
-create or replace function public.app_priv_ok(ent text, d jsonb) returns boolean
+-- حریم شخصی «رشد فردی»: ردیف‌های دارای _by فقط برای صاحبشان
+create or replace function public.app_priv_ok(d jsonb) returns boolean
 language sql stable security definer set search_path=public as
-$$ select app_is_admin()
-     or not app_growth(ent)
-     or coalesce(d->>'_by','')=''
-     or lower(d->>'_by')=app_email() $$;
+$$ select app_is_admin() or coalesce(d->>'_by','')='' or lower(d->>'_by')=app_email() $$;
 
 -- مالکیت هدف BSC / سنجه (خودش یا از طریق هدفِ والد سنجه)
 create or replace function public.app_bsc_mine(ent text, d jsonb) returns boolean
@@ -178,7 +166,7 @@ create policy rec_select on public.records for select to authenticated using (
   or (
     app_approved()
     and (app_is_meta(id) or app_ent_level(entity)<>'hide')
-    and app_priv_ok(entity,data)
+    and app_priv_ok(data)
     and app_in_scope(id,entity,data)
   )
 );
@@ -199,7 +187,7 @@ create policy rec_insert on public.records for insert to authenticated with chec
 create policy rec_update on public.records for update to authenticated using (
   app_approved()
   and (not app_is_meta(id) or app_is_admin())
-  and app_priv_ok(entity,data)
+  and app_priv_ok(data)
   and app_in_scope(id,entity,data)
   and (app_is_meta(id) or app_ent_level(entity) not in ('hide','read'))
   and (entity not in ('bsc','measure') or app_is_admin()
@@ -211,10 +199,6 @@ create policy rec_update on public.records for update to authenticated using (
 -- حذف فیزیکی: فقط ادمین
 create policy rec_delete on public.records for delete to authenticated
   using (app_is_admin());
-
--- نسخه‌ی تک‌آرگومانیِ قدیمیِ app_priv_ok دیگر استفاده نمی‌شود و اکنون که سیاست‌های
--- جدید ساخته شده‌اند (و وابستگی‌اش قطع شده) بی‌خطر حذف می‌شود.
-drop function if exists public.app_priv_ok(jsonb);
 
 -- ---------- ۴) تریگر ضدتحریف: تغییر entity یا جعل _by ممنوع ----------
 create or replace function public.app_guard_update() returns trigger
@@ -318,25 +302,17 @@ select 'RLS فعال شد ✅' as status,
   (select count(*) from pg_policies where tablename='records') as policies_records,
   (select count(*) from pg_policies where tablename='objects' and policyname like 'mlx_%') as policies_storage;
 
-
--- ---------- ⏱ نسخه ۱.۶۳: زمان سرور برای updated_at (رفع گم‌شدن تغییرات با ساعتِ غلط دستگاه‌ها) ----------
-create or replace function public.app_touch_updated() returns trigger
-language plpgsql as $$
+-- ⏱️ زمان سرور برای updated_at (اصلاح هم‌گام‌سازی v2.90+)
+create or replace function public.app_touch_updated()
+returns trigger language plpgsql as $$
 begin
   new.updated_at := now();
   return new;
 end $$;
 drop trigger if exists trg_touch_updated on public.records;
 create trigger trg_touch_updated before insert or update on public.records
-  for each row execute function public.app_touch_updated();
+for each row execute function public.app_touch_updated();
 
--- ---------- 📡 فعال‌سازی رئال‌تایم (هم‌دیدی فوری کاربران) ----------
-do $$
-begin
-  begin
-    alter publication supabase_realtime add table public.records;
-  exception when duplicate_object then null;
-           when undefined_object then null;
-  end;
-end $$;
+-- 📡 انتشار بلادرنگ رکوردها
+alter publication supabase_realtime add table public.records;
 alter table public.records replica identity full;
