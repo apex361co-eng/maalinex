@@ -1,0 +1,11 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>به‌روزرسانی مالینکس</title></head>
+<body style="font-family:Tahoma,sans-serif;background:#0d1117;color:#e6edf3;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+<div style="text-align:center;line-height:2.2"><div style="font-size:40px">🔄</div><div id="m" style="font-size:15px">در حال پاک‌سازی نسخهٔ قدیمی…</div></div>
+<script>
+(async()=>{
+  try{const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.unregister();}catch(e){}
+  try{const ks=await caches.keys();for(const k of ks)await caches.delete(k);}catch(e){}
+  document.getElementById('m').textContent='✅ انجام شد — در حال رفتن به نسخهٔ جدید…';
+  setTimeout(()=>location.replace('./index.html?v='+Date.now()),900);
+})();
+</script></body></html>
