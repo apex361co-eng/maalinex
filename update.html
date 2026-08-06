@@ -1,11 +1,13 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>به‌روزرسانی مالینکس</title></head>
-<body style="font-family:Tahoma,sans-serif;background:#0d1117;color:#e6edf3;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-<div style="text-align:center;line-height:2.2"><div style="font-size:40px">🔄</div><div id="m" style="font-size:15px">در حال پاک‌سازی نسخهٔ قدیمی…</div></div>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>به‌روزرسانی Maalinex</title>
+<style>body{font-family:system-ui,Tahoma;background:#0d1117;color:#e6edf3;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}div{text-align:center;padding:24px}</style></head>
+<body><div><h2>🔄 در حال به‌روزرسانی…</h2><p id="s">پاک‌سازی نسخهٔ قدیمی…</p></div>
 <script>
-(async()=>{
-  try{const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.unregister();}catch(e){}
-  try{const ks=await caches.keys();for(const k of ks)await caches.delete(k);}catch(e){}
-  document.getElementById('m').textContent='✅ انجام شد — در حال رفتن به نسخهٔ جدید…';
-  setTimeout(()=>location.replace('./index.html?v='+Date.now()),900);
-})();
+(async()=>{try{
+ if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.unregister();}
+ if(window.caches){const ks=await caches.keys();for(const k of ks)await caches.delete(k);}
+ document.getElementById('s').textContent='انجام شد — انتقال به نسخهٔ جدید…';
+}catch(e){}finally{
+ const p=location.pathname.replace(/update\.html$/,'')+'index.html';
+ setTimeout(()=>location.replace(p+'?v='+Date.now()),600);
+}})();
 </script></body></html>
